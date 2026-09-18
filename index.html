@@ -126,6 +126,33 @@
 @keyframes clearTitle{0%{transform:translateY(9px) scale(.9);opacity:0}45%,100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes clearPetal{0%{transform:translate(0,0) rotate(0) scale(.2);opacity:0}20%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.7);opacity:0}}
 @media(prefers-reduced-motion:reduce){.fx-bit,.clear-confetti,.bloom-mode .board-aura:before,.bloom-mode .board-aura:after,.stageClear .clear-bouquet:after{display:none!important}.cell.pop .flower{animation:none!important;transform:scale(1.12)}.stageClear,.stageClear *,.bloom-mode .bloom-badge{animation:none!important}.stageClear .clear-bouquet:before{animation:none;opacity:.4}.stageClear .clear-bouquet img{transform:scale(var(--bouquet-size)) rotate(var(--bouquet-turn));opacity:1}.comboFx{animation:none!important;transform:translate(-50%,-50%)}}
+</style>
+<style id="larger-board-butterfly-motion">
+.board-zone{width:100%;margin-top:-2px}
+.hero{min-height:92px;padding-top:12px}.tagline{margin-top:7px}
+.fx-halo.afterglow{border:1px dashed var(--fx-color);background:none;box-shadow:0 0 6px var(--fx-color);animation:afterglowRing .65s ease-out both}
+.butterfly-icon{position:relative;display:block;width:30px;height:28px;pointer-events:none}
+.butterfly-icon .wing{position:absolute;top:2px;width:15px;height:21px;background:radial-gradient(ellipse at 50% 28%,#fff6d2 0 8%,#a2f0ff 13%,#4eb5ed 35%,#5672d5 62%,#7151aa 85%);border:1px solid #ffe6ab;box-shadow:inset 0 -3px 3px #aeeeff55,0 0 3px #c2ecff88}
+.butterfly-icon .wing:after{content:'';position:absolute;bottom:-3px;width:9px;height:11px;border-radius:70%;background:radial-gradient(ellipse,#b9f6ff,#6d8ee4 60%,#d8b976);border:1px solid #ffedb5}
+.butterfly-icon .wing-left{left:0;border-radius:80% 55% 65% 35%;transform-origin:100% 50%;animation:wingLeft .2s ease-in-out infinite alternate}.butterfly-icon .wing-left:after{right:0}
+.butterfly-icon .wing-right{right:0;border-radius:55% 80% 35% 65%;transform-origin:0 50%;animation:wingRight .2s ease-in-out infinite alternate}.butterfly-icon .wing-right:after{left:0}
+.butterfly-icon .thorax{position:absolute;left:13px;top:6px;width:4px;height:17px;border-radius:60%;background:linear-gradient(#ffdf9b,#705331);box-shadow:0 0 2px #ffedc4}
+.butterfly-icon:before,.butterfly-icon:after{content:'';position:absolute;top:1px;width:1px;height:7px;background:#fff0bd;border-radius:2px;z-index:1}.butterfly-icon:before{left:12px;transform:rotate(-28deg)}.butterfly-icon:after{right:12px;transform:rotate(28deg)}
+.butterfly-mark{right:-5px;top:-8px;width:24px;height:23px;padding:0;background:none;filter:drop-shadow(0 0 4px #ffebbb);animation:butterflyHover 1.5s ease-in-out infinite alternate}
+.butterfly-mark .butterfly-icon{transform:scale(.8);transform-origin:top left}.butterfly-mark:after{left:-4px;top:17px;font-size:11px}.butterfly-mark.arriving .butterfly-icon{opacity:0}
+.butterfly-mark .wing{animation-duration:.48s}.butterfly-leaving .butterfly-mark{animation:butterflyHover .32s ease-in-out infinite alternate}.butterfly-leaving .wing{animation-duration:.14s}
+.butterfly-flight{width:30px;height:28px;filter:drop-shadow(0 0 6px #fff0b3);animation:butterflyArc var(--flight-time) cubic-bezier(.32,.1,.28,1) both;z-index:11}
+.butterfly-flight:after{content:'✦';position:absolute;left:-7px;bottom:-2px;color:#ffe8a0;font:10px/1 serif;text-shadow:-8px 6px 3px #ffd7f6,8px -3px 4px #d6f3ff;animation:flightShimmer .3s ease-in-out infinite alternate}
+.app:has(#menu:not(.hide)) .butterfly-mark,.app:has(#menu:not(.hide)) .butterfly-icon .wing{animation-play-state:paused}
+@keyframes wingLeft{from{transform:rotate(-10deg) scaleX(1)}to{transform:rotate(7deg) scaleX(.28)}}
+@keyframes wingRight{from{transform:rotate(10deg) scaleX(1)}to{transform:rotate(-7deg) scaleX(.28)}}
+@keyframes butterflyHover{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-3px) rotate(5deg)}}
+@keyframes flightShimmer{from{opacity:.2;transform:scale(.6)}to{opacity:.85;transform:scale(1)}}
+@keyframes butterflyArc{0%{transform:translate(calc(-50% + var(--x0)),calc(-50% + var(--y0))) rotate(-18deg);opacity:0}12%{opacity:1}35%{transform:translate(calc(-50% + var(--x1)),calc(-50% + var(--y1))) rotate(16deg);opacity:1}72%{transform:translate(calc(-50% + var(--x2)),calc(-50% + var(--y2))) rotate(-10deg);opacity:1}100%{transform:translate(calc(-50% + var(--x3)),calc(-50% + var(--y3))) rotate(4deg);opacity:var(--flight-end-opacity)}}
+@keyframes afterglowRing{from{transform:translate(-50%,-50%) scale(.5);opacity:.45}to{transform:translate(-50%,-50%) scale(1.25);opacity:0}}
+@media(max-height:780px){.hero{min-height:82px;padding-top:8px}.brand{font-size:35px}.tagline{font-size:7px;margin-top:5px}.footer{flex-basis:52px}}
+@media(max-height:690px){.hero{min-height:58px;padding-top:5px}.brand{font-size:28px}.brand span{margin-left:20px}.brand-flower{width:21px;height:21px;top:15px;right:-14px}.tagline{display:none}.status{flex-basis:50px}.footer{flex-basis:48px}.signature{flex-basis:8px}}
+@media(prefers-reduced-motion:reduce){.butterfly-mark,.butterfly-icon .wing{animation:none!important}.butterfly-flight{display:none!important}.butterfly-mark.arriving .butterfly-icon{opacity:1}}
 </style></head>
 <body>
 <div class="app" id="app">
@@ -172,7 +199,7 @@
 // Flower Bloom — asset integration v1. Balance values are retained from main.
 const ASSET_ROOT = 'assets/sakura-v1/';
 const ASSET_VERSION = 'sakura-assets-1';
-const EFFECT_VERSION = 'bloom-spectacle-2';
+const EFFECT_VERSION = 'bloom-spectacle-3';
 const $ = id => document.getElementById(id);
 const P = ['red', 'blue', 'yellow'];
 const C = {red:'var(--r)', blue:'var(--b)', yellow:'var(--y)'};
@@ -411,16 +438,30 @@ function scheduleButterfly(first=false) {
  const max=first?BUTTERFLY_FIRST_MAX_DELAY:BUTTERFLY_MAX_DELAY;
  butterflyNextAt=performance.now()+(min+Math.random()*(max-min))*1000;
 }
-function butterflyFlight(index) {
+function butterflyIcon(){return '<span class="butterfly-icon"><i class="wing wing-left"></i><i class="wing wing-right"></i><i class="thorax"></i></span>';}
+function stopButterflyFlights(){
+ $('effects').querySelectorAll('.butterfly-flight').forEach(node=>node.remove());
+ butterfly?.mark.classList.remove('arriving');
+}
+function butterflyFlight(index,arrival=false) {
  if(reducedMotion||!board[index])return;
- const {x,y}=centerOf(board[index].el),fx=document.createElement('span');
- fx.className='butterfly-flight';fx.textContent='🦋';fx.setAttribute('aria-hidden','true');
- fx.style.left=x+'px';fx.style.top=y+'px';$('effects').append(fx);
- later(()=>fx.remove(),560);
+ const mark=butterfly?.index===index?butterfly.mark:null;
+ const {x,y,w,h}=centerOf(mark||board[index].el),fx=document.createElement('span');
+ const direction=x<w/2?-1:1,edge=direction<0?-x-20:w-x+20;
+ const path=arrival?[[edge,-Math.min(y,100)-35],[edge*.65,-95],[edge*.18,-35],[0,0]]:
+  [[0,0],[-direction*w*.13,-45],[direction*w*.17,-h*.27],[direction*w*.46,-Math.min(y+45,h*.7)]];
+ const duration=arrival?900:1100;
+ fx.className='butterfly-flight'+(arrival?' arrival':'');fx.innerHTML=butterflyIcon();fx.setAttribute('aria-hidden','true');
+ fx.style.left=x+'px';fx.style.top=y+'px';fx.style.setProperty('--flight-time',duration+'ms');fx.style.setProperty('--flight-end-opacity',arrival?'1':'0');
+ path.forEach(([dx,dy],i)=>{fx.style.setProperty('--x'+i,dx+'px');fx.style.setProperty('--y'+i,dy+'px');});
+ if(arrival&&mark)mark.classList.add('arriving');
+ addEffect(fx,duration+40);
+ if(arrival)later(()=>{if(butterfly?.mark===mark)mark.classList.remove('arriving');fx.remove();},duration);
 }
 function clearButterfly({reschedule=false,fly=false}={}) {
  if(butterfly){
   const {index,el,mark}=butterfly;
+  stopButterflyFlights();
   if(fly)butterflyFlight(index);
   mark.remove();el.classList.remove('butterfly-target','butterfly-leaving');el.removeAttribute('aria-label');
  }
@@ -439,10 +480,10 @@ function spawnButterfly() {
  });
  if(!candidates.length){butterflyNextAt=performance.now()+BUTTERFLY_RETRY_DELAY*1000;return false;}
  const index=candidates[Math.random()*candidates.length|0],cell=board[index],mark=document.createElement('span');
- mark.className='butterfly-mark';mark.textContent='🦋';mark.setAttribute('aria-hidden','true');cell.el.append(mark);
+ mark.className='butterfly-mark';mark.innerHTML=butterflyIcon();mark.setAttribute('aria-hidden','true');cell.el.append(mark);
  cell.el.classList.add('butterfly-target');cell.el.setAttribute('aria-label',cell.bud.alt+' · 이 칸으로 합성하면 나비 보너스');
  butterfly={index,color:cell.k,bud:cell.bud,el:cell.el,mark,epoch:generation,until:performance.now()+BUTTERFLY_LIFETIME*1000};
- butterflyNextAt=0;renderButterflyHint();return true;
+ butterflyNextAt=0;renderButterflyHint();butterflyFlight(index,true);return true;
 }
 function updateButterfly() {
  if(!run||menuPaused||clearing)return;
@@ -587,6 +628,18 @@ function particles(el,name,perfect=false) {
   p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist-16+'px');
   p.style.setProperty('--start-rot',(angle*180/Math.PI)+'deg');p.style.setProperty('--rot',(angle*180/Math.PI+90+fxRandom()*180)+'deg');
  }
+ const encoreCount=combo>=5||festival?8:5;
+ later(()=>{
+  if(!run||menuPaused||clearing)return;
+  effectAt('fx-halo afterglow',x,y,cellSize*2.15,light.light,700);
+  for(let i=0;i<encoreCount;i++){
+   const angle=i/encoreCount*Math.PI*2+.45,dist=cellSize*(.85+fxRandom()*.6);
+   const p=effectAt(i%3===0?'fx-star':'fx-petal',x,y,10+fxRandom()*9,light.light,700);
+   p.style.setProperty('--petal-edge',light.edge);p.style.setProperty('--life','650ms');
+   p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist-22+'px');
+   p.style.setProperty('--start-rot','15deg');p.style.setProperty('--rot',(i*65+80)+'deg');
+  }
+ },150);
 }
 function comboEffect(el) {
  $('effects').querySelectorAll('.comboFx,.board-wave').forEach(node=>node.remove());
@@ -702,6 +755,7 @@ function finish() {
 function openMenu(help=false) {
  if(clearing)return;
  if(!menuPaused){
+  stopButterflyFlights();
   updateButterfly();butterflyPausedAt=performance.now();
   updateBloom();bloomPausedRemaining=Math.max(0,bloomUntil-performance.now());
   menuPaused=true;pausedAt=Date.now();cancelPointer();
