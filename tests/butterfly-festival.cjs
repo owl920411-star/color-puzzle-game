@@ -99,10 +99,10 @@ function check(name,value){assert.equal(value,true,name);passed.push(name);}
   await page.clock.runFor(851);
   check('next normal stage has clean state and start overlay',await page.evaluate(()=>si===1&&!run&&!butterfly&&total===0&&!$('start').classList.contains('hide')));
   check('existing five normal stage goals and times preserved; festival is fourth',await page.evaluate(()=>{
-   const normal=ST.filter(s=>s.type==='normal');
+   const normal=ST.slice(0,6).filter(s=>s.type==='normal');
    return JSON.stringify(normal.map(s=>({g:s.g,t:s.t,a:s.a})))===JSON.stringify([
     {g:{purple:8},t:60,a:.28},{g:{orange:10},t:60,a:.25},{g:{green:12},t:60,a:.23},{g:{purple:8,green:6},t:55,a:.20},{g:{purple:7,orange:7,green:7},t:55,a:.16}
-   ])&&ST.length===6&&ST[3].type==='festival';
+   ])&&ST.length>=6&&ST[3].type==='festival';
   }));
   check('festival opens through developer button with clear total goal',await page.evaluate(()=>{
    $('devFestival').click();return si===3&&!run&&!done()&&$('sStage').textContent.includes('SPECIAL')&&$('startTitle').textContent==='만개 축제'&&$('sGoal').textContent.includes('25송이')&&time===45;

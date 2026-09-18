@@ -62,6 +62,10 @@
 .butterfly-flight{position:absolute;z-index:8;font:17px/1 system-ui,sans-serif;pointer-events:none;animation:butterflyFly .55s ease-out forwards}
 .butterfly-hint{display:none;flex:1;min-width:0;text-align:center;white-space:nowrap;font:700 9px system-ui,sans-serif;color:#fff0b9}.has-butterfly-hint .butterfly-hint{display:block}.has-butterfly-hint .harvest{display:none}
 .mission.special .goal-chip{font-size:14px!important}.mission.special .mission-title b{font-size:10px}
+.mission.with-combo{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;flex-basis:72px;min-height:72px;row-gap:3px;padding-top:7px;padding-bottom:7px}
+.combo-goal{grid-column:1/-1;text-align:center;font:700 11px system-ui,sans-serif;letter-spacing:.2px;color:#ffe5b0}.combo-goal.complete{color:#d4f8ad}
+.mission.combo-only{grid-template-columns:1fr}.mission.combo-only .mission-title{align-items:center}.mission.combo-only .progress{display:none}
+.devPanel{max-height:65dvh;overflow-y:auto}.dev-stage-input{width:66px;min-height:32px;border:1px solid #b9875c;border-radius:8px;background:#2d232f;color:#fff;text-align:center;font:14px system-ui,sans-serif}
 #menu .modal-card{max-height:calc(100dvh - 48px);overflow-y:auto}
 @keyframes butterflyFlutter{to{transform:rotate(8deg);filter:drop-shadow(0 0 4px #ffeab5)}}
 @keyframes butterflyFly{from{transform:translate(-50%,-50%);opacity:1}to{transform:translate(-35%,-150%);opacity:0}}
@@ -125,14 +129,26 @@ const F = {
 const M = {'blue,red':'purple', 'red,yellow':'orange', 'blue,yellow':'green'};
 const FESTIVAL_DURATION = 45, FESTIVAL_TOTAL_GOAL = 25;
 const FESTIVAL_SPAWN_TUNING = Object.freeze({goalRate:.20,chainRate:.25,chainWeight:1.2});
+const PRESSURE_DURATION = 38, CHALLENGE_DURATION = 42, CHALLENGE_COMBO_GOAL = 7;
+const EXPERT_DURATION = 50, EXPERT_COMBO_GOAL = 7;
 const ST = [
  {type:'normal',goalType:'flowers',g:{purple:8},t:60,a:.28},
  {type:'normal',goalType:'flowers',g:{orange:10},t:60,a:.25},
  {type:'normal',goalType:'flowers',g:{green:12},t:60,a:.23},
  {type:'festival',goalType:'total',g:{},totalGoal:FESTIVAL_TOTAL_GOAL,t:FESTIVAL_DURATION,a:.23,spawnTuning:FESTIVAL_SPAWN_TUNING},
  {type:'normal',goalType:'flowers',g:{purple:8,green:6},t:55,a:.20},
- {type:'normal',goalType:'flowers',g:{purple:7,orange:7,green:7},t:55,a:.16}
-];
+ {type:'normal',goalType:'flowers',g:{purple:7,orange:7,green:7},t:55,a:.16},
+ {difficulty:'HARD',g:{purple:15,green:4},t:52,a:.18},
+ {difficulty:'HARD',g:{purple:10,orange:5},comboGoal:5,t:52,a:.18},
+ {difficulty:'HARD',g:{purple:8,orange:7,green:6},t:50,a:.16},
+ {type:'pressure',difficulty:'HARD',randomProfile:'PRESSURE',g:{purple:9,orange:9,green:6},t:PRESSURE_DURATION,a:.23},
+ {difficulty:'NORMAL',g:{purple:8,green:8},t:55,a:.20},
+ {difficulty:'HARD',g:{orange:14,purple:5,green:3},comboGoal:6,t:48,a:.16},
+ {difficulty:'EXPERT',g:{purple:8,orange:8,green:8},comboGoal:6,t:50,a:.16},
+ {type:'challenge',goalType:'combo',difficulty:'EXPERT',randomProfile:'COMBO',g:{},comboGoal:CHALLENGE_COMBO_GOAL,t:CHALLENGE_DURATION,a:.20},
+ {difficulty:'EXPERT',g:{purple:10,orange:10,green:10},comboGoal:EXPERT_COMBO_GOAL,t:EXPERT_DURATION,a:.16}
+].map((stage,index)=>({type:'normal',goalType:'flowers',difficulty:index<3?'EASY':'NORMAL',butterflyEnabled:true,...stage,
+ randomProfile:stage.randomProfile||stage.difficulty||(index<3?'EASY':'NORMAL')}));
 const N = 6;
 // Playtest knobs: natural / goal balance / chain opportunity = 70 / 20 / 10.
 const COMBO_TIME_BONUS = .2, COMBO_TIME_CAP = 8;
@@ -142,6 +158,16 @@ const RANDOM_BALANCE = Object.freeze({
  goalRate:.20, chainRate:.10, materialFloor:10, materialWeight:.2,
  goalWeight:3, pairFloor:3, pairWeight:.35, neighborWeight:.45, chainWeight:.8
 });
+// Preserve the first six stages. Later profiles reduce assistance, never remove it.
+const DIFFICULTY_PROFILES = Object.freeze({
+ EASY:Object.freeze({goalRate:.20,chainRate:.10}),
+ NORMAL:Object.freeze({goalRate:.20,chainRate:.10}),
+ HARD:Object.freeze({goalRate:.14,chainRate:.08}),
+ EXPERT:Object.freeze({goalRate:.10,chainRate:.07}),
+ PRESSURE:Object.freeze({goalRate:.22,chainRate:.23,chainWeight:1.2}),
+ COMBO:Object.freeze({goalRate:.15,chainRate:.25,chainWeight:1.2})
+});
+const DEAD_BOARD_THRESHOLD = 0;
 const COMBO_FEEDBACK = Object.freeze({
  normal:{petals:5,vibration:0}, warm:{petals:8,vibration:12},
  hot:{petals:13,vibration:22}, mega:{petals:18,vibration:35}
@@ -163,7 +189,10 @@ const pending = new Set();
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const entries = () => Object.entries(T.g);
 const totalGoalStage = () => T.goalType==='total';
-const done = () => totalGoalStage()?total>=T.totalGoal:entries().every(([name,goal]) => (goals[name]||0) >= goal);
+const flowerGoalDone = () => T.goalType==='combo'||(totalGoalStage()?total>=T.totalGoal:entries().every(([name,goal]) => (goals[name]||0) >= goal));
+const done = () => flowerGoalDone()&&maxCombo>=(T.comboGoal||0);
+const stageName = () => ({festival:'만개 축제',pressure:'개화 러시',challenge:'콤보 챌린지'}[T.type]||'벚꽃 정원');
+const randomBalance = () => ({...RANDOM_BALANCE,...(DIFFICULTY_PROFILES[T.randomProfile]||DIFFICULTY_PROFILES.NORMAL),...T.spawnTuning});
 const asset = name => window.FLOWER_BLOOM_ASSETS?.[name] || ASSET_ROOT + name + '.webp';
 const sprite = (kind, name, alt='') => `<img src="${asset(kind+'-'+name)}" alt="${alt}" draggable="false">`;
 const clock = seconds => {
@@ -189,8 +218,20 @@ function cancelBoardWork() {
  $('beat').classList.remove('on');
 }
 function goalText() {
- if(totalGoalStage())return '🌸 개화 '+Math.min(total,T.totalGoal)+' / '+T.totalGoal;
- return entries().map(([n,g])=>F[n].e+' '+Math.min(goals[n]||0,g)+'/'+g).join('  ');
+ const flowers=totalGoalStage()?'🌸 개화 '+Math.min(total,T.totalGoal)+' / '+T.totalGoal:entries().map(([n,g])=>F[n].e+' '+Math.min(goals[n]||0,g)+'/'+g).join('  ');
+ return [flowers,T.comboGoal?'🔥 MAX COMBO '+maxCombo+' / '+T.comboGoal+(maxCombo>=T.comboGoal?' ✓':''):''].filter(Boolean).join(' · ');
+}
+function remainingGoalText() {
+ const missing=totalGoalStage()?(total<T.totalGoal?['꽃 '+(T.totalGoal-total)+'송이 부족']:[]):entries().filter(([n,g])=>(goals[n]||0)<g).map(([n,g])=>F[n].n+' '+(g-(goals[n]||0))+'송이 부족');
+ if(T.comboGoal&&maxCombo<T.comboGoal)missing.push('최고 콤보 '+(T.comboGoal-maxCombo)+'단계 부족');
+ return missing.join(' · ');
+}
+function resultTitle() {
+ if(done())return 'STAGE CLEAR!';
+ const missingFlowers=totalGoalStage()?Math.max(0,T.totalGoal-total):entries().reduce((sum,[n,g])=>sum+Math.max(0,g-(goals[n]||0)),0);
+ if(missingFlowers===1&&maxCombo>=(T.comboGoal||0))return '딱 1송이 남았어요!';
+ if(missingFlowers===0&&T.comboGoal-maxCombo===1)return '최고 콤보 1단계만 더!';
+ return '조금만 더 피워볼까요?';
 }
 function renderTime() {
  $('time').textContent=clock(time);
@@ -218,9 +259,11 @@ function triggerBloom() {
 }
 function ui() {
  T=ST[si];
- $('startTitle').textContent=totalGoalStage()?'만개 축제':'오늘의 개화 목표';
- document.querySelector('.stage-name').textContent=totalGoalStage()?'만개 축제':'벚꽃 정원';
- $('mission').classList.toggle('special',totalGoalStage());
+ $('startTitle').textContent=T.type==='normal'?'오늘의 개화 목표':stageName();
+ document.querySelector('.stage-name').textContent=T.type!=='normal'?stageName():T.difficulty==='EXPERT'?'🌺 EXPERT':T.difficulty==='HARD'?'🔥 HARD':'벚꽃 정원';
+ $('mission').classList.toggle('special',T.type!=='normal');
+ $('mission').classList.toggle('with-combo',Boolean(T.comboGoal));
+ $('mission').classList.toggle('combo-only',T.goalType==='combo');
  $('stage').textContent=$('sStage').textContent='STAGE '+(si+1);
  $('target').textContent=entries().length>1?'꽃을 모아 주세요':'꽃을 피워 주세요';
  $('mission').classList.toggle('multi',entries().length>1);
@@ -236,6 +279,17 @@ function ui() {
   $('sGoal').innerHTML='<div class="start-goal"><span>모든 색 꽃</span><b>'+T.totalGoal+'송이</b></div>';
   $('guide').innerHTML='시간 안에 꽃을 마음껏 피워 주세요!<br>제한시간 <b>'+T.t+'초</b> · 모든 개화를 합산합니다.';
  }
+ if(T.type==='pressure'){
+  $('sStage').textContent='🔥 BLOOM RUSH · STAGE '+(si+1);$('target').textContent='🔥 개화 러시';
+ }
+ if(T.goalType==='combo'){
+  $('sStage').textContent='🌺 COMBO CHALLENGE';$('target').textContent='같은 꽃 연속 개화';
+  $('guide').innerHTML='제한시간 <b>'+T.t+'초</b><br>같은 꽃 콤보를 한 번 달성하면 성공!';
+ }
+ $('comboGoal').classList.toggle('hide',!T.comboGoal);
+ $('comboGoal').classList.toggle('complete',maxCombo>=(T.comboGoal||0));
+ $('comboGoal').textContent=T.comboGoal?'🔥 같은 꽃 COMBO '+Math.min(maxCombo,T.comboGoal)+' / '+T.comboGoal+(maxCombo>=T.comboGoal?' ✓':''):'';
+ if(T.comboGoal)$('sGoal').insertAdjacentHTML('beforeend','<div class="start-goal"><span>🔥 같은 꽃 연속</span><b>'+T.comboGoal+' COMBO</b></div>');
  $('score').textContent=score.toLocaleString('ko-KR');
  $('harvestCount').textContent=String(total);
  renderCombo(); renderTime(); devInfo();
@@ -248,6 +302,7 @@ function devInfo() {
  const c=counts(),pairs=adjacentFlowerCounts();
  $('devInfo').textContent='ST '+(si+1)+' / '+ST.length+' · '+T.type+' · 목표 '+(totalGoalStage()?goalText():entries().map(([n,g])=>F[n].e+g).join(' '))+
   ' · 보드 🔴'+c.red+' 🔵'+c.blue+' 🟡'+c.yellow+' · 인접쌍 🟣'+pairs.purple+' 🟠'+pairs.orange+' 🟢'+pairs.green+
+  ' · '+T.difficulty+' / randomProfile '+T.randomProfile+' · 인접 총 '+Object.values(pairs).reduce((a,b)=>a+b,0)+
   ' · 남은시간 '+time.toFixed(1)+'초 · 나비 '+(butterfly?'칸 '+(butterfly.index+1):butterflyNextAt?'등장 대기':'없음')+' · '+ASSET_VERSION;
 }
 function neighbors(index) {
@@ -270,6 +325,18 @@ function adjacentFlowerCounts() {
  });
  return result;
 }
+// Recover only a settled, genuinely unplayable board. Never interrupt a gesture
+// or mistake temporarily empty bloom cells for a dead board.
+function recoverDeadBoard() {
+ if(!run||menuPaused||clearing||busy.size||startPointer||board.length!==N*N||board.some(cell=>!P.includes(cell.k)))return false;
+ if(Object.values(adjacentFlowerCounts()).reduce((sum,n)=>sum+n,0)>DEAD_BOARD_THRESHOLD)return false;
+ const candidates=board.map((cell,index)=>index).filter(index=>index!==butterfly?.index);
+ const index=candidates[Math.random()*candidates.length|0],cell=board[index];
+ const alternatives=P.filter(color=>color!==board[neighbors(index)[0]].k);
+ cell.k=alternatives[Math.random()*alternatives.length|0];paintBud(cell.bud,cell.k);
+ cell.el.classList.add('drop');later(()=>cell.el.classList.remove('drop'),230);
+ return true;
+}
 // A single attachment belongs to one bud and one board generation.
 // Deadlines use the monotonic clock; menu pause shifts both arrival and expiry.
 function renderButterflyHint(text=butterfly?'🦋 이 칸으로 합성 → 점수 ×'+BUTTERFLY_SCORE_MULTIPLIER:'') {
@@ -277,7 +344,7 @@ function renderButterflyHint(text=butterfly?'🦋 이 칸으로 합성 → 점�
  $('app').classList.toggle('has-butterfly-hint',Boolean(text));
 }
 function scheduleButterfly(first=false) {
- if(!run||clearing)return;
+ if(!run||clearing||T.butterflyEnabled===false)return;
  const min=first?BUTTERFLY_FIRST_MIN_DELAY:BUTTERFLY_MIN_DELAY;
  const max=first?BUTTERFLY_FIRST_MAX_DELAY:BUTTERFLY_MAX_DELAY;
  butterflyNextAt=performance.now()+(min+Math.random()*(max-min))*1000;
@@ -303,7 +370,7 @@ function resetButterfly() {
  document.querySelectorAll('.butterfly-flight').forEach(el=>el.remove());
 }
 function spawnButterfly() {
- if(!run||menuPaused||clearing||butterfly||BUTTERFLY_MAX_ON_BOARD<1)return false;
+ if(!run||menuPaused||clearing||T.butterflyEnabled===false||butterfly||BUTTERFLY_MAX_ON_BOARD<1)return false;
  const candidates=board.flatMap((cell,index)=>{
   if(!P.includes(cell.k)||busy.has(index)||startPointer?.index===index)return [];
   return neighbors(index).some(j=>!busy.has(j)&&P.includes(board[j]?.k)&&board[j].k!==cell.k)?[index]:[];
@@ -317,6 +384,7 @@ function spawnButterfly() {
 }
 function updateButterfly() {
  if(!run||menuPaused||clearing)return;
+ if(T.butterflyEnabled===false){resetButterfly();return;}
  const now=performance.now();
  if(butterfly){
   const cell=board[butterfly.index];
@@ -342,7 +410,7 @@ function collectButterfly(source,destination) {
 }
 function spawn(index) {
  if(butterfly?.index===index)clearButterfly({reschedule:true});
- const mode=Math.random(),balance=T.spawnTuning?{...RANDOM_BALANCE,...T.spawnTuning}:RANDOM_BALANCE;
+ const mode=Math.random(),balance=randomBalance();
  if(mode>=balance.goalRate+balance.chainRate)return P[Math.random()*P.length|0];
  const c=counts(),pairs=adjacentFlowerCounts(),w={red:1,blue:1,yellow:1};
  const local=neighbors(index).filter(i=>board[i]?.k&&!busy.has(i));
@@ -351,7 +419,7 @@ function spawn(index) {
   w[k]+=weight+local.filter(i=>board[i].k===partner).length*balance.neighborWeight;
  });
  if(mode<balance.goalRate){
-  const spawnGoals=totalGoalStage()?Object.keys(F).map(name=>[name,T.totalGoal]):entries();
+  const spawnGoals=T.goalType==='combo'?Object.keys(F).map(name=>[name,Infinity]):totalGoalStage()?Object.keys(F).map(name=>[name,T.totalGoal]):entries();
   spawnGoals.forEach(([flower,goal])=>{
    if((goals[flower]||0)>=goal)return;
    F[flower].need.forEach(k=>w[k]+=Math.max(0,balance.materialFloor-c[k])*balance.materialWeight+T.a*balance.goalWeight);
@@ -440,7 +508,7 @@ function merge(a,b) {
  if(combo>=BLOOM_TRIGGER&&!bloomTriggered)triggerBloom();
  board[b].el.dataset.comboTier=comboTier();
  board[b].el.style.setProperty('--bloom-color',F[name].c);
- const target=totalGoalStage()?!done():T.g[name]!=null&&(goals[name]||0)<T.g[name];
+ const target=T.goalType==='combo'||(totalGoalStage()?total<T.totalGoal:T.g[name]!=null&&(goals[name]||0)<T.g[name]);
  const perfect=Date.now()-beatAt<260;
  const mul=1+Math.min(combo-1,9)*.1;
  const basePoints=Math.round((target?100:45)*(perfect?2:1)*mul/5)*5;
@@ -459,11 +527,11 @@ function merge(a,b) {
  destination.bud.alt=F[name].n;destination.bud.className='bud flower';
  destination.bud.style.setProperty('--bloom-color',F[name].c);
  destination.el.classList.add('pop');
- later(()=>[a,b].forEach(i=>{
+ later(()=>{[a,b].forEach(i=>{
   const k=spawn(i),cell=board[i];cell.k=k;paintBud(cell.bud,k);
   cell.el.classList.remove('pop','comboGlow');cell.el.classList.add('drop');
   later(()=>cell.el.classList.remove('drop'),230);busy.delete(i);
- }),380);
+ });recoverDeadBoard();},380);
  if(done())stageClear();
 }
 function resetState() {
@@ -474,9 +542,10 @@ function resetState() {
  $('menu').classList.add('hide');$('end').classList.add('hide');
 }
 function begin() {
- cancelBoardWork();T=ST[si];resetState();build();ui();
+ cancelBoardWork();T=ST[si];resetState();build();ui();fitBoard();
  $('start').classList.add('hide');run=true;beatAt=Date.now();
  scheduleButterfly(true);
+ recoverDeadBoard();
  beatTimer=setInterval(()=>{
   if(!run||menuPaused)return;
   beatAt=Date.now();$('beat').classList.add('on');later(()=>$('beat').classList.remove('on'),160);
@@ -485,6 +554,7 @@ function begin() {
   if(!run||menuPaused)return;
   updateBloom();
   updateButterfly();
+  recoverDeadBoard();
   if(devPaused)return;
   time=Math.max(0,time-.1);renderTime();
   if(!$('devPanel').classList.contains('hide'))devInfo();
@@ -493,7 +563,7 @@ function begin() {
 }
 function prepareStage(index) {
  cancelBoardWork();run=false;si=(index+ST.length)%ST.length;T=ST[si];
- resetState();build();ui();$('start').classList.remove('hide');
+ resetState();build();ui();fitBoard();$('start').classList.remove('hide');
 }
 function stageClear() {
  if(clearing||!run)return;
@@ -507,9 +577,10 @@ function finish() {
  if(!run)return;
  run=false;stopClocks();endBloom();cancelPointer();
  resetButterfly();
- $('endTitle').textContent=done()?'STAGE CLEAR!':'조금만 더 피워볼까요?';
+ $('endTitle').textContent=resultTitle();
  $('result').innerHTML='최종 점수 <b>'+score.toLocaleString('ko-KR')+'</b><br>'+goalText()+
-  '<br>전체 개화 '+total+'송이 · MAX COMBO '+maxCombo;
+  '<br>전체 개화 '+total+'송이'+(T.comboGoal?'':' · MAX COMBO '+maxCombo)+
+  (done()?'':'<br><b>'+remainingGoalText()+'</b>');
  $('next').classList.toggle('hide',!done());
  $('next').textContent=si===ST.length-1?'처음부터 다시':'다음 스테이지';
  $('end').classList.remove('hide');
@@ -581,16 +652,28 @@ $('stage').addEventListener('pointerdown',()=>{clearTimeout(stageHoldTimer);stag
 ['pointerup','pointercancel','pointerleave'].forEach(name=>$('stage').addEventListener(name,()=>clearTimeout(stageHoldTimer)));
 $('devClose').onclick=()=>toggleDev(false);
 $('devInfo').insertAdjacentHTML('beforebegin','<div class="devRow"><button class="devBtn" id="devButterfly">🦋 나비 생성</button><button class="devBtn" id="devFestival">🌸 만개 축제</button></div>');
+$('devInfo').insertAdjacentHTML('beforebegin','<div class="devRow"><input class="dev-stage-input" id="devStageInput" type="number" min="1" max="'+ST.length+'" step="1" value="1" inputmode="numeric" aria-label="이동할 스테이지"><button class="devBtn" id="devStageGo">ST 이동</button><button class="devBtn" id="devHard">HARD</button><button class="devBtn" id="devExpert">EXPERT</button><button class="devBtn" id="devRush">RUSH</button><button class="devBtn" id="devChallenge">COMBO</button></div>');
+$('mission').insertAdjacentHTML('beforeend','<div class="combo-goal hide" id="comboGoal"></div>');
 $('harvest').insertAdjacentHTML('beforebegin','<span class="butterfly-hint" id="butterflyHint" role="status"></span>');
+$('devStageGo').onclick=()=>{
+ const stage=Number($('devStageInput').value);
+ if(Number.isInteger(stage)&&stage>=1&&stage<=ST.length){$('devStageInput').setCustomValidity('');prepareStage(stage-1);}
+ else{$('devStageInput').setCustomValidity('1부터 '+ST.length+'까지 입력해 주세요.');$('devStageInput').reportValidity();}
+};
+$('devStageInput').oninput=()=>$('devStageInput').setCustomValidity('');
+$('devHard').onclick=()=>prepareStage(ST.findIndex(stage=>stage.difficulty==='HARD'));
+$('devExpert').onclick=()=>prepareStage(ST.length-1);
+$('devRush').onclick=()=>prepareStage(ST.findIndex(stage=>stage.type==='pressure'));
+$('devChallenge').onclick=()=>prepareStage(ST.findIndex(stage=>stage.type==='challenge'));
 $('devButterfly').onclick=()=>{spawnButterfly();devInfo();};
 $('devFestival').onclick=()=>prepareStage(ST.findIndex(stage=>stage.type==='festival'));
 $('devPrev').onclick=()=>jumpStage(-1);$('devNext').onclick=()=>jumpStage(1);
-$('devComplete').onclick=()=>{if(totalGoalStage())total=Math.max(0,T.totalGoal-1);else entries().forEach(([n,g])=>goals[n]=Math.max(0,g-1));ui();};
+$('devComplete').onclick=()=>{if(totalGoalStage())total=Math.max(0,T.totalGoal-1);else entries().forEach(([n,g])=>goals[n]=Math.max(0,g-1));if(T.comboGoal)maxCombo=Math.max(maxCombo,T.comboGoal-1);ui();};
 $('devTimePlus').onclick=()=>{time+=10;renderTime();devInfo();};
 $('devTimeMinus').onclick=()=>{time=Math.max(.1,time-10);renderTime();devInfo();};
 $('devPause').onclick=()=>{devPaused=!devPaused;$('devPause').textContent=devPaused?'타이머 재개':'타이머 정지';devInfo();};
-$('devGoalPlus').onclick=()=>{if(totalGoalStage())T.totalGoal++;else Object.keys(T.g).forEach(n=>T.g[n]++);ui();};
-$('devGoalMinus').onclick=()=>{if(totalGoalStage())T.totalGoal=Math.max(1,T.totalGoal-1);else Object.keys(T.g).forEach(n=>T.g[n]=Math.max(1,T.g[n]-1));ui();if(run&&done())stageClear();};
+$('devGoalPlus').onclick=()=>{if(totalGoalStage())T.totalGoal++;else if(T.goalType==='combo')T.comboGoal++;else Object.keys(T.g).forEach(n=>T.g[n]++);ui();};
+$('devGoalMinus').onclick=()=>{if(totalGoalStage())T.totalGoal=Math.max(1,T.totalGoal-1);else if(T.goalType==='combo')T.comboGoal=Math.max(1,T.comboGoal-1);else Object.keys(T.g).forEach(n=>T.g[n]=Math.max(1,T.g[n]-1));ui();if(run&&done())stageClear();};
 $('devReset').onclick=()=>{toggleDev(false);begin();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&run&&!menuPaused)openMenu();});
 
