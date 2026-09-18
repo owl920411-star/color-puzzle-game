@@ -23,7 +23,29 @@
 @media(prefers-reduced-motion:reduce){.ambient{display:none}.petal,.spark{animation-duration:.2s}.comboFx,.float{animation-duration:.35s}.bud,.cell{animation-duration:.15s!important}.timer i{transition:none}}
 </style>
 
-</head>
+<style id="polish-v2">
+/* Mobile polish pass: hierarchy, breathing room and bloom payoff */
+.logo{transform:scale(.9);transform-origin:left top}
+.topbar{padding-top:3px}
+.mission{min-height:50px}
+.goal-chip{font-size:17px!important;font-weight:800!important;gap:4px}
+.goal-chip img{width:31px!important;height:31px!important}
+.mission-title b{font-size:10px}
+.board-zone{width:94%;align-self:center;margin-top:-4px}
+.board-shell{filter:drop-shadow(0 10px 15px #140d1399)}
+.grid:before{content:"";position:absolute;inset:-3%;z-index:-1;background:#120d12aa;filter:blur(10px);border-radius:14px}
+.bud{width:88%;height:88%;filter:drop-shadow(0 2px 3px #0008)}
+.cell:nth-child(3n+1) .bud{filter:drop-shadow(0 2px 3px #0008) saturate(1.08)}
+.flower{width:112%!important;height:112%!important;z-index:5;filter:drop-shadow(0 0 9px var(--bloom-color)) drop-shadow(0 0 18px #fff7c4)!important}
+.pop .flower{animation:bloomHero .48s cubic-bezier(.18,.9,.25,1.2) both}
+.comboFx{position:fixed;left:50%;top:52%;transform:translate(-50%,-50%);font-size:34px;z-index:30;color:#ffd9fa;text-shadow:0 3px #7f2c68,0 0 18px #ff8fe8}
+.comboFx.hot{font-size:44px}.comboFx.mega{font-size:55px}
+.float b{font-size:32px;text-shadow:0 3px #7c4528,0 0 15px #fff0a8}
+.harvest-row{opacity:.84;height:19px;flex-basis:19px}
+.footer{flex-basis:62px}
+@keyframes bloomHero{0%{transform:scale(.18) rotate(-10deg);opacity:.2}48%{transform:scale(1.75) rotate(3deg);opacity:1}72%{transform:scale(1.42)}100%{transform:scale(1.18);opacity:1}}
+@media(max-height:780px){.board-zone{width:91%}.goal-chip{font-size:15px!important}.goal-chip img{width:27px!important;height:27px!important}.footer{flex-basis:56px}}
+</style></head>
 <body>
 <div class="app" id="app">
  <div class="scenery" aria-hidden="true"></div>
@@ -211,7 +233,7 @@ function particles(el,name) {
 function comboEffect(el) {
  const fx=document.createElement('div');
  fx.className='comboFx'+(combo>=8?' mega':combo>=5?' hot':'');
- fx.innerHTML=combo+' COMBO<span>+0.2 sec</span>';
+ fx.innerHTML=(combo>=8?'🌺 ':combo>=5?'✨ ':'')+combo+' COMBO<span>+0.2 sec</span>';if(navigator.vibrate)navigator.vibrate(combo>=8?35:combo>=5?22:12);
  $('effects').append(fx); el.classList.add('comboGlow');
  later(()=>{fx.remove();el.classList.remove('comboGlow');},620);
 }
@@ -227,7 +249,7 @@ function merge(a,b) {
  const points=Math.round((target?100:45)*(perfect?2:1)*mul/5)*5;
  score+=points;total++;goals[name]=(goals[name]||0)+1;
  if(combo>=2){time=Math.min(T.t+8,time+.2);comboEffect(board[b].el);}
- ui();floater(board[b].el,points,perfect);particles(board[b].el,name);
+ ui();floater(board[b].el,points,perfect);particles(board[b].el,name);if(combo>=5){document.body.animate([{filter:'brightness(1)'},{filter:'brightness(1.14)'},{filter:'brightness(1)'}],{duration:180});}
  const flower=document.createElement('img');flower.src=asset('flower-'+name);flower.alt=F[name].n;
  $('harvest').append(flower);
  while($('harvest').childElementCount>14)$('harvest').firstElementChild.remove();
