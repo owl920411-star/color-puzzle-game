@@ -72,6 +72,54 @@
 @media(prefers-reduced-motion:reduce){.butterfly-mark{animation:none!important}.butterfly-flight{display:none}}
 @media(max-height:780px){.board-zone{width:91%}.goal-chip{font-size:15px!important}.goal-chip img{width:27px!important;height:27px!important}.footer{flex-basis:56px}}
 @media(prefers-reduced-motion:reduce){.pop .flower,.comboFx,.float,.cell.comboGlow:after,.harvest img{animation:none!important}.comboFx{transform:translate(-50%,-50%)}.board-wave{display:none}.board-aura,.bloom-badge{animation:none!important;transition:none}.cell.shake,.cell.pop,.cell.drop .bud{animation:none!important}}
+</style>
+<style id="bloom-spectacle-v1">
+/* Keep the middle readable: brief local blooms, celebration around the frame. */
+.cell{--bloom-peak:1.42;--combo-glow:14px}.cell[data-combo-tier="warm"]{--bloom-peak:1.55;--combo-glow:18px}.cell[data-combo-tier="hot"]{--bloom-peak:1.72;--combo-glow:23px}.cell[data-combo-tier="mega"]{--bloom-peak:1.9;--combo-glow:28px}
+.cell.pop .flower{z-index:5;transform-origin:50% 55%;filter:drop-shadow(0 0 7px var(--bloom-color)) drop-shadow(0 0 2px #fff3c7);animation:flowerUnfurl .38s cubic-bezier(.15,.7,.25,1) both}
+.cell.comboGlow:after{inset:-3px;border-radius:50%;border:1px solid #fff1d5;box-shadow:0 0 var(--combo-glow) var(--bloom-color),inset 0 0 10px var(--bloom-color);animation:cellBloomLight .38s ease-out both}
+.fx-bit{position:absolute;pointer-events:none;contain:layout style;animation-fill-mode:both}
+.fx-trail{height:5px;border-radius:99px;transform-origin:0 50%;background:linear-gradient(90deg,transparent,var(--trail-color),#fff6ce);box-shadow:0 0 7px var(--trail-color);animation:swipeRibbon .25s ease-out both}
+.fx-halo{width:var(--size);height:var(--size);border-radius:50%;border:2px solid var(--fx-color);background:radial-gradient(circle,transparent 42%,var(--fx-color) 65%,transparent 72%);box-shadow:0 0 9px var(--fx-color);animation:bloomRipple .48s ease-out both;opacity:0}
+.fx-halo.second{border:1px solid #fff5c9;background:none;animation-duration:.62s;animation-delay:.07s}
+.fx-echo{width:var(--size);height:var(--size);object-fit:contain;filter:drop-shadow(0 0 5px var(--fx-color));animation:flowerEcho .58s ease-out both;opacity:0}
+.fx-petal{width:var(--size);height:calc(var(--size)*.64);border-radius:80% 12% 75% 22%;background:radial-gradient(ellipse at 25% 25%,#fff9e8 0%,var(--fx-color) 40%,var(--petal-edge) 100%);box-shadow:inset 0 1px 1px #fff9,0 0 4px var(--fx-color);animation:petalArc var(--life) cubic-bezier(.15,.65,.25,1) both}
+.fx-star{width:var(--size);height:var(--size);background:#fff8d4;clip-path:polygon(50% 0,61% 36%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 36%);animation:petalArc var(--life) ease-out both}
+.fx-edge-flower{width:var(--size);height:var(--size);object-fit:contain;filter:drop-shadow(0 0 7px #ffe8a4);animation:edgeFlower .9s ease-out both}
+.comboFx{letter-spacing:-.5px;color:#fff0dd;text-shadow:0 2px 0 #71344e,0 0 12px #ed83dd;animation:comboCrescendo .65s cubic-bezier(.16,.8,.3,1) both}
+.comboFx.hot{color:#fff0b2;text-shadow:0 2px 0 #814122,0 0 14px #ffb45d}.comboFx.mega{color:#fff7db;text-shadow:0 2px 0 #864549,0 0 12px #ffc56c,0 0 23px #f58edb}
+.comboFx span{margin-top:4px;letter-spacing:1.2px;font-size:9px;color:#ffe7b5}.comboFx .combo-name{display:inline;font:inherit;letter-spacing:inherit;color:inherit}
+.board-wave{border-color:#ffeabb;box-shadow:0 0 14px #f5aaca,inset 0 0 8px #ed97c244;animation:frameBloom .6s ease-out both}.board-wave.mega{border:2px solid #fff0be;box-shadow:0 0 22px #ffc96f,inset 0 0 15px #fa99d244}
+.bloom-mode .board-aura{border:2px solid #ffe3a0;box-shadow:0 0 18px #f6bf7288,inset 0 0 14px #f5a8d33d;animation:bloomAura 1.5s ease-in-out infinite alternate}
+.bloom-mode .board-aura:before,.bloom-mode .board-aura:after{content:'✦';position:absolute;font-size:20px;color:#fff1be;text-shadow:0 0 9px #ffc4e6;animation:edgeTwinkle 1.2s ease-in-out infinite alternate}.bloom-mode .board-aura:before{left:-10px;top:24%}.bloom-mode .board-aura:after{right:-10px;bottom:24%;animation-delay:.4s}
+.bloom-mode .bloom-badge{padding:3px 10px;border:1px solid #efc98380;border-radius:12px;background:linear-gradient(90deg,#4d2948e6,#724d3cdd,#4d2948e6);box-shadow:0 0 12px #ffc97b40;animation:badgeBloom .45s ease-out both}
+.app[data-scene="festival"] .board-aura{opacity:.65;border-color:#ffdba0;box-shadow:0 0 15px #f5ac9866,inset 0 0 10px #f6c78633}.app[data-scene="festival"] .mission{filter:drop-shadow(0 0 6px #eeb17360)}
+.app[data-scene="festival"] .ambient i{width:19px;height:19px;filter:drop-shadow(0 0 3px #ffdbad);animation-duration:8s}
+.app[data-scene="festival"] .scenery:after{background:linear-gradient(135deg,#ef9ba51a,transparent 40%,#ffd99712 80%,#20142430)}
+.stageClear{overflow:hidden;background:radial-gradient(ellipse at 50% 44%,#96605570,#251525a8 68%);font-size:clamp(25px,7vw,34px);letter-spacing:1px;animation:clearCurtain .85s ease-out both}
+.stageClear .clear-bouquet{position:relative;width:200px;height:160px;margin-bottom:8px;display:grid;place-items:center;isolation:isolate}
+.stageClear .clear-bouquet:before{content:'';position:absolute;width:170px;height:170px;border:1px solid #ffe7b1;border-radius:50%;box-shadow:0 0 25px #f6b5db55,inset 0 0 28px #ffdfab33;animation:clearHalo .8s ease-out both;z-index:-1}
+.stageClear .clear-bouquet img{position:absolute;width:100px;height:100px;filter:drop-shadow(0 0 12px #edbee8);animation:bouquetBloom .75s cubic-bezier(.2,.8,.3,1) both}
+.stageClear .clear-bouquet img:first-child{left:8px;top:42px;--bouquet-turn:-22deg;--bouquet-size:.86}.stageClear .clear-bouquet img:nth-child(2){right:8px;top:42px;--bouquet-turn:22deg;--bouquet-size:.86;animation-delay:.045s}.stageClear .clear-bouquet img:last-child{width:136px;height:136px;top:0;--bouquet-turn:0deg;--bouquet-size:1;animation-delay:.085s}
+.clear-kicker{font:700 10px system-ui,sans-serif;letter-spacing:4px;color:#ffe7af;margin-bottom:15px}.stageClear>span:not(.clear-kicker){animation:clearTitle .6s ease-out both}.stageClear small{letter-spacing:0;color:#ffeacd}
+.clear-confetti{position:absolute;left:50%;top:45%;width:15px;height:10px;border-radius:70% 12% 70% 12%;background:var(--confetti-color);animation:clearPetal .8s ease-out both}
+@keyframes flowerUnfurl{0%{transform:scale(.2) rotate(-25deg);opacity:.3}48%{transform:scale(var(--bloom-peak)) rotate(6deg);opacity:1}75%{transform:scale(calc(var(--bloom-peak)*.89)) rotate(-3deg);opacity:1}100%{transform:scale(1.18) rotate(0);opacity:.9}}
+@keyframes cellBloomLight{0%{transform:scale(.5);opacity:0}35%{opacity:.9}100%{transform:scale(1.28);opacity:0}}
+@keyframes swipeRibbon{0%{transform:rotate(var(--angle)) scaleX(.1);opacity:0}25%{opacity:.95}100%{transform:rotate(var(--angle)) scaleX(1);opacity:0}}
+@keyframes bloomRipple{0%{transform:translate(-50%,-50%) scale(.25);opacity:.65}35%{opacity:.45}100%{transform:translate(-50%,-50%) scale(1.35);opacity:0}}
+@keyframes flowerEcho{0%{transform:translate(-50%,-50%) scale(.35) rotate(-15deg);opacity:.25}30%{opacity:.18}100%{transform:translate(-50%,-50%) scale(1.45) rotate(16deg);opacity:0}}
+@keyframes petalArc{0%{transform:translate(-50%,-50%) rotate(var(--start-rot)) scale(.25);opacity:0}12%{opacity:.95}65%{opacity:.8}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--rot)) scale(.6);opacity:0}}
+@keyframes edgeFlower{0%{transform:translate(-50%,-50%) scale(.1) rotate(-30deg);opacity:0}30%{transform:translate(-50%,-50%) scale(1) rotate(5deg);opacity:.9}100%{transform:translate(-50%,-65%) scale(.8) rotate(16deg);opacity:0}}
+@keyframes comboCrescendo{0%{transform:translate(-50%,-50%) scale(.65);opacity:0}22%{transform:translate(-50%,-50%) scale(1.12);opacity:1}42%,70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-64%) scale(.96);opacity:0}}
+@keyframes frameBloom{0%{opacity:0;transform:scale(.99)}20%{opacity:.85}100%{opacity:0;transform:scale(1.045)}}
+@keyframes edgeTwinkle{from{opacity:.4;transform:scale(.7) rotate(-12deg)}to{opacity:.95;transform:scale(1.1) rotate(12deg)}}
+@keyframes badgeBloom{from{transform:translateX(-50%) scale(.8)}to{transform:translateX(-50%) scale(1)}}
+@keyframes clearCurtain{0%{opacity:0}18%,80%{opacity:1}100%{opacity:0}}
+@keyframes clearHalo{from{transform:scale(.25) rotate(-25deg);opacity:0}45%{opacity:1}to{transform:scale(1.3) rotate(20deg);opacity:.3}}
+@keyframes bouquetBloom{0%{transform:scale(.2) rotate(calc(var(--bouquet-turn) - 20deg));opacity:0}50%,100%{transform:scale(var(--bouquet-size)) rotate(var(--bouquet-turn));opacity:1}}
+@keyframes clearTitle{0%{transform:translateY(9px) scale(.9);opacity:0}45%,100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes clearPetal{0%{transform:translate(0,0) rotate(0) scale(.2);opacity:0}20%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.7);opacity:0}}
+@media(prefers-reduced-motion:reduce){.fx-bit,.clear-confetti,.bloom-mode .board-aura:before,.bloom-mode .board-aura:after{display:none!important}.cell.pop .flower{animation:none!important;transform:scale(1.12)}.stageClear,.stageClear *,.bloom-mode .bloom-badge{animation:none!important}.stageClear .clear-bouquet:before{animation:none;opacity:.4}.stageClear .clear-bouquet img{transform:scale(var(--bouquet-size)) rotate(var(--bouquet-turn));opacity:1}.comboFx{animation:none!important;transform:translate(-50%,-50%)}}
 </style></head>
 <body>
 <div class="app" id="app">
@@ -118,6 +166,7 @@
 // Flower Bloom — asset integration v1. Balance values are retained from main.
 const ASSET_ROOT = 'assets/sakura-v1/';
 const ASSET_VERSION = 'sakura-assets-1';
+const EFFECT_VERSION = 'bloom-spectacle-1';
 const $ = id => document.getElementById(id);
 const P = ['red', 'blue', 'yellow'];
 const C = {red:'var(--r)', blue:'var(--b)', yellow:'var(--y)'};
@@ -173,6 +222,11 @@ const COMBO_FEEDBACK = Object.freeze({
  hot:{petals:13,vibration:22}, mega:{petals:18,vibration:35}
 });
 const BLOOM_EXTRA_PETALS = 5, MAX_EFFECT_NODES = 96;
+const FLOWER_LIGHT = Object.freeze({purple:{light:'#e2a4ff',edge:'#a54ce6'},orange:{light:'#ffd18c',edge:'#ee7d4d'},green:{light:'#d6f49b',edge:'#69b95a'}});
+const VISUAL_PETALS = Object.freeze({normal:8,warm:12,hot:17,mega:22});
+// Cosmetic randomness must not change the sequence of gameplay random draws.
+let fxSeed=0x6d2b79f5;
+function fxRandom(){fxSeed=(Math.imul(fxSeed,1664525)+1013904223)>>>0;return fxSeed/4294967296;}
 const BUTTERFLY_FIRST_MIN_DELAY = 6, BUTTERFLY_FIRST_MAX_DELAY = 10;
 const BUTTERFLY_MIN_DELAY = 8, BUTTERFLY_MAX_DELAY = 14;
 const BUTTERFLY_LIFETIME = 7, BUTTERFLY_LEAVING_TIME = 1.5;
@@ -256,9 +310,11 @@ function triggerBloom() {
  bloomTriggered=true;bloomUntil=performance.now()+BLOOM_DURATION*1000;
  $('boardShell').classList.add('bloom-mode');
  $('bloomBadge').textContent='BLOOM MODE · ×'+BLOOM_SCORE_MULTIPLIER;
+ frameFlowers(true);
 }
 function ui() {
  T=ST[si];
+ $('app').dataset.scene=T.type;
  $('startTitle').textContent=T.type==='normal'?'오늘의 개화 목표':stageName();
  document.querySelector('.stage-name').textContent=T.type!=='normal'?stageName():T.difficulty==='EXPERT'?'🌺 EXPERT':T.difficulty==='HARD'?'🔥 HARD':'벚꽃 정원';
  $('mission').classList.toggle('special',T.type!=='normal');
@@ -303,7 +359,7 @@ function devInfo() {
  $('devInfo').textContent='ST '+(si+1)+' / '+ST.length+' · '+T.type+' · 목표 '+(totalGoalStage()?goalText():entries().map(([n,g])=>F[n].e+g).join(' '))+
   ' · 보드 🔴'+c.red+' 🔵'+c.blue+' 🟡'+c.yellow+' · 인접쌍 🟣'+pairs.purple+' 🟠'+pairs.orange+' 🟢'+pairs.green+
   ' · '+T.difficulty+' / randomProfile '+T.randomProfile+' · 인접 총 '+Object.values(pairs).reduce((a,b)=>a+b,0)+
-  ' · 남은시간 '+time.toFixed(1)+'초 · 나비 '+(butterfly?'칸 '+(butterfly.index+1):butterflyNextAt?'등장 대기':'없음')+' · '+ASSET_VERSION;
+  ' · 남은시간 '+time.toFixed(1)+'초 · 나비 '+(butterfly?'칸 '+(butterfly.index+1):butterflyNextAt?'등장 대기':'없음')+' · '+ASSET_VERSION+' · '+EFFECT_VERSION;
 }
 function neighbors(index) {
  if(!Number.isInteger(index)||index<0||index>=N*N)return [];
@@ -467,32 +523,63 @@ function floater(points,perfect) {
  f.className='float'; f.innerHTML=(perfect?'<b>PERFECT!</b>':'')+'+'+points;
  $('effects').append(f); later(()=>f.remove(),670);
 }
-function particles(el,name) {
+function addEffect(node,life=700){
+ const layer=$('effects');
+ while(layer.childElementCount>=MAX_EFFECT_NODES)layer.firstElementChild.remove();
+ layer.append(node);later(()=>node.remove(),life);return node;
+}
+function effectAt(className,x,y,size,color,life,tag='i'){
+ const node=document.createElement(tag);node.className='fx-bit '+className;
+ node.style.left=x+'px';node.style.top=y+'px';node.style.setProperty('--size',size+'px');node.style.setProperty('--fx-color',color);
+ return addEffect(node,life);
+}
+function mergeRibbon(source,destination){
  if(reducedMotion)return;
- const {x,y}=centerOf(el),count=COMBO_FEEDBACK[comboTier()].petals+(bloomActive()?BLOOM_EXTRA_PETALS:0);
- for(let i=0;i<count;i++) {
-  const p=document.createElement('i'),angle=Math.random()*Math.PI*2,dist=12+Math.random()*32;
-  p.className=i%3===0?'spark':'petal'; p.style.left=x+'px'; p.style.top=y+'px';
-  p.style.setProperty('--dx',Math.cos(angle)*dist+'px'); p.style.setProperty('--dy',Math.sin(angle)*dist-15+'px');
-  p.style.setProperty('--rot',(Math.random()*300-150)+'deg');
-  if(p.className==='petal')p.style.filter=name==='purple'?'hue-rotate(285deg)':name==='green'?'hue-rotate(75deg)':'hue-rotate(20deg)';
-  $('effects').append(p); later(()=>p.remove(),690);
+ const a=centerOf(source),b=centerOf(destination),dx=b.x-a.x,dy=b.y-a.y;
+ const ribbon=effectAt('fx-trail',a.x,a.y,0,'#ffeecb',280);
+ ribbon.style.width=Math.hypot(dx,dy)+'px';ribbon.style.setProperty('--angle',Math.atan2(dy,dx)+'rad');
+ ribbon.style.setProperty('--trail-color',FLOWER_LIGHT[lastFlower].light);
+}
+function frameFlowers(major=false){
+ if(reducedMotion)return;
+ const box=$('boardShell').getBoundingClientRect();
+ const positions=major?[[.09,.18],[.91,.18],[.07,.49],[.93,.49],[.11,.87],[.89,.87]]:[[.09,.2],[.91,.84]];
+ positions.forEach(([x,y],i)=>{
+  const flower=effectAt('fx-edge-flower',box.width*x,box.height*y,major?30:23,'#ffdfab',960,'img');
+  flower.src=asset('flower-'+(major?Object.keys(F)[i%3]:lastFlower));flower.alt='';
+ });
+}
+function particles(el,name,perfect=false) {
+ if(reducedMotion)return;
+ const {x,y,w}=centerOf(el),light=FLOWER_LIGHT[name],tier=comboTier(),festival=T.type==='festival';
+ const cellSize=el.getBoundingClientRect().width,boost=combo>=8?1.35:combo>=5?1.18:1;
+ effectAt('fx-halo',x,y,cellSize*1.45,light.light,540);
+ if(combo>=5||perfect||festival)effectAt('fx-halo second',x,y,cellSize*1.65,light.light,740);
+ if(combo>=5||festival){const echo=effectAt('fx-echo',x,y,cellSize*1.5,light.light,640,'img');echo.src=asset('flower-'+name);echo.alt='';}
+ const count=VISUAL_PETALS[tier]+(bloomActive()?BLOOM_EXTRA_PETALS:0)+(festival?4:0)+(perfect?2:0);
+ for(let i=0;i<count;i++){
+  const angle=i/count*Math.PI*2+(fxRandom()-.5)*.55;
+  const dist=(cellSize*.5+fxRandom()*Math.min(w*.13,55))*boost;
+  const star=i%4===0,life=620+fxRandom()*260;
+  const p=effectAt(star?'fx-star':'fx-petal',x,y,star?5+fxRandom()*5:10+fxRandom()*9,light.light,life+40);
+  p.style.setProperty('--petal-edge',light.edge);p.style.setProperty('--life',life+'ms');
+  p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist-16+'px');
+  p.style.setProperty('--start-rot',(angle*180/Math.PI)+'deg');p.style.setProperty('--rot',(angle*180/Math.PI+90+fxRandom()*180)+'deg');
  }
- // Bound transient nodes during very fast continuous swipes.
- while($('effects').childElementCount>MAX_EFFECT_NODES) $('effects').firstElementChild.remove();
 }
 function comboEffect(el) {
  $('effects').querySelectorAll('.comboFx,.board-wave').forEach(node=>node.remove());
  const fx=document.createElement('div');
  fx.className='comboFx'+(combo>=8?' mega':combo>=5?' hot':'');
- fx.innerHTML=combo+' COMBO<span>+'+COMBO_TIME_BONUS+' sec</span>';
+ fx.innerHTML=combo+' COMBO<span>'+(combo>=8?'만개 연속! · ':combo>=5?'꽃이 쏟아져요! · ':'')+'+'+COMBO_TIME_BONUS+' sec</span>';
  if(!reducedMotion&&navigator.vibrate)navigator.vibrate(COMBO_FEEDBACK[comboTier()].vibration);
  $('effects').append(fx); el.classList.add('comboGlow');
  if(combo>=5&&!reducedMotion){
   const wave=document.createElement('i');wave.className='board-wave'+(combo>=8?' mega':'');
-  $('effects').append(wave);later(()=>wave.remove(),450);
+  addEffect(wave,660);
+  if(combo%5===0)frameFlowers(combo>=8);
  }
- later(()=>fx.remove(),620);
+ later(()=>fx.remove(),710);
 }
 function merge(a,b) {
  if(!run||menuPaused||busy.has(a)||busy.has(b)||!board[a]||!board[b])return;
@@ -516,7 +603,7 @@ function merge(a,b) {
  const points=bloomPoints*(butterflyBonus?BUTTERFLY_SCORE_MULTIPLIER:1);
  score+=points;total++;goals[name]=(goals[name]||0)+1;
  if(combo>=2){time=Math.min(T.t+COMBO_TIME_CAP,time+COMBO_TIME_BONUS);comboEffect(board[b].el);}
- ui();floater(points,perfect);particles(board[b].el,name);
+ ui();floater(points,perfect);mergeRibbon(board[a].el,board[b].el);particles(board[b].el,name,perfect);
  if(butterflyBonus&&combo<2&&!reducedMotion&&navigator.vibrate)navigator.vibrate(BUTTERFLY_VIBRATION);
  const flower=document.createElement('img');flower.src=asset('flower-'+name);flower.alt=F[name].n;
  $('harvest').append(flower);
@@ -570,7 +657,13 @@ function stageClear() {
  clearing=true;run=false;stopClocks();endBloom();cancelPointer();
  resetButterfly();
  const fx=document.createElement('div');fx.className='stageClear';
- fx.innerHTML=sprite('flower',lastFlower||'purple')+'<span>STAGE '+(si+1)+' CLEAR</span><small>다음 스테이지로 이동합니다</small>';
+ const centerFlower=lastFlower||'purple',sides=Object.keys(F).filter(name=>name!==centerFlower);
+ fx.innerHTML='<span class="clear-kicker">'+(T.type==='festival'?'BLOOM FESTIVAL':'BEAUTIFUL BLOOM')+'</span><div class="clear-bouquet">'+sides.map(name=>sprite('flower',name)).join('')+sprite('flower',centerFlower)+'</div><span>STAGE '+(si+1)+' CLEAR</span><small>다음 스테이지로 이동합니다</small>';
+ if(!reducedMotion)for(let i=0;i<18;i++){
+  const p=document.createElement('i'),angle=i/18*Math.PI*2,dist=80+fxRandom()*110;p.className='clear-confetti';
+  p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist+'px');p.style.setProperty('--rot',(fxRandom()*360)+'deg');
+  p.style.setProperty('--confetti-color',['#edb5ff','#ffe4a3','#d8f2a3','#ffb8ce'][i%4]);fx.append(p);
+ }
  $('app').append(fx);later(()=>{fx.remove();prepareStage(si+1);},850);
 }
 function finish() {
