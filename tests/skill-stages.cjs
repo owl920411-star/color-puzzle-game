@@ -2,10 +2,12 @@
 // Optional: CHROME_PATH=/path/to/chrome; TEST_SCREENSHOTS=/output/directory
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
-const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),vm=require('node:vm');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(script[1]);
-const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);});
+for(const filename of ['game.js','assets/farm-assets.js'])new vm.Script(fs.readFileSync(path.join(__dirname,'..',filename),'utf8'),{filename});
+const {createStaticServer}=require('./static-server.cjs');
+const server=createStaticServer(path.join(__dirname,'..'));
 const checks=[];
 function check(name,value){assert.equal(value,true,name);checks.push(name);}
 (async()=>{
@@ -204,11 +206,11 @@ function check(name,value){assert.equal(value,true,name);checks.push(name);}
   check('remaining goal text identifies a missing flower and earned max combo',await page.evaluate(()=>{
    setupSkill(14);goals={purple:9,orange:10,green:10};combo=0;maxCombo=7;
    const missing=remainingGoalText(),progress=goalText();
-   return missing.includes('보라')&&missing.includes('1')&&progress.includes('9/10')&&/7\s*\/\s*7/.test(progress);
+   return missing.includes('포도')&&missing.includes('1')&&progress.includes('9/10')&&/7\s*\/\s*7/.test(progress);
   }));
   check('near miss result explains one flower short and shows max combo achievement',await page.evaluate(()=>{
    finish();const text=$('end').textContent;
-   return !$('end').classList.contains('hide')&&text.includes('1송이')&&text.includes('9/10')&&/7\s*\/\s*7/.test(text)&&!run;
+   return !$('end').classList.contains('hide')&&text.includes('1개')&&text.includes('9/10')&&/7\s*\/\s*7/.test(text)&&!run;
   }));
   check('near miss combo result distinguishes six reached from seven required',await page.evaluate(()=>{
    setupSkill(13);combo=0;maxCombo=6;finish();const text=$('end').textContent;

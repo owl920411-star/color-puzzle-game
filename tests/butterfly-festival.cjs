@@ -1,9 +1,10 @@
 // Run after tests/bloom-regression.cjs with the same Playwright/CHROME_PATH setup.
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
-const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const fs=require('node:fs'),path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);});
+const {createStaticServer}=require('./static-server.cjs');
+const server=createStaticServer(path.join(__dirname,'..'));
 const passed=[];
 function check(name,value){assert.equal(value,true,name);passed.push(name);}
 (async()=>{
@@ -105,11 +106,11 @@ function check(name,value){assert.equal(value,true,name);passed.push(name);}
    ])&&ST.length>=6&&ST[3].type==='festival';
   }));
   check('festival opens through developer button with clear total goal',await page.evaluate(()=>{
-   $('devFestival').click();return si===3&&!run&&!done()&&$('sStage').textContent.includes('SPECIAL')&&$('startTitle').textContent==='만개 축제'&&$('sGoal').textContent.includes('25송이')&&time===45;
+   $('devFestival').click();return si===3&&!run&&!done()&&$('sStage').textContent.includes('SPECIAL')&&$('startTitle').textContent==='농장 대축제'&&$('sGoal').textContent.includes('25개')&&time===45;
   }));
   check('mixed flowers count once each toward festival total',await page.evaluate(()=>{
    setup(3);['purple','orange','green'].forEach(pair);
-   return total===3&&Object.values(goals).reduce((a,b)=>a+b,0)===3&&!done()&&$('progress').textContent==='개화 3 / 25';
+   return total===3&&Object.values(goals).reduce((a,b)=>a+b,0)===3&&!done()&&$('progress').textContent==='수확 3 / 25';
   }));
   check('festival bloom retains 8 / 5 / 1.5 and same time bonus',await page.evaluate(()=>{
    setup(3);time=30;for(let i=0;i<8;i++)pair('purple');

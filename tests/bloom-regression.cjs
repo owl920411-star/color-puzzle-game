@@ -4,11 +4,12 @@ const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const http=require('node:http');
 const vm=require('node:vm');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(match[1]);
-const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);});
+for(const filename of ['game.js','assets/farm-assets.js'])new vm.Script(fs.readFileSync(path.join(__dirname,'..',filename),'utf8'),{filename});
+const {createStaticServer}=require('./static-server.cjs');
+const server=createStaticServer(path.join(__dirname,'..'));
 const checks=[];
 function check(label,value){assert.equal(value,true,label);checks.push(label);}
 (async()=>{
