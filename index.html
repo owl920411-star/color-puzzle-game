@@ -164,6 +164,15 @@
 @keyframes corollaBloom{0%{transform:translate(-50%,-50%) scale(.15) rotate(-35deg);opacity:0}25%{opacity:.8}100%{transform:translate(-50%,-50%) scale(1.2) rotate(55deg);opacity:0}}
 @keyframes orbitBloom{0%{transform:translate(-50%,-50%) scale(.35) rotate(0);opacity:0}20%{opacity:.9}100%{transform:translate(-50%,-50%) scale(1.35) rotate(150deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){.fx-corolla,.fx-orbit{display:none!important}}
+</style><style id="flower-fireworks">
+.fx-bloom-satellite{width:var(--size);height:var(--size);object-fit:contain;filter:drop-shadow(0 0 5px var(--fx-color));animation:flowerFirework var(--life) cubic-bezier(.12,.65,.25,1) both}
+.fx-comet{width:var(--size);height:4px;border-radius:100%;transform-origin:0 50%;background:linear-gradient(90deg,transparent,var(--fx-color),#fffce6);box-shadow:0 0 6px var(--fx-color);animation:cometFirework .85s ease-out both}
+.fx-comet:after{content:'✦';position:absolute;right:-6px;top:-10px;color:#fffbd8;font-size:22px;text-shadow:0 0 7px var(--fx-color)}
+.fx-bloom-flash{width:var(--size);height:var(--size);border-radius:50%;background:radial-gradient(circle,#fff8d9aa 0%,var(--fx-color) 12%,transparent 65%);mix-blend-mode:screen;animation:bloomFlash .65s ease-out both}
+@keyframes flowerFirework{0%{transform:translate(-50%,-50%) scale(.1) rotate(var(--start-rot));opacity:0}20%{opacity:.95}70%{opacity:.85}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.65) rotate(var(--rot));opacity:0}}
+@keyframes cometFirework{0%{transform:rotate(var(--angle)) translateX(8px) scaleX(.1);opacity:0}20%{opacity:.9}100%{transform:rotate(var(--angle)) translateX(var(--travel)) scaleX(.35);opacity:0}}
+@keyframes bloomFlash{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}22%{opacity:.55}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}
+@media(prefers-reduced-motion:reduce){.fx-bloom-satellite,.fx-comet,.fx-bloom-flash{display:none!important}}
 </style></head>
 <body>
 <div class="app" id="app">
@@ -210,7 +219,7 @@
 // Flower Bloom — asset integration v1. Balance values are retained from main.
 const ASSET_ROOT = 'assets/sakura-v1/';
 const ASSET_VERSION = 'sakura-assets-1';
-const EFFECT_VERSION = 'bloom-spectacle-4';
+const EFFECT_VERSION = 'bloom-spectacle-5';
 const $ = id => document.getElementById(id);
 const P = ['red', 'blue', 'yellow'];
 const C = {red:'var(--r)', blue:'var(--b)', yellow:'var(--y)'};
@@ -616,6 +625,21 @@ function particles(el,name,perfect=false) {
  effectAt('fx-orbit',x,y,cellSize*1.8,light.light,900);
  if(combo>=5||festival||perfect)effectAt('fx-corolla outer',x,y,cellSize*3.5,light.light,1050);
  if(combo>=5||perfect||festival)effectAt('fx-halo second',x,y,cellSize*2.05,light.light,740);
+ effectAt('fx-bloom-flash',x,y,cellSize*(combo>=5?3:2.2),light.light,700);
+ const satellites=combo>=8?8:combo>=5||festival?6:4;
+ for(let i=0;i<satellites;i++){
+  const angle=i/satellites*Math.PI*2-.9,dist=cellSize*(combo>=8?2.1:1.45);
+  const flower=effectAt('fx-bloom-satellite',x,y,cellSize*(combo>=5?.58:.43),light.light,1150,'img');
+  flower.src=asset('flower-'+(festival?Object.keys(F)[i%3]:name));flower.alt='';
+  flower.style.setProperty('--life','1100ms');flower.style.setProperty('--dx',Math.cos(angle)*dist+'px');flower.style.setProperty('--dy',(Math.sin(angle)*dist-24)+'px');
+  flower.style.setProperty('--start-rot',(i*45)+'deg');flower.style.setProperty('--rot',(i*45+150)+'deg');
+ }
+ if(combo>=3||festival||perfect){
+  for(let i=0;i<4;i++){
+   const comet=effectAt('fx-comet',x,y,cellSize*.75,light.light,900);
+   comet.style.setProperty('--angle',(i*Math.PI/2+.4)+'rad');comet.style.setProperty('--travel',cellSize*(combo>=8?2.2:1.6)+'px');
+  }
+ }
  const rays=combo>=8?8:combo>=5||festival?6:3;
  for(let i=0;i<rays;i++){
   const angle=i/rays*Math.PI*2+.3;
