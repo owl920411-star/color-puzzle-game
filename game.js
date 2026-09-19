@@ -169,7 +169,7 @@ function triggerBloom() {
  bloomTriggered=true;bloomUntil=performance.now()+BLOOM_DURATION*1000;
  $('boardShell').classList.add('bloom-mode');
  $('bloomBadge').textContent='FEVER TIME · ×'+BLOOM_SCORE_MULTIPLIER;
- frameFlowers(true);
+ if(T.type!=='festival')frameFlowers(true);
  if(T.type==='festival')window.FestivalShow?.fever();
 }
 function ui() {
@@ -437,6 +437,7 @@ function particles(el,name,perfect=false) {
   shard.style.setProperty('--dy',Math.sin(angle)*dist+'px');
   shard.style.setProperty('--rot',(i%2?-150:170)+'deg');
  }
+ if(festival)return; // Canvas owns rings/stars; keep only eight crisp DOM facets.
  effectAt('fx-halo',x,y,cellSize*(festival?2.4:1.75),light.light,540);
  effectAt('fx-corolla',x,y,cellSize*(festival?3.4:2.6),light.light,850);
  if(!festival)effectAt('fx-orbit',x,y,cellSize*1.8,light.light,900);
@@ -505,7 +506,7 @@ function comboEffect(el) {
  fx.innerHTML=combo+' COMBO<span>'+(combo>=8?'대풍년! · ':combo>=5?'풍성한 수확! · ':'')+'+'+COMBO_TIME_BONUS+' sec</span>';
  if(!reducedMotion&&navigator.vibrate)navigator.vibrate(COMBO_FEEDBACK[comboTier()].vibration);
  $('effects').append(fx); el.classList.add('comboGlow');
- if(combo>=5&&!reducedMotion){
+ if(combo>=5&&!reducedMotion&&T.type!=='festival'){
   const wave=document.createElement('i');wave.className='board-wave'+(combo>=8?' mega':'');
   addEffect(wave,660);
   if(combo%5===0)frameFlowers(combo>=8);
@@ -738,5 +739,5 @@ Promise.allSettled(required.map(name=>new Promise((resolve,reject)=>{
  const missing=results.filter(r=>r.status==='rejected').map(r=>r.reason);
  if(missing.length){$('assetWarning').classList.remove('hide');console.warn('Missing Farm Friends assets:',missing);}
  document.documentElement.dataset.assetsReady=missing.length?'partial':'true';
- document.documentElement.dataset.farmVersion='festival-shatter-5';
+ document.documentElement.dataset.farmVersion='festival-smooth-6';
 });

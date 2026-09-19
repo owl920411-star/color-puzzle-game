@@ -51,3 +51,12 @@
 .festival-beam{filter:none;mix-blend-mode:normal}
 #app.festival-active .board-shell:before{animation:none}
 #app[data-scene="festival"] .fx-bloom-satellite,#app[data-scene="festival"] .fx-ray{filter:none}
+
+/* Festival stays colorful at rest, but only player events animate. */
+#festivalCanvas[hidden]{display:none}
+#app[data-scene="festival"] .festival-beam,#app[data-scene="festival"] .festival-lights i{animation:none!important}
+#app[data-scene="festival"] .festival-beam{opacity:.4;transform:rotate(var(--from))}
+#app[data-scene="festival"] .ambient{display:none}
+#app[data-scene="festival"] .board-shell,#app[data-scene="festival"] .mission{filter:none}
+#app[data-scene="festival"] .board-aura,#app[data-scene="festival"] .board-aura:before,#app[data-scene="festival"] .board-aura:after{animation:none!important}
+#app[data-scene="festival"] .cell.pop .flower{filter:none}
