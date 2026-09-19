@@ -7,9 +7,17 @@
  app.prepend(atmosphere);
  const canvas=document.createElement('canvas');canvas.id='festivalCanvas';canvas.setAttribute('aria-hidden','true');app.append(canvas);
  const ctx=canvas.getContext('2d'),palette=['#ffd777','#ff86cf','#83f8ee','#bca2ff','#fff0b8'];
- const CAP=520, QUEUE_CAP=24;let queue=[],particles=[],active=false,paused=false,raf=0,last=0,clock=0,next=0,finale=false,seed=41317,width=0,height=0,banner=null,bannerUntil=0,lastBurst=-10;
+ const CAP=360, QUEUE_CAP=24;let queue=[],particles=[],active=false,paused=false,raf=0,last=0,clock=0,next=0,finale=false,seed=41317,width=0,height=0,banner=null,bannerUntil=0,lastBurst=-10;
  const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
- function resize(){const r=app.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.5);width=r.width;height=r.height;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);if(ctx)ctx.setTransform(dpr,0,0,dpr,0,0);}
+ const glowSprites=new Map();
+ function glowSprite(color){
+  if(glowSprites.has(color))return glowSprites.get(color);
+  const sprite=document.createElement('canvas');sprite.width=sprite.height=128;
+  const c=sprite.getContext('2d'),g=c.createRadialGradient(64,64,0,64,64,64);
+  g.addColorStop(0,color);g.addColorStop(.22,color+'99');g.addColorStop(1,color+'00');
+  c.fillStyle=g;c.fillRect(0,0,128,128);glowSprites.set(color,sprite);return sprite;
+ }
+ function resize(){const r=app.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.25);width=r.width;height=r.height;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);if(ctx)ctx.setTransform(dpr,0,0,dpr,0,0);}
  function add(p){if(particles.length>=CAP)particles.shift();particles.push({...p,age:0});}
  function schedule(delay,kind,args){if(queue.length>=QUEUE_CAP)queue.shift();queue.push({at:clock+delay,kind,args});}
  function ring(x,y,color,power=1){add({x,y,vx:0,vy:0,color,life:.7,size:8*power,growth:145*power,kind:'ring',gravity:0});}
@@ -39,7 +47,7 @@
    const fade=Math.max(0,1-p.age/p.life);ctx.globalAlpha=fade;ctx.strokeStyle=ctx.fillStyle=p.color;
    ctx.globalCompositeOperation=p.kind==='paper'?'source-over':'lighter';
    if(p.kind==='ring'){ctx.globalAlpha=fade*.8;ctx.lineWidth=3.4*fade+.5;ctx.beginPath();ctx.arc(p.x,p.y,p.size+p.age*p.growth,0,Math.PI*2);ctx.stroke();}
-   else if(p.kind==='glow'){const radius=p.size*(.4+p.age/p.life),g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,radius);g.addColorStop(0,p.color);g.addColorStop(.22,p.color+'99');g.addColorStop(1,p.color+'00');ctx.globalAlpha=fade*.34;ctx.fillStyle=g;ctx.fillRect(p.x-radius,p.y-radius,radius*2,radius*2);}
+   else if(p.kind==='glow'){const radius=p.size*(.4+p.age/p.life);ctx.globalAlpha=fade*.34;ctx.drawImage(glowSprite(p.color),p.x-radius,p.y-radius,radius*2,radius*2);}
    else if(p.kind==='star'){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle+p.age*2);const size=p.size*(1+fade);ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,r=i%2?size*.3:size;if(i===0)ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}ctx.closePath();ctx.fill();ctx.restore();}
    else if(p.kind==='paper'){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle+p.age*4);ctx.fillRect(-p.size/2,-p.size,p.size,2*p.size*Math.cos(p.age*7));ctx.restore();}
    else{ctx.lineWidth=p.size;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.vx*.13,p.y-p.vy*.13);ctx.stroke();ctx.fillStyle='#fff8df';ctx.fillRect(p.x-1,p.y-1,2,2);}
@@ -50,7 +58,7 @@
   raf=0;if(!active||paused||document.hidden||motion.matches||!ctx)return;
   if(last&&now-last<32){raf=requestAnimationFrame(tick);return;}
   const dt=last?Math.min((now-last)/1000,.06):.033;last=now;clock+=dt;
-  if(!finale&&clock>=next){firework(width*(rand()<.5?.12:.88),height*(.055+rand()*.10),1.15+rand()*.35);next=clock+.7;}
+  if(!finale&&clock>=next){firework(width*(rand()<.5?.12:.88),height*(.055+rand()*.10),1.15+rand()*.35);next=clock+1.1;}
   const due=queue.filter(e=>e.at<=clock);queue=queue.filter(e=>e.at>clock);for(const e of due){if(e.kind==='firework')firework(...e.args);else if(e.kind==='impact')impact(...e.args);else confetti(...e.args);}
   if(banner&&clock>=bannerUntil){banner.remove();banner=null;}
   paint(dt);
@@ -69,7 +77,7 @@
   const a=app.getBoundingClientRect(),r=el.getBoundingClientRect(),x=r.left-a.left+r.width/2,y=r.top-a.top+r.height/2;
   // A substantial, short-lived impact for EVERY merge; echoes build with combos.
   impact(x,y,combo>=8?1.25:combo>=5?1.1:.9);
-  if(clock-lastBurst<.10)return;lastBurst=clock;
+  if(clock-lastBurst<.35)return;lastBurst=clock;
   firework(width*(combo%2?.15:.85),height*.10,combo>=8?1.8:1.3);
   if(combo>=3||perfect)schedule(.16,'firework',[width*(combo%2?.85:.15),height*.14,1.45]);
   if(combo>=5){confetti(48);schedule(.24,'impact',[x,y,.7]);schedule(.38,'firework',[width*.5,height*.08,1.5]);}

@@ -43,3 +43,11 @@
 #app[data-scene="festival"] .fx-ray{filter:drop-shadow(0 0 6px #ffe9ab)}
 @keyframes megaMarquee{from{border-color:#ffe8a3;filter:drop-shadow(0 0 3px #ffae42)}to{border-color:#b8ffff;filter:drop-shadow(0 0 8px #ed7cff)}}
 @media(prefers-reduced-motion:reduce){#app.festival-active .board-shell:before{animation:none}.festival-beam{opacity:.2}}
+
+/* Crisp fracture facets animate only transform and opacity. */
+.fx-shard{width:var(--size);height:var(--size);background:linear-gradient(135deg,#fffbea 0 20%,var(--fx-color) 22% 68%,#fff7d7 70%);clip-path:polygon(12% 0,100% 20%,75% 100%,0 64%);animation:puzzleShatter 540ms cubic-bezier(.12,.65,.25,1) both}
+@keyframes puzzleShatter{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}18%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--rot)) scale(.35);opacity:0}}
+/* Keep static glow, avoid repeatedly rasterizing large blur/filter surfaces. */
+.festival-beam{filter:none;mix-blend-mode:normal}
+#app.festival-active .board-shell:before{animation:none}
+#app[data-scene="festival"] .fx-bloom-satellite,#app[data-scene="festival"] .fx-ray{filter:none}
