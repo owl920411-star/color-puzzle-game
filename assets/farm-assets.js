@@ -46,7 +46,7 @@
   // Original logical asset keys deliberately survive the visual update.
   window.FLOWER_BLOOM_ASSETS=assets;
   window.FARM_FRIENDS_ASSETS=assets;
-  const script=document.createElement('script');script.src='game.js?v=festival-spectacle-3';
+  const script=document.createElement('script');script.src='game.js?v=festival-mega-4';
   script.onerror=()=>{
     button.disabled=false;button.textContent='게임 다시 불러오기';button.onclick=()=>location.reload();
     const warning=document.getElementById('assetWarning');warning.textContent='게임을 불러오지 못했어요. 다시 시도해 주세요.';warning.classList.remove('hide');

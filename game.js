@@ -429,15 +429,15 @@ function particles(el,name,perfect=false) {
  if(reducedMotion)return;
  const {x,y,w}=centerOf(el),light=FLOWER_LIGHT[name],tier=comboTier(),festival=T.type==='festival';
  const cellSize=el.getBoundingClientRect().width,boost=combo>=8?1.6:combo>=5?1.35:1.15;
- effectAt('fx-halo',x,y,cellSize*1.75,light.light,540);
- effectAt('fx-corolla',x,y,cellSize*2.6,light.light,850);
+ effectAt('fx-halo',x,y,cellSize*(festival?2.4:1.75),light.light,540);
+ effectAt('fx-corolla',x,y,cellSize*(festival?3.4:2.6),light.light,850);
  effectAt('fx-orbit',x,y,cellSize*1.8,light.light,900);
  if(combo>=5||festival||perfect)effectAt('fx-corolla outer',x,y,cellSize*3.5,light.light,1050);
  if(combo>=5||perfect||festival)effectAt('fx-halo second',x,y,cellSize*2.05,light.light,740);
  effectAt('fx-bloom-flash',x,y,cellSize*(combo>=5?3:2.2),light.light,700);
- const satellites=combo>=8?8:combo>=5||festival?6:4;
+ const satellites=festival?10:combo>=8?8:combo>=5?6:4;
  for(let i=0;i<satellites;i++){
-  const angle=i/satellites*Math.PI*2-.9,dist=cellSize*(combo>=8?2.1:1.45);
+  const angle=i/satellites*Math.PI*2-.9,dist=cellSize*(festival?2.4:combo>=8?2.1:1.45);
   const flower=effectAt('fx-bloom-satellite',x,y,cellSize*(combo>=5?.58:.43),light.light,1150,'img');
   flower.src=asset(festival?['festival-pinwheel','festival-balloon','festival-gift'][i%3]:'flower-'+name);flower.alt='';
   flower.style.setProperty('--life','1100ms');flower.style.setProperty('--dx',Math.cos(angle)*dist+'px');flower.style.setProperty('--dy',(Math.sin(angle)*dist-24)+'px');
@@ -728,5 +728,5 @@ Promise.allSettled(required.map(name=>new Promise((resolve,reject)=>{
  const missing=results.filter(r=>r.status==='rejected').map(r=>r.reason);
  if(missing.length){$('assetWarning').classList.remove('hide');console.warn('Missing Farm Friends assets:',missing);}
  document.documentElement.dataset.assetsReady=missing.length?'partial':'true';
- document.documentElement.dataset.farmVersion='festival-spectacle-3';
+ document.documentElement.dataset.farmVersion='festival-mega-4';
 });

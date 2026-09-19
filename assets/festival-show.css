@@ -27,3 +27,19 @@
 @keyframes festivalWelcome{0%{opacity:0;transform:translateY(-22px) rotate(-5deg) scale(.85)}18%,70%{opacity:1;transform:translateY(0) rotate(-3deg) scale(1)}100%{opacity:0;transform:translateY(-14px) rotate(-1deg) scale(.98)}}
 @media(max-height:650px){.festival-banner{top:1%;padding:10px}.festival-banner b{font-size:24px}.festival-banner span{font-size:8px;margin-top:3px}.festival-lights{top:14px}}
 @media(prefers-reduced-motion:reduce){.festival-beam,.festival-lights i{animation:none!important}.festival-beam{opacity:.2}.festival-banner,#festivalCanvas{display:none}.festival-lights i{box-shadow:0 0 5px var(--bulb)}}
+/* Mega celebration: richer light, with stable touch coordinates and no strobe. */
+#app[data-scene="festival"] .festival-atmosphere{background:radial-gradient(ellipse at 5% 0,#fa49e36b,transparent 45%),radial-gradient(ellipse at 95% 5%,#59eaff66,transparent 42%),radial-gradient(ellipse at 50% 100%,#ffb23e55,transparent 45%)}
+.festival-beam{opacity:.8;filter:blur(3px);animation-duration:5s}
+.beam-one{background:linear-gradient(#ff7de99c,#fb7ab125,transparent)}
+.beam-two{background:linear-gradient(#68eeff99,#81eaff22,transparent)}
+.beam-three{background:linear-gradient(#ffe4a975,#ffe4a919,transparent);animation-duration:7s}
+.festival-lights i{width:9px;height:12px;box-shadow:0 0 8px 3px var(--bulb),0 0 24px var(--bulb)}
+#app[data-scene="festival"] .board-shell:before{box-shadow:inset 0 0 0 2px #fffbe1,inset 0 0 0 5px #ab4fbc,0 0 12px #ffd16b,0 0 26px #ff6bdcaa,0 0 42px #6ce6ff66,0 5px 0 #753c73}
+#app.festival-active .board-shell:before{animation:megaMarquee 2.4s ease-in-out infinite alternate}
+#app.festival-paused .board-shell:before{animation-play-state:paused}
+#app[data-scene="festival"] .bloom-mode:before{box-shadow:inset 0 0 0 3px #fffbe1,inset 0 0 0 6px #ffb737,0 0 18px #ffe46b,0 0 38px #ff73d6,0 0 62px #aa7bfd99}
+#app.festival-finale #festivalCanvas{z-index:35}
+#app[data-scene="festival"] .fx-bloom-satellite{filter:drop-shadow(0 0 6px #ffe9b7) drop-shadow(0 0 10px #ff9cee)}
+#app[data-scene="festival"] .fx-ray{filter:drop-shadow(0 0 6px #ffe9ab)}
+@keyframes megaMarquee{from{border-color:#ffe8a3;filter:drop-shadow(0 0 3px #ffae42)}to{border-color:#b8ffff;filter:drop-shadow(0 0 8px #ed7cff)}}
+@media(prefers-reduced-motion:reduce){#app.festival-active .board-shell:before{animation:none}.festival-beam{opacity:.2}}
