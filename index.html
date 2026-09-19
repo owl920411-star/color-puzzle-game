@@ -153,6 +153,17 @@
 @media(max-height:780px){.hero{min-height:82px;padding-top:8px}.brand{font-size:35px}.tagline{font-size:7px;margin-top:5px}.footer{flex-basis:52px}}
 @media(max-height:690px){.hero{min-height:58px;padding-top:5px}.brand{font-size:28px}.brand span{margin-left:20px}.brand-flower{width:21px;height:21px;top:15px;right:-14px}.tagline{display:none}.status{flex-basis:50px}.footer{flex-basis:48px}.signature{flex-basis:8px}}
 @media(prefers-reduced-motion:reduce){.butterfly-mark,.butterfly-icon .wing{animation:none!important}.butterfly-flight{display:none!important}.butterfly-mark.arriving .butterfly-icon{opacity:1}}
+</style><style id="grand-bloom-board">
+.grid{left:7%;right:7%;top:15%;bottom:6.5%;gap:2px;border-radius:10px;outline:3px solid #e8c38e;box-shadow:0 0 0 6px #714f42,0 5px 15px #35263088;background:#684e47}
+.board-aura,.board-wave{left:5.8%;right:5.8%;top:14%;bottom:5.5%}
+.fx-corolla{width:var(--size);height:var(--size);border-radius:50%;background:repeating-conic-gradient(from 0deg,transparent 0deg 17deg,var(--fx-color) 22deg 28deg,transparent 33deg 45deg);mask:radial-gradient(circle,transparent 24%,#000 28% 42%,transparent 65%);filter:drop-shadow(0 0 5px var(--fx-color));animation:corollaBloom .8s ease-out both}
+.fx-corolla.outer{animation-duration:1s;animation-direction:normal;opacity:.6}
+.fx-orbit{width:var(--size);height:var(--size);border:1px solid transparent;border-top-color:#fff9dc;border-bottom-color:var(--fx-color);border-radius:50%;box-shadow:0 0 9px var(--fx-color);animation:orbitBloom .85s ease-out both}
+.fx-orbit:before,.fx-orbit:after{content:'✦';position:absolute;color:#fff6d6;font-size:17px;text-shadow:0 0 8px var(--fx-color)}
+.fx-orbit:before{left:9%;top:7%}.fx-orbit:after{right:9%;bottom:7%}
+@keyframes corollaBloom{0%{transform:translate(-50%,-50%) scale(.15) rotate(-35deg);opacity:0}25%{opacity:.8}100%{transform:translate(-50%,-50%) scale(1.2) rotate(55deg);opacity:0}}
+@keyframes orbitBloom{0%{transform:translate(-50%,-50%) scale(.35) rotate(0);opacity:0}20%{opacity:.9}100%{transform:translate(-50%,-50%) scale(1.35) rotate(150deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){.fx-corolla,.fx-orbit{display:none!important}}
 </style></head>
 <body>
 <div class="app" id="app">
@@ -199,7 +210,7 @@
 // Flower Bloom — asset integration v1. Balance values are retained from main.
 const ASSET_ROOT = 'assets/sakura-v1/';
 const ASSET_VERSION = 'sakura-assets-1';
-const EFFECT_VERSION = 'bloom-spectacle-3';
+const EFFECT_VERSION = 'bloom-spectacle-4';
 const $ = id => document.getElementById(id);
 const P = ['red', 'blue', 'yellow'];
 const C = {red:'var(--r)', blue:'var(--b)', yellow:'var(--y)'};
@@ -601,6 +612,9 @@ function particles(el,name,perfect=false) {
  const {x,y,w}=centerOf(el),light=FLOWER_LIGHT[name],tier=comboTier(),festival=T.type==='festival';
  const cellSize=el.getBoundingClientRect().width,boost=combo>=8?1.6:combo>=5?1.35:1.15;
  effectAt('fx-halo',x,y,cellSize*1.75,light.light,540);
+ effectAt('fx-corolla',x,y,cellSize*2.6,light.light,850);
+ effectAt('fx-orbit',x,y,cellSize*1.8,light.light,900);
+ if(combo>=5||festival||perfect)effectAt('fx-corolla outer',x,y,cellSize*3.5,light.light,1050);
  if(combo>=5||perfect||festival)effectAt('fx-halo second',x,y,cellSize*2.05,light.light,740);
  const rays=combo>=8?8:combo>=5||festival?6:3;
  for(let i=0;i<rays;i++){
