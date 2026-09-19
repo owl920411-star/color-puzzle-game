@@ -13,15 +13,13 @@ const F = {
  green:{e:'🌿', n:'잎사귀', c:'var(--g)', need:['blue','yellow'], r:'물방울 + 옥수수'}
 };
 const M = {'blue,red':'purple', 'red,yellow':'orange', 'blue,yellow':'green'};
-const FESTIVAL_DURATION = 45, FESTIVAL_TOTAL_GOAL = 25;
-const FESTIVAL_SPAWN_TUNING = Object.freeze({goalRate:.20,chainRate:.25,chainWeight:1.2});
 const PRESSURE_DURATION = 38, CHALLENGE_DURATION = 42, CHALLENGE_COMBO_GOAL = 7;
 const EXPERT_DURATION = 50, EXPERT_COMBO_GOAL = 7;
 const ST = [
  {type:'normal',goalType:'flowers',g:{purple:8},t:60,a:.28},
  {type:'normal',goalType:'flowers',g:{orange:10},t:60,a:.25},
  {type:'normal',goalType:'flowers',g:{green:12},t:60,a:.23},
- {type:'festival',goalType:'total',g:{},totalGoal:FESTIVAL_TOTAL_GOAL,t:FESTIVAL_DURATION,a:.23,spawnTuning:FESTIVAL_SPAWN_TUNING},
+ {type:'normal',goalType:'total',g:{},totalGoal:25,t:45,a:.23},
  {type:'normal',goalType:'flowers',g:{purple:8,green:6},t:55,a:.20},
  {type:'normal',goalType:'flowers',g:{purple:7,orange:7,green:7},t:55,a:.16},
  {difficulty:'HARD',g:{purple:15,green:4},t:52,a:.18},
@@ -82,7 +80,7 @@ const entries = () => Object.entries(T.g);
 const totalGoalStage = () => T.goalType==='total';
 const flowerGoalDone = () => T.goalType==='combo'||(totalGoalStage()?total>=T.totalGoal:entries().every(([name,goal]) => (goals[name]||0) >= goal));
 const done = () => flowerGoalDone()&&maxCombo>=(T.comboGoal||0);
-const stageName = () => ({festival:'퍼즐 축제',pressure:'수확 러시',challenge:'콤보 챌린지'}[T.type]||'컬러 퍼즐');
+const stageName = () => ({pressure:'수확 러시',challenge:'콤보 챌린지'}[T.type]||'컬러 퍼즐');
 const randomBalance = () => ({...RANDOM_BALANCE,...(DIFFICULTY_PROFILES[T.randomProfile]||DIFFICULTY_PROFILES.NORMAL),...T.spawnTuning});
 const asset = name => window.FLOWER_BLOOM_ASSETS?.[name] || ASSET_ROOT + name + '.webp';
 const sprite = (kind, name, alt='') => `<img src="${asset(kind+'-'+name)}" alt="${alt}" draggable="false">`;
@@ -120,7 +118,6 @@ function later(fn, ms) {
 }
 function stopClocks() { clearInterval(timer); clearInterval(beatTimer); timer=beatTimer=null; }
 function cancelBoardWork() {
- window.FestivalShow?.stop();
  generation++;
  pending.forEach(clearTimeout); pending.clear();
  stopClocks(); busy.clear(); startPointer=null;
@@ -169,14 +166,13 @@ function triggerBloom() {
  bloomTriggered=true;bloomUntil=performance.now()+BLOOM_DURATION*1000;
  $('boardShell').classList.add('bloom-mode');
  $('bloomBadge').textContent='FEVER TIME · ×'+BLOOM_SCORE_MULTIPLIER;
- if(T.type!=='festival')frameFlowers(true);
- if(T.type==='festival')window.FestivalShow?.fever();
+ frameFlowers(true);
 }
 function ui() {
  T=ST[si];
  $('app').dataset.scene=T.type;
- document.querySelector('.scene-label').innerHTML=T.type==='festival'?'반짝이는 퍼즐 축제<span>FARM FESTIVAL · LET’S CELEBRATE</span>':'색을 잇고, 콤보를 이어가요<span>MATCH · COMBO · CLEAR</span>';
- document.querySelector('.tagline').textContent=T.type==='festival'?'친구들과 함께, 밤하늘 가득 축제!':'농장 친구들과 함께하는 컬러 퍼즐';
+ document.querySelector('.scene-label').innerHTML='색을 잇고, 콤보를 이어가요<span>MATCH · COMBO · CLEAR</span>';
+ document.querySelector('.tagline').textContent='농장 친구들과 함께하는 컬러 퍼즐';
  $('startTitle').textContent=T.type==='normal'?'오늘의 수확 목표':stageName();
  document.querySelector('.stage-name').textContent=T.type!=='normal'?stageName():T.difficulty==='EXPERT'?'🌺 EXPERT':T.difficulty==='HARD'?'🔥 HARD':'컬러 퍼즐';
  $('mission').classList.toggle('special',T.type!=='normal');
@@ -192,10 +188,10 @@ function ui() {
  $('guide').innerHTML=entries().map(([n])=>F[n].r).join(' / ')+
   '<br>제한시간 <b>'+T.t+'초</b><br><small>같은 수확물 2연속부터 콤보 · 매회 +0.2초</small>';
  if(totalGoalStage()){
-  $('sStage').textContent='🎪 SPECIAL STAGE';$('target').textContent='🎪 퍼즐 축제';
+  $('target').textContent='색을 조합해 목표를 채우세요';
   $('progress').innerHTML='<span class="goal-chip'+(done()?' complete':'')+'">수확 '+Math.min(total,T.totalGoal)+' / '+T.totalGoal+'</span>';
   $('sGoal').innerHTML='<div class="start-goal"><span>모든 수확물</span><b>'+T.totalGoal+'개</b></div>';
-  $('guide').innerHTML='시간 안에 농작물을 마음껏 수확해 주세요!<br>제한시간 <b>'+T.t+'초</b> · 모든 수확를 합산합니다.';
+  $('guide').innerHTML='시간 안에 색을 조합해 주세요!<br>제한시간 <b>'+T.t+'초</b> · 모든 조합을 합산합니다.';
  }
  if(T.type==='pressure'){
   $('sStage').textContent='🔥 HARVEST RUSH · STAGE '+(si+1);$('target').textContent='🔥 수확 러시';
@@ -427,7 +423,7 @@ function frameFlowers(major=false){
 }
 function particles(el,name,perfect=false) {
  if(reducedMotion)return;
- const {x,y,w}=centerOf(el),light=FLOWER_LIGHT[name],tier=comboTier(),festival=T.type==='festival';
+ const {x,y,w}=centerOf(el),light=FLOWER_LIGHT[name],tier=comboTier();
  const cellSize=el.getBoundingClientRect().width,boost=combo>=8?1.6:combo>=5?1.35:1.15;
  // Eight large facets give each break a crisp silhouette without a cloud of DOM nodes.
  for(let i=0;i<8;i++){
@@ -437,46 +433,42 @@ function particles(el,name,perfect=false) {
   shard.style.setProperty('--dy',Math.sin(angle)*dist+'px');
   shard.style.setProperty('--rot',(i%2?-150:170)+'deg');
  }
- if(festival)return; // Canvas owns rings/stars; keep only eight crisp DOM facets.
- effectAt('fx-halo',x,y,cellSize*(festival?2.4:1.75),light.light,540);
- effectAt('fx-corolla',x,y,cellSize*(festival?3.4:2.6),light.light,850);
- if(!festival)effectAt('fx-orbit',x,y,cellSize*1.8,light.light,900);
- if(!festival&&(combo>=5||perfect))effectAt('fx-corolla outer',x,y,cellSize*3.5,light.light,1050);
- if(combo>=5||perfect||festival)effectAt('fx-halo second',x,y,cellSize*2.05,light.light,740);
+ effectAt('fx-halo',x,y,cellSize*1.75,light.light,540);
+ effectAt('fx-corolla',x,y,cellSize*2.6,light.light,850);
+ effectAt('fx-orbit',x,y,cellSize*1.8,light.light,900);
+ if(combo>=5||perfect)effectAt('fx-corolla outer',x,y,cellSize*3.5,light.light,1050);
+ if(combo>=5||perfect)effectAt('fx-halo second',x,y,cellSize*2.05,light.light,740);
  effectAt('fx-bloom-flash',x,y,cellSize*(combo>=5?3:2.2),light.light,700);
- const satellites=festival?4:combo>=8?8:combo>=5?6:4;
+ const satellites=combo>=8?8:combo>=5?6:4;
  for(let i=0;i<satellites;i++){
-  const angle=i/satellites*Math.PI*2-.9,dist=cellSize*(festival?2.4:combo>=8?2.1:1.45);
+  const angle=i/satellites*Math.PI*2-.9,dist=cellSize*(combo>=8?2.1:1.45);
   const flower=effectAt('fx-bloom-satellite',x,y,cellSize*(combo>=5?.58:.43),light.light,1150,'img');
-  flower.src=asset(festival?['festival-pinwheel','festival-balloon','festival-gift'][i%3]:'flower-'+name);flower.alt='';
+  flower.src=asset('flower-'+name);flower.alt='';
   flower.style.setProperty('--life','1100ms');flower.style.setProperty('--dx',Math.cos(angle)*dist+'px');flower.style.setProperty('--dy',(Math.sin(angle)*dist-24)+'px');
   flower.style.setProperty('--start-rot',(i*45)+'deg');flower.style.setProperty('--rot',(i*45+150)+'deg');
  }
- // Canvas owns the festival sparks/rings; avoid rendering them again as DOM effects.
- if(festival)return;
  if(combo>=3||perfect){
   for(let i=0;i<4;i++){
    const comet=effectAt('fx-comet',x,y,cellSize*.75,light.light,900);
    comet.style.setProperty('--angle',(i*Math.PI/2+.4)+'rad');comet.style.setProperty('--travel',cellSize*(combo>=8?2.2:1.6)+'px');
   }
  }
- const rays=combo>=8?8:combo>=5||festival?6:3;
+ const rays=combo>=8?8:combo>=5?6:3;
  for(let i=0;i<rays;i++){
   const angle=i/rays*Math.PI*2+.3;
   const ray=effectAt('fx-ray',x,y,cellSize*(combo>=5?1.1:.8),light.light,570);
   ray.style.setProperty('--angle',angle+'rad');ray.style.setProperty('--gap',cellSize*.35+'px');
  }
- if(combo>=8||(festival&&total%5===0)){
+ if(combo>=8){
   for(let i=0;i<3;i++){
    const angle=i/3*Math.PI*2-.7,dist=cellSize*1.65;
    const little=effectAt('fx-mini-flower',x,y,cellSize*.48,light.light,870,'img');little.src=asset('flower-'+name);little.alt='';
    little.style.setProperty('--dx',Math.cos(angle)*dist+'px');little.style.setProperty('--dy',Math.sin(angle)*dist-12+'px');
    little.style.setProperty('--start-rot','-20deg');little.style.setProperty('--rot',(i*60+80)+'deg');
   }
-  if(festival&&total%5===0)frameFlowers(false);
  }
- if(combo>=5||festival){const echo=effectAt('fx-echo',x,y,cellSize*1.5,light.light,640,'img');echo.src=asset('flower-'+name);echo.alt='';}
- const count=VISUAL_PETALS[tier]+(bloomActive()?BLOOM_EXTRA_PETALS:0)+(festival?4:0)+(perfect?2:0);
+ if(combo>=5){const echo=effectAt('fx-echo',x,y,cellSize*1.5,light.light,640,'img');echo.src=asset('flower-'+name);echo.alt='';}
+ const count=VISUAL_PETALS[tier]+(bloomActive()?BLOOM_EXTRA_PETALS:0)+(perfect?2:0);
  for(let i=0;i<count;i++){
   const angle=i/count*Math.PI*2+(fxRandom()-.5)*.55;
   const dist=(cellSize*.5+fxRandom()*Math.min(w*.13,55))*boost;
@@ -486,7 +478,7 @@ function particles(el,name,perfect=false) {
   p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist-16+'px');
   p.style.setProperty('--start-rot',(angle*180/Math.PI)+'deg');p.style.setProperty('--rot',(angle*180/Math.PI+90+fxRandom()*180)+'deg');
  }
- const encoreCount=combo>=5||festival?8:5;
+ const encoreCount=combo>=5?8:5;
  later(()=>{
   if(!run||menuPaused||clearing)return;
   effectAt('fx-halo afterglow',x,y,cellSize*2.15,light.light,700);
@@ -506,7 +498,7 @@ function comboEffect(el) {
  fx.innerHTML=combo+' COMBO<span>'+(combo>=8?'대풍년! · ':combo>=5?'풍성한 수확! · ':'')+'+'+COMBO_TIME_BONUS+' sec</span>';
  if(!reducedMotion&&navigator.vibrate)navigator.vibrate(COMBO_FEEDBACK[comboTier()].vibration);
  $('effects').append(fx); el.classList.add('comboGlow');
- if(combo>=5&&!reducedMotion&&T.type!=='festival'){
+ if(combo>=5&&!reducedMotion){
   const wave=document.createElement('i');wave.className='board-wave'+(combo>=8?' mega':'');
   addEffect(wave,660);
   if(combo%5===0)frameFlowers(combo>=8);
@@ -535,7 +527,6 @@ function merge(a,b) {
  const points=bloomPoints*(butterflyBonus?BUTTERFLY_SCORE_MULTIPLIER:1);
  score+=points;total++;goals[name]=(goals[name]||0)+1;
  if(combo>=2){time=Math.min(T.t+COMBO_TIME_CAP,time+COMBO_TIME_BONUS);comboEffect(board[b].el);}
- if(T.type==='festival')window.FestivalShow?.burst(board[b].el,combo,perfect);
  ui();floater(points,perfect);mergeRibbon(board[a].el,board[b].el);particles(board[b].el,name,perfect);
  if(butterflyBonus&&combo<2&&!reducedMotion&&navigator.vibrate)navigator.vibrate(BUTTERFLY_VIBRATION);
  const flower=document.createElement('img');flower.src=asset('flower-'+name);flower.alt=F[name].n;
@@ -564,7 +555,6 @@ function resetState() {
 function begin() {
  cancelBoardWork();T=ST[si];resetState();build();ui();fitBoard();
  $('start').classList.add('hide');run=true;beatAt=Date.now();
- if(T.type==='festival')window.FestivalShow?.start();
  scheduleButterfly(true);
  recoverDeadBoard();
  beatTimer=setInterval(()=>{
@@ -589,12 +579,11 @@ function prepareStage(index) {
 function stageClear() {
  if(clearing||!run)return;
  clearing=true;run=false;stopClocks();endBloom();cancelPointer();
- if(T.type==='festival')window.FestivalShow?.clear();
  savePuzzleStage((si+1)%ST.length);
  resetButterfly();
  const fx=document.createElement('div');fx.className='stageClear';
  const centerFlower=lastFlower||'purple',sides=Object.keys(F).filter(name=>name!==centerFlower);
- fx.innerHTML='<span class="clear-kicker">'+(T.type==='festival'?'FARM FESTIVAL':'HAPPY HARVEST')+'</span><div class="clear-bouquet">'+sides.map(name=>sprite('flower',name)).join('')+sprite('flower',centerFlower)+'</div><span>STAGE '+(si+1)+' CLEAR</span><small>다음 스테이지로 이동합니다</small>';
+ fx.innerHTML='<span class="clear-kicker">'+'HAPPY HARVEST'+'</span><div class="clear-bouquet">'+sides.map(name=>sprite('flower',name)).join('')+sprite('flower',centerFlower)+'</div><span>STAGE '+(si+1)+' CLEAR</span><small>다음 스테이지로 이동합니다</small>';
  if(!reducedMotion)for(let i=0;i<28;i++){
   const p=document.createElement('i'),angle=i/28*Math.PI*2,dist=90+fxRandom()*140;p.className='clear-confetti';
   p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist+'px');p.style.setProperty('--rot',(fxRandom()*360)+'deg');
@@ -604,7 +593,6 @@ function stageClear() {
 }
 function finish() {
  if(!run)return;
- window.FestivalShow?.stop();
  run=false;stopClocks();endBloom();cancelPointer();
  resetButterfly();
  $('endTitle').textContent=resultTitle();
@@ -627,7 +615,6 @@ function openMenu(help=false) {
  $('menuTitle').textContent=help?'농작물을 수확하는 방법':'잠시 쉬어가세요';
  $('resumeBtn').textContent=run?'계속하기':'닫기';
  $('menu').classList.remove('hide');
- window.FestivalShow?.pause(true);
 }
 function closeMenu() {
  if(menuPaused){
@@ -640,7 +627,6 @@ function closeMenu() {
   bloomPausedRemaining=0;
  }
  menuPaused=false;$('menu').classList.add('hide');
- window.FestivalShow?.pause(false);
 }
 function toggleDev(show) {
  const hidden=$('devPanel').classList.contains('hide');
@@ -684,7 +670,7 @@ $('devOpen').onclick=()=>{closeMenu();toggleDev(true);};
 $('stage').addEventListener('pointerdown',()=>{clearTimeout(stageHoldTimer);stageHoldTimer=setTimeout(()=>toggleDev(),900);});
 ['pointerup','pointercancel','pointerleave'].forEach(name=>$('stage').addEventListener(name,()=>clearTimeout(stageHoldTimer)));
 $('devClose').onclick=()=>toggleDev(false);
-$('devInfo').insertAdjacentHTML('beforebegin','<div class="devRow"><button class="devBtn" id="devButterfly">🦋 나비 생성</button><button class="devBtn" id="devFestival">🌸 퍼즐 축제</button></div>');
+$('devInfo').insertAdjacentHTML('beforebegin','<div class="devRow"><button class="devBtn" id="devButterfly">🦋 나비 생성</button></div>');
 $('devInfo').insertAdjacentHTML('beforebegin','<div class="devRow"><input class="dev-stage-input" id="devStageInput" type="number" min="1" max="'+ST.length+'" step="1" value="1" inputmode="numeric" aria-label="이동할 스테이지"><button class="devBtn" id="devStageGo">ST 이동</button><button class="devBtn" id="devHard">HARD</button><button class="devBtn" id="devExpert">EXPERT</button><button class="devBtn" id="devRush">RUSH</button><button class="devBtn" id="devChallenge">COMBO</button></div>');
 $('mission').insertAdjacentHTML('beforeend','<div class="combo-goal hide" id="comboGoal"></div>');
 $('harvest').insertAdjacentHTML('beforebegin','<span class="butterfly-hint" id="butterflyHint" role="status"></span>');
@@ -699,7 +685,6 @@ $('devExpert').onclick=()=>prepareStage(ST.length-1);
 $('devRush').onclick=()=>prepareStage(ST.findIndex(stage=>stage.type==='pressure'));
 $('devChallenge').onclick=()=>prepareStage(ST.findIndex(stage=>stage.type==='challenge'));
 $('devButterfly').onclick=()=>{spawnButterfly();devInfo();};
-$('devFestival').onclick=()=>prepareStage(ST.findIndex(stage=>stage.type==='festival'));
 $('devPrev').onclick=()=>jumpStage(-1);$('devNext').onclick=()=>jumpStage(1);
 $('devComplete').onclick=()=>{if(totalGoalStage())total=Math.max(0,T.totalGoal-1);else entries().forEach(([n,g])=>goals[n]=Math.max(0,g-1));if(T.comboGoal)maxCombo=Math.max(maxCombo,T.comboGoal-1);ui();};
 $('devTimePlus').onclick=()=>{time+=10;renderTime();devInfo();};
@@ -730,7 +715,7 @@ if(!reducedMotion){
 document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement){e.target.classList.add('missing');$('assetWarning').classList.remove('hide');}},true);
 prepareStage(loadPuzzleStage());requestAnimationFrame(fitBoard);
 // Decode essential art before enabling play. No remote CDN/font dependencies.
-const required=['scene','festival','mascots','bud-red','bud-blue','bud-yellow','flower-purple','flower-orange','flower-green'];
+const required=['scene','mascots','bud-red','bud-blue','bud-yellow','flower-purple','flower-orange','flower-green'];
 $('startBtn').disabled=true;$('startBtn').textContent='농장 친구들을 불러오고 있어요…';
 Promise.allSettled(required.map(name=>new Promise((resolve,reject)=>{
  const img=new Image();img.onload=()=>resolve(name);img.onerror=()=>reject(name);img.src=asset(name);
@@ -739,5 +724,5 @@ Promise.allSettled(required.map(name=>new Promise((resolve,reject)=>{
  const missing=results.filter(r=>r.status==='rejected').map(r=>r.reason);
  if(missing.length){$('assetWarning').classList.remove('hide');console.warn('Missing Farm Friends assets:',missing);}
  document.documentElement.dataset.assetsReady=missing.length?'partial':'true';
- document.documentElement.dataset.farmVersion='festival-smooth-6';
+ document.documentElement.dataset.farmVersion='puzzle-only-7';
 });

@@ -37,7 +37,7 @@ function check(name,value){assert.equal(value,true,name);checks.push(name);}
     {type:'normal',goalType:'flowers',g:{purple:8},t:60,a:.28},
     {type:'normal',goalType:'flowers',g:{orange:10},t:60,a:.25},
     {type:'normal',goalType:'flowers',g:{green:12},t:60,a:.23},
-    {type:'festival',goalType:'total',g:{},t:45,a:.23},
+    {type:'normal',goalType:'total',g:{},t:45,a:.23},
     {type:'normal',goalType:'flowers',g:{purple:8,green:6},t:55,a:.20},
     {type:'normal',goalType:'flowers',g:{purple:7,orange:7,green:7},t:55,a:.16}
    ];
@@ -64,11 +64,11 @@ function check(name,value){assert.equal(value,true,name);checks.push(name);}
      Object.keys(g).length===Object.keys(s.g).length&&Object.entries(g).every(([name,amount])=>s.g[name]===amount);
    })&&ST[9].type==='pressure'&&ST[13].type==='challenge'&&ST[13].goalType==='combo';
   }));
-  check('normal stages and festival keep their previous random balance',await page.evaluate(()=>{
+  check('first six stages use normal random balance',await page.evaluate(()=>{
    let ok=true;
    for(let i=0;i<6;i++){
     setupSkill(i);const balance=randomBalance();
-    ok&&=balance.goalRate===.20&&balance.chainRate===(i===3?.25:.10);
+    ok&&=balance.goalRate===.20&&balance.chainRate===.10;
    }
    return ok&&COMBO_TIME_BONUS===.2&&COMBO_TIME_CAP===8&&BLOOM_TRIGGER===8&&BLOOM_DURATION===5&&BLOOM_SCORE_MULTIPLIER===1.5;
   }));
@@ -138,7 +138,7 @@ function check(name,value){assert.equal(value,true,name);checks.push(name);}
    const next=si===14&&!run&&!done();begin();stopClocks();maxCombo=7;combo=6;begin();stopClocks();
    return next&&si===14&&maxCombo===0&&combo===0&&total===0&&!done()&&run;
   }));
-  check('normal stages hide combo mission; festival still counts all flowers',await page.evaluate(()=>{
+  check('normal stages hide combo mission; stage four counts all flowers',await page.evaluate(()=>{
    setupSkill(0);const normal=$('comboGoal').classList.contains('hide');
    setupSkill(3);['purple','orange','green'].forEach(name=>skillPair(name));
    return normal&&$('comboGoal').classList.contains('hide')&&total===3&&!done()&&$('progress').textContent.includes('3 / 25');

@@ -5,7 +5,7 @@
   'use strict';
   const button=document.getElementById('startBtn');
   button.disabled=true;button.textContent='농장 친구들을 불러오고 있어요…';
-  const assets={scene:'assets/farm-day.webp',festival:'assets/farm-festival.webp',mascots:'assets/farm-mascots.webp'};
+  const assets={scene:'assets/farm-day.webp',mascots:'assets/farm-mascots.webp'};
   const atlases={
     farm:{url:'assets/farm-reference.png',size:[1536,1024],rects:{
       'bud-red':[331,47,96,95], 'bud-blue':[649,174,96,94],
@@ -13,11 +13,6 @@
       'flower-orange':[435,47,95,95], 'flower-green':[650,47,95,95],
       'farm-daisy':[330,174,96,94], 'farm-peach':[435,174,95,94],
       'farm-star':[1010,169,112,112], 'farm-gift':[892,171,111,108]
-    }},
-    festival:{url:'assets/festival-reference.png',size:[1536,1024],rects:{
-      'festival-balloon':[109,407,85,88], 'festival-pinwheel':[206,407,85,88],
-      'festival-gift':[206,541,85,87], 'festival-cupcake':[306,407,84,88],
-      'festival-lantern':[109,541,85,87], 'festival-ticket':[403,541,84,87]
     }}
   };
   function load(url){return new Promise((resolve,reject)=>{
@@ -46,7 +41,7 @@
   // Original logical asset keys deliberately survive the visual update.
   window.FLOWER_BLOOM_ASSETS=assets;
   window.FARM_FRIENDS_ASSETS=assets;
-  const script=document.createElement('script');script.src='game.js?v=festival-smooth-6';
+  const script=document.createElement('script');script.src='game.js?v=puzzle-only-7';
   script.onerror=()=>{
     button.disabled=false;button.textContent='게임 다시 불러오기';button.onclick=()=>location.reload();
     const warning=document.getElementById('assetWarning');warning.textContent='게임을 불러오지 못했어요. 다시 시도해 주세요.';warning.classList.remove('hide');

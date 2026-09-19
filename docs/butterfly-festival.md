@@ -23,7 +23,7 @@ Playwright 환경에서 아래를 순서대로 실행한다. 기존 문서의 `C
 
 ```text
 node tests/bloom-regression.cjs
-node tests/butterfly-festival.cjs
+node tests/butterfly-stages.cjs
 ```
 
 1차 25개와 2차 41개 검사가 통과했다. JS 문법, 브라우저 런타임/콘솔, 실제 Chromium 터치 이벤트, 320×568 / 360×740 / 412×915 화면, reduced motion, 수명/메뉴 정지, 배율 중첩, ghost 정리, 총 개화 및 다음 스테이지를 검증했다. 인라인 이미지 24개의 SHA-256이 1차와 동일하다. 1차의 밸런스 선언 및 8개 콤보/BLOOM 연출 함수도 동일하다.

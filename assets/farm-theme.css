@@ -1,4 +1,4 @@
-/* Farm Friends · a sunny little farm, and a festival after dark.
+/* Farm Friends · color-combination puzzle artwork.
    Geometry retains the 512 / 558 shell used by fitBoard(). */
 :root{
   color-scheme:light;
@@ -161,28 +161,6 @@ button:focus-visible{outline:3px solid #3d8e42;outline-offset:3px}
 .stageClear .clear-bouquet:after{border-color:#fff1a0}
 .stageClear .clear-bouquet img{filter:drop-shadow(0 0 14px #fff1ac)}
 
-/* The same farm turns into a lantern festival between regular stages. */
-#app[data-scene="festival"] .scenery{background:#273565 url("farm-festival.webp") center 40%/cover no-repeat}
-#app[data-scene="festival"] .scenery:after{background:linear-gradient(#1514420a,#47204500 30%,#29235319)}
-#app[data-scene="festival"] .hero:before{content:"";position:absolute;left:-12px;right:-12px;top:-1px;height:17px;border-top:1px solid #ffe3ac;background:repeating-linear-gradient(90deg,#f5999c 0 20px,#f7ce75 20px 40px,#91cbcb 40px 60px,#d3afe8 60px 80px);clip-path:polygon(0 0,100% 0,100% 20%,97.5% 100%,95% 20%,92.5% 100%,90% 20%,87.5% 100%,85% 20%,82.5% 100%,80% 20%,77.5% 100%,75% 20%,72.5% 100%,70% 20%,67.5% 100%,65% 20%,62.5% 100%,60% 20%,57.5% 100%,55% 20%,52.5% 100%,50% 20%,47.5% 100%,45% 20%,42.5% 100%,40% 20%,37.5% 100%,35% 20%,32.5% 100%,30% 20%,27.5% 100%,25% 20%,22.5% 100%,20% 20%,17.5% 100%,15% 20%,12.5% 100%,10% 20%,7.5% 100%,5% 20%,2.5% 100%,0 20%);filter:drop-shadow(0 0 3px #fff3b0);z-index:0;pointer-events:none}
-#app[data-scene="festival"] .hero{padding-top:22px}
-#app[data-scene="festival"] .brand{color:#ffe184;text-shadow:0 3px 0 #a85731,0 5px 0 #68425f,0 0 15px #ffc97799}
-#app[data-scene="festival"] .tagline{background:#fff3ddeb;border-color:#f0c886;color:#8c5260}
-#app[data-scene="festival"] .scene-label,#app[data-scene="festival"] .scene-label span{color:#fff0bd;text-shadow:0 1px 3px #512960,0 0 5px #512960}
-#app[data-scene="festival"] .farm-friends{filter:drop-shadow(0 0 9px #fbe1ad66)}
-#app[data-scene="festival"] .stat{background:linear-gradient(140deg,#fff4dbfa,#ffe3cffa);border-color:#e4b167;box-shadow:inset 0 0 0 2px #fff6dc,0 3px 0 #96546a,0 0 9px #ffd1862b}
-#app[data-scene="festival"] .mission{background:linear-gradient(100deg,#fff1cef7,#ffdfbbf7);border-color:#e1a65f;filter:drop-shadow(0 0 5px #ffc78244);box-shadow:inset 0 0 0 2px #fff5d1,0 3px 0 #a85b57}
-#app[data-scene="festival"] .board-shell:before{background:repeating-linear-gradient(2deg,transparent 0 9px,#7c462917 10px 11px,transparent 12px 24px),linear-gradient(90deg,#c08955,#f3c17b 13%,#dbab68 48%,#f3c583 88%,#ba7a42);border-color:#b8784e;box-shadow:inset 0 0 0 2px #ffdf9b,inset 0 0 0 5px #ca8f4c,0 4px 0 #70404c,0 0 17px #ffc67547}
-#app[data-scene="festival"] .board-shell:after{content:"★ FARM FESTIVAL ★";background:linear-gradient(#c86987,#a04472);border-color:#ffe1a0;box-shadow:inset 0 1px #f8aac0,0 2px 0 #6e2b65;color:#fff1b9;text-shadow:0 1px #8f3565}
-#app[data-scene="festival"] .grid{border-color:#c5a2aa;outline-color:#ffe5aa;background:#a77a9c;box-shadow:inset 0 2px 4px #663b7755,0 1px 1px #99693e}
-#app[data-scene="festival"] .cell{background:linear-gradient(145deg,#fff7ed,#f4dce2);border-color:#ead3cc;box-shadow:inset 0 1px #fff9f4,0 2px 0 #835b80}
-#app[data-scene="festival"] .cell:nth-child(2n){background:linear-gradient(145deg,#fff7e8,#f6e3c1)}
-#app[data-scene="festival"] .board-aura{border-color:#ffe29b;box-shadow:0 0 14px #ffc86466,inset 0 0 10px #ffdc8655}
-#app[data-scene="festival"] .ambient i{background:radial-gradient(circle,#fff5bc 10%,#f5ad5d 50%,transparent 72%);border-radius:50%;width:11px;height:11px;filter:drop-shadow(0 0 4px #ffc658)}
-#app[data-scene="festival"] .overlay{background:#33224430}
-#app[data-scene="festival"] .modal-card{border-color:#e1af6a;background:radial-gradient(ellipse at 50% 0,#fff9ec 0 20%,transparent 70%),linear-gradient(140deg,#fff5e0,#f9e1ce);box-shadow:inset 0 0 0 4px #fff5dc,inset 0 0 0 5px #e3bd91,0 15px 42px #21133177,0 0 20px #ffdb8c26}
-#app[data-scene="festival"] .modal-card h2{color:#aa6279}
-#app[data-scene="festival"] .stageClear{background:radial-gradient(ellipse at 50% 44%,#ffc15a70,#59255ea8 70%)}
 
 @media(min-width:430px) and (min-height:820px){
   .hero{min-height:140px;max-height:175px;padding-top:18px}
@@ -211,7 +189,6 @@ button:focus-visible{outline:3px solid #3d8e42;outline-offset:3px}
   .modal-card{padding:19px 22px 17px}
   .modal-flower{height:116px;width:205px}
   .modal-card h2{font-size:20px;margin-top:6px;margin-bottom:10px}
-  #app[data-scene="festival"] .hero{padding-top:18px}
 }
 @media(max-height:650px){
   .app{gap:3px;padding-top:max(5px,env(safe-area-inset-top))}
@@ -252,8 +229,6 @@ button:focus-visible{outline:3px solid #3d8e42;outline-offset:3px}
   .btn{min-height:42px;padding:10px 15px;font-size:14px}
   .btn.secondary{min-height:35px;padding:7px 12px;font-size:11px;margin-top:9px}
   .modal-card .fine{font-size:7px;margin:11px 0 0}
-  #app[data-scene="festival"] .hero{padding-top:17px}
-  #app[data-scene="festival"] .brand{font-size:26px}
 }
 @media(max-width:355px){
   .app{padding-left:7px;padding-right:7px}
@@ -281,8 +256,6 @@ button:focus-visible{outline:3px solid #3d8e42;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.farm-friends,.brand{animation:none}.scenery{transition:none}.bloom-mode .bloom-badge{animation:none}}
 /* Keep the small scene name readable against either illustrated backdrop. */
 .scene-label{padding:3px 9px;border-radius:9px 9px 0 0;background:#fff8e5e8;text-shadow:none;box-shadow:0 -1px 0 #c3af6f55}
-#app[data-scene="festival"] .scene-label{background:#302c64dc;color:#ffeab1;text-shadow:none}
-#app[data-scene="festival"] .scene-label span{color:#ffdda2;text-shadow:none}
 /* Reserve separate frame bands for combo, score and fever feedback. */
 .grid{bottom:11%}
 .board-shell:before{bottom:8.2%}
@@ -296,3 +269,7 @@ button:focus-visible{outline:3px solid #3d8e42;outline-offset:3px}
 .bloom-badge{bottom:.1%;font-size:8px;line-height:10px}
 .bloom-mode .bloom-badge{padding:1px 9px;border-width:1px;line-height:10px}
 .bloom-badge:before,.bloom-badge:after{font-size:8px;line-height:10px;margin:0 4px}
+
+/* Local puzzle break feedback. */
+.fx-shard{width:var(--size);height:var(--size);background:linear-gradient(135deg,#fffbea 0 20%,var(--fx-color) 22% 68%,#fff7d7 70%);clip-path:polygon(12% 0,100% 20%,75% 100%,0 64%);animation:puzzleShatter 540ms cubic-bezier(.12,.65,.25,1) both}
+@keyframes puzzleShatter{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}18%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--rot)) scale(.35);opacity:0}}

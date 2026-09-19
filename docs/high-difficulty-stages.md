@@ -58,7 +58,7 @@ DEAD BOARD 복구는 실제 인접 조합 0개이고 전체 36칸 재생성이 �
 
 ```text
 node tests/bloom-regression.cjs
-node tests/butterfly-festival.cjs
+node tests/butterfly-stages.cjs
 node tests/skill-stages.cjs
 ```
 

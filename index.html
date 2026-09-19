@@ -97,9 +97,6 @@
 .bloom-mode .board-aura{border:2px solid #ffe3a0;box-shadow:0 0 18px #f6bf7288,inset 0 0 14px #f5a8d33d;animation:bloomAura 1.5s ease-in-out infinite alternate}
 .bloom-mode .board-aura:before,.bloom-mode .board-aura:after{content:'✦';position:absolute;font-size:20px;color:#fff1be;text-shadow:0 0 9px #ffc4e6;animation:edgeTwinkle 1.2s ease-in-out infinite alternate}.bloom-mode .board-aura:before{left:-10px;top:24%}.bloom-mode .board-aura:after{right:-10px;bottom:24%;animation-delay:.4s}
 .bloom-mode .bloom-badge{padding:3px 10px;border:1px solid #efc98380;border-radius:12px;background:linear-gradient(90deg,#4d2948e6,#724d3cdd,#4d2948e6);box-shadow:0 0 12px #ffc97b40;animation:badgeBloom .45s ease-out both}
-.app[data-scene="festival"] .board-aura{opacity:.65;border-color:#ffdba0;box-shadow:0 0 15px #f5ac9866,inset 0 0 10px #f6c78633}.app[data-scene="festival"] .mission{filter:drop-shadow(0 0 6px #eeb17360)}
-.app[data-scene="festival"] .ambient i{width:19px;height:19px;filter:drop-shadow(0 0 3px #ffdbad);animation-duration:8s}
-.app[data-scene="festival"] .scenery:after{background:linear-gradient(135deg,#ef9ba51a,transparent 40%,#ffd99712 80%,#20142430)}
 .stageClear{overflow:hidden;background:radial-gradient(ellipse at 50% 44%,#96605570,#251525a8 68%);font-size:clamp(25px,7vw,34px);letter-spacing:1px;animation:clearCurtain .85s ease-out both}
 .stageClear .clear-bouquet{position:relative;width:200px;height:160px;margin-bottom:8px;display:grid;place-items:center;isolation:isolate}
 .stageClear .clear-bouquet:before{content:'';position:absolute;width:170px;height:170px;border:1px solid #ffe7b1;border-radius:50%;box-shadow:0 0 25px #f6b5db55,inset 0 0 28px #ffdfab33;animation:clearHalo .8s ease-out both;z-index:-1}
@@ -177,10 +174,9 @@
 
 
 <meta name="theme-color" content="#5b983e">
-<meta name="description" content="타일을 조합하고 콤보를 이어가는 컬러 퍼즐. 15개 스테이지와 축제 모드에 도전하세요.">
+<meta name="description" content="타일을 조합하고 콤보를 이어가는 컬러 퍼즐. 15개 스테이지에 도전하세요.">
 <link rel="preload" as="image" href="assets/farm-day.webp">
-<link rel="stylesheet" href="assets/farm-theme.css?v=festival-smooth-6">
-<link rel="stylesheet" href="assets/festival-show.css?v=festival-smooth-6">
+<link rel="stylesheet" href="assets/farm-theme.css?v=puzzle-only-7">
 </head>
 <body>
 <div class="app" id="app">
@@ -223,6 +219,5 @@
  <div class="devPanel hide" id="devPanel"><div class="devHead"><b>개발자 모드</b><button class="devBtn" id="devClose">닫기</button></div><div class="devRow"><button class="devBtn" id="devPrev">◀ 이전 ST</button><button class="devBtn" id="devNext">다음 ST ▶</button><button class="devBtn" id="devComplete">목표 직전</button></div><div class="devRow"><button class="devBtn" id="devTimePlus">시간 +10초</button><button class="devBtn" id="devTimeMinus">시간 -10초</button><button class="devBtn" id="devPause">타이머 정지</button></div><div class="devRow"><button class="devBtn" id="devGoalPlus">목표 +1</button><button class="devBtn" id="devGoalMinus">목표 -1</button><button class="devBtn" id="devReset">현재 ST 리셋</button></div><div class="devInfo" id="devInfo"></div></div>
  <p class="asset-warning hide" id="assetWarning" role="status">일부 이미지가 로드되지 않았습니다. 연결 확인 후 새로고침해 주세요.</p>
 </div>
-<script src="assets/festival-show.js?v=festival-smooth-6"></script>
-<script src="assets/farm-assets.js?v=festival-smooth-6"></script></body>
+<script src="assets/farm-assets.js?v=puzzle-only-7"></script></body>
 </html>

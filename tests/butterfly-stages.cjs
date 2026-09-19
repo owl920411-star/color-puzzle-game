@@ -99,38 +99,38 @@ function check(name,value){assert.equal(value,true,name);passed.push(name);}
   }));
   await page.clock.runFor(851);
   check('next normal stage has clean state and start overlay',await page.evaluate(()=>si===1&&!run&&!butterfly&&total===0&&!$('start').classList.contains('hide')));
-  check('existing five normal stage goals and times preserved; festival is fourth',await page.evaluate(()=>{
-   const normal=ST.slice(0,6).filter(s=>s.type==='normal');
+  check('existing five normal stage goals and times preserved; total-goal stage is fourth',await page.evaluate(()=>{
+   const normal=ST.slice(0,6).filter(s=>s.goalType==='flowers');
    return JSON.stringify(normal.map(s=>({g:s.g,t:s.t,a:s.a})))===JSON.stringify([
     {g:{purple:8},t:60,a:.28},{g:{orange:10},t:60,a:.25},{g:{green:12},t:60,a:.23},{g:{purple:8,green:6},t:55,a:.20},{g:{purple:7,orange:7,green:7},t:55,a:.16}
-   ])&&ST.length>=6&&ST[3].type==='festival';
+   ])&&ST.length>=6&&ST[3].type==='normal';
   }));
-  check('festival opens through developer button with clear total goal',await page.evaluate(()=>{
-   $('devFestival').click();return si===3&&!run&&!done()&&$('sStage').textContent.includes('SPECIAL')&&$('startTitle').textContent==='퍼즐 축제'&&$('sGoal').textContent.includes('25개')&&time===45;
+  check('total-goal stage opens as a regular stage with clear total goal',await page.evaluate(()=>{
+   prepareStage(3);return si===3&&!run&&!done()&&$('sStage').textContent==='STAGE 4'&&$('startTitle').textContent==='오늘의 수확 목표'&&$('sGoal').textContent.includes('25개')&&time===45;
   }));
-  check('mixed flowers count once each toward festival total',await page.evaluate(()=>{
+  check('mixed flowers count once each toward total-goal stage total',await page.evaluate(()=>{
    setup(3);['purple','orange','green'].forEach(pair);
    return total===3&&Object.values(goals).reduce((a,b)=>a+b,0)===3&&!done()&&$('progress').textContent==='수확 3 / 25';
   }));
-  check('festival bloom retains 8 / 5 / 1.5 and same time bonus',await page.evaluate(()=>{
+  check('total-goal stage bloom retains 8 / 5 / 1.5 and same time bonus',await page.evaluate(()=>{
    setup(3);time=30;for(let i=0;i<8;i++)pair('purple');
    return combo===8&&bloomUntil-performance.now()===5000&&BLOOM_SCORE_MULTIPLIER===1.5&&Math.abs(time-31.4)<1e-8;
   }));
-  check('festival butterfly stacks and advances total by one',await page.evaluate(()=>{
+  check('total-goal stage butterfly stacks and advances total by one',await page.evaluate(()=>{
    setup(3);attach();combo=7;lastFlower='purple';beatAt=Date.now();merge(1,0);
    return score===1020&&total===1&&goals.purple===1&&bloomActive()&&!butterfly;
   }));
-  check('festival reaches exactly 25 and clears immediately',await page.evaluate(()=>{
+  check('total-goal stage reaches exactly 25 and clears immediately',await page.evaluate(()=>{
    setup(3);for(let i=0;i<24;i++)pair(['purple','orange','green'][i%3]);
    const before=run&&!done()&&total===24;pair('green');return before&&total===25&&done()&&clearing&&!run&&time>0;
   }));
   await page.clock.runFor(851);
-  check('festival advances to original fourth normal stage',await page.evaluate(()=>si===4&&T.type==='normal'&&T.g.purple===8&&T.g.green===6&&total===0&&!butterfly));
-  check('festival developer goal controls and near-goal shortcut work',await page.evaluate(()=>{
+  check('total-goal stage advances to original fourth normal stage',await page.evaluate(()=>si===4&&T.type==='normal'&&T.g.purple===8&&T.g.green===6&&total===0&&!butterfly));
+  check('total-goal stage developer goal controls and near-goal shortcut work',await page.evaluate(()=>{
    setup(3);$('devGoalPlus').click();const plus=T.totalGoal===26;$('devGoalMinus').click();$('devComplete').click();
    const almost=total===24&&!done();pair('purple');return plus&&almost&&clearing&&T.totalGoal===25;
   }));
-  check('normal spawn tuning unchanged; festival remains weighted, never guaranteed',await page.evaluate(()=>{
+  check('normal spawn tuning unchanged; total-goal stage remains weighted, never guaranteed',await page.evaluate(()=>{
    setup(3);lastFlower='purple';combo=4;
    board.forEach(c=>c.k='yellow');board[1].k='red';
    let seed=923,call=0;const random=Math.random,counts={red:0,blue:0,yellow:0};
@@ -138,7 +138,7 @@ function check(name,value){assert.equal(value,true,name);passed.push(name);}
     Math.random=()=>{if(call++%2===0)return .3;seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
     for(let i=0;i<5000;i++)counts[spawn(0)]++;
    }finally{Math.random=random;}
-   return RANDOM_BALANCE.goalRate===.2&&RANDOM_BALANCE.chainRate===.1&&FESTIVAL_SPAWN_TUNING.chainRate===.25&&Object.values(counts).every(n=>n>400);
+   return RANDOM_BALANCE.goalRate===.2&&RANDOM_BALANCE.chainRate===.1&&randomBalance().chainRate===.10&&Object.values(counts).every(n=>n>400);
   }));
   // Exercise Android's touch -> pointer event path with the butterfly present.
   await page.evaluate(()=>{setup();attach();combo=4;lastFlower='purple';});
@@ -158,14 +158,14 @@ function check(name,value){assert.equal(value,true,name);passed.push(name);}
   for(const size of [{width:320,height:568},{width:360,height:740},{width:412,height:915}]){
    await page.setViewportSize(size);
    await page.evaluate(()=>{prepareStage(3);fitBoard();});
-   if(process.env.TEST_SCREENSHOTS)await page.screenshot({path:path.join(process.env.TEST_SCREENSHOTS,'festival-start-'+size.width+'.png')});
+   if(process.env.TEST_SCREENSHOTS)await page.screenshot({path:path.join(process.env.TEST_SCREENSHOTS,'total-goal-start-'+size.width+'.png')});
    await page.evaluate(()=>{setup(3);attach();combo=7;lastFlower='purple';merge(1,0);fitBoard();});
    await page.clock.runFor(100);
-   check('festival + butterfly + bloom layout '+size.width,await page.evaluate(()=>{
+   check('total-goal stage + butterfly + bloom layout '+size.width,await page.evaluate(()=>{
     const grid=$('grid').getBoundingClientRect(),hint=$('butterflyHint').getBoundingClientRect(),badge=$('bloomBadge').getBoundingClientRect(),fx=document.querySelector('.comboFx').getBoundingClientRect();
     return fx.bottom<grid.top&&badge.top>grid.bottom&&hint.top>badge.bottom&&hint.left>=0&&hint.right<=innerWidth&&$('butterflyHint').scrollWidth<=$('butterflyHint').clientWidth&&$('mission').scrollWidth<=$('mission').clientWidth;
    }));
-   if(process.env.TEST_SCREENSHOTS)await page.screenshot({path:path.join(process.env.TEST_SCREENSHOTS,'festival-bonus-'+size.width+'.png')});
+   if(process.env.TEST_SCREENSHOTS)await page.screenshot({path:path.join(process.env.TEST_SCREENSHOTS,'total-goal-bonus-'+size.width+'.png')});
   }
   await page.evaluate(()=>{setup(3);attach();fitBoard();});
   if(process.env.TEST_SCREENSHOTS)await page.screenshot({path:path.join(process.env.TEST_SCREENSHOTS,'butterfly-target.png')});
