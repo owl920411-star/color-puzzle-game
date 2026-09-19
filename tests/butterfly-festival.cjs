@@ -106,7 +106,7 @@ function check(name,value){assert.equal(value,true,name);passed.push(name);}
    ])&&ST.length>=6&&ST[3].type==='festival';
   }));
   check('festival opens through developer button with clear total goal',await page.evaluate(()=>{
-   $('devFestival').click();return si===3&&!run&&!done()&&$('sStage').textContent.includes('SPECIAL')&&$('startTitle').textContent==='농장 대축제'&&$('sGoal').textContent.includes('25개')&&time===45;
+   $('devFestival').click();return si===3&&!run&&!done()&&$('sStage').textContent.includes('SPECIAL')&&$('startTitle').textContent==='퍼즐 축제'&&$('sGoal').textContent.includes('25개')&&time===45;
   }));
   check('mixed flowers count once each toward festival total',await page.evaluate(()=>{
    setup(3);['purple','orange','green'].forEach(pair);

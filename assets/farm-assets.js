@@ -1,11 +1,11 @@
 /* Farm Friends: use the supplied art sheets as atlases, without server-side
  * image manipulation or an external image service. Crop once before gameplay.
- * The resulting local data URLs also work in the garden photo exporter. */
+ * The resulting local data URLs are reused by the puzzle HUD and effects. */
 (async function loadFarmArt(){
   'use strict';
   const button=document.getElementById('startBtn');
   button.disabled=true;button.textContent='농장 친구들을 불러오고 있어요…';
-  const assets={garden:'assets/farm-day.webp',festival:'assets/farm-festival.webp',mascots:'assets/farm-mascots.webp'};
+  const assets={scene:'assets/farm-day.webp',festival:'assets/farm-festival.webp',mascots:'assets/farm-mascots.webp'};
   const atlases={
     farm:{url:'assets/farm-reference.png',size:[1536,1024],rects:{
       'bud-red':[331,47,96,95], 'bud-blue':[649,174,96,94],
@@ -46,7 +46,7 @@
   // Original logical asset keys deliberately survive the visual update.
   window.FLOWER_BLOOM_ASSETS=assets;
   window.FARM_FRIENDS_ASSETS=assets;
-  const script=document.createElement('script');script.src='game.js?v=farm-friends-1';
+  const script=document.createElement('script');script.src='game.js?v=puzzle-focus-2';
   script.onerror=()=>{
     button.disabled=false;button.textContent='게임 다시 불러오기';button.onclick=()=>location.reload();
     const warning=document.getElementById('assetWarning');warning.textContent='게임을 불러오지 못했어요. 다시 시도해 주세요.';warning.classList.remove('hide');
