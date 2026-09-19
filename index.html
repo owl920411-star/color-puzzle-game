@@ -232,6 +232,52 @@
 @media(prefers-reduced-motion:reduce){.garden-plot img,.garden-butterflies i,.garden-butterflies i:before,.garden-butterflies i:after{animation:none!important}}
 </style>
 
+<style id="garden-world-v2">
+.garden-plot.locked{aspect-ratio:auto;min-height:28px;height:28px;align-self:end}
+.garden-plot img{animation:none}.garden-plot.just-planted img{animation:gardenPlant .5s ease-out both}
+.garden-view[data-theme="moonlight"] .garden-heading span,.garden-view[data-theme="moonlight"] .garden-seed[aria-pressed="true"] span{color:#cbd8bd}
+.garden-view{--garden-ink:#324c3a;--garden-muted:#6b7966;--garden-paper:#f6f4e9;--garden-card:#fffdf6;color:var(--garden-ink);background:var(--garden-paper)}
+.garden-tabs{display:grid;grid-template-columns:repeat(4,1fr);position:sticky;top:84px;z-index:4;background:var(--garden-paper);padding:4px 14px 8px;gap:4px;border-bottom:1px solid #7e946321}
+.garden-tabs button{min-height:44px;border:0;border-radius:12px;color:var(--garden-muted);background:transparent;font-size:12px;font-weight:650;padding:9px 3px}
+.garden-tabs [aria-selected="true"]{color:#fff8e7;background:#3b6247}
+.garden-top{z-index:5;min-height:84px;background:var(--garden-paper)}
+.garden-content{padding-top:12px}.garden-heading{margin-top:18px}.garden-summary{margin-bottom:10px}
+.garden-rooms,.garden-themes,.garden-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.garden-rooms button,.garden-themes button,.garden-choice-grid button,.garden-small-button{min-height:44px;border:1px solid #cdd6bf;background:var(--garden-card);color:var(--garden-ink);padding:8px 5px;border-radius:12px;font-size:11px}
+.garden-room-hint{font-size:10px;color:var(--garden-muted);margin:7px 0 11px;line-height:1.6}
+.garden-themes button{display:flex;align-items:center;flex-direction:column;gap:3px}.garden-themes i{width:18px;height:18px;border-radius:50%;border:1px solid #7c906340}.garden-themes small{font-size:9px}
+.garden-subtle{font-size:11px;line-height:1.8;color:var(--garden-muted);margin:9px 0 12px}
+.garden-details{border:1px solid #cdd6bf;border-radius:14px;margin:14px 0;padding:0 12px;background:var(--garden-card)}
+.garden-details summary{min-height:48px;cursor:pointer;font-size:12px;font-weight:650;padding:15px 0;touch-action:manipulation;list-style-position:inside}.garden-details summary span{float:right;font-size:9px;font-weight:400;line-height:20px;color:var(--garden-muted)}
+.garden-details[open]{padding-bottom:12px}.garden-details .garden-seeds{margin-top:4px}.garden-details .garden-seed{min-width:0}.garden-details .garden-seed span{font-size:9px;line-height:1.5}
+.rare-flower{position:relative}.rare-flower img{filter:drop-shadow(0 0 6px #ffe48e)!important}.rare-mark{font-size:16px;line-height:1;position:absolute;right:7px;top:8px;color:#fff0a0;text-shadow:0 1px 3px #786248;font-style:normal;pointer-events:none}.garden-plot .rare-mark{font-size:19px;right:0;top:-2px}
+.garden-plot-label{position:absolute;left:0;right:0;bottom:0;z-index:2;font-size:7px;line-height:1.4;color:#304833;background:#fffde4cc;border-radius:8px;white-space:nowrap}
+.garden-trophies{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.garden-trophies button,.garden-visitors button{min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid #ccd6bf;border-radius:13px;background:var(--garden-card);color:var(--garden-ink);padding:8px;font-size:11px}.garden-trophies small,.garden-visitors small{font-size:10px;line-height:1.5;font-weight:400}
+.garden-view[data-tab="album"] .garden-scene,.garden-view[data-tab="progress"] .garden-scene,.garden-view[data-tab="album"] .garden-rooms,.garden-view[data-tab="progress"] .garden-rooms,.garden-view[data-tab="album"] .garden-room-hint,.garden-view[data-tab="progress"] .garden-room-hint{display:none}
+.garden-record{display:flex;align-items:center;gap:12px;padding:14px 12px;background:var(--garden-card);border:1px solid #d5dcc7;border-radius:17px;margin:9px 0;min-width:0}.garden-record>img,.garden-record>.rare-flower{width:62px;height:62px;flex-shrink:0}.garden-record .rare-flower img{width:100%;height:100%;object-fit:contain}.garden-record>div:last-child{min-width:0;flex:1}.garden-record h4{font-size:13px;margin:0 0 5px}.garden-record h4 span{font-size:9px;border:1px solid #9bac8970;padding:2px 5px;border-radius:8px;font-weight:400;margin-left:4px}.garden-record p{font-size:11px;line-height:1.8;margin:0}.garden-record small{font-size:10px;color:var(--garden-muted)}.garden-record.undiscovered>div:first-child{filter:grayscale(1);opacity:.55}
+.garden-panel progress{appearance:none;display:block;width:100%;height:5px;border:0;border-radius:5px;overflow:hidden;margin-top:8px;background:#dee4d0}.garden-panel progress::-webkit-progress-bar{background:#dee4d0}.garden-panel progress::-webkit-progress-value{background:#85a66c;border-radius:5px}.garden-panel progress::-moz-progress-bar{background:#85a66c}
+.garden-visitors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.visitor-swatch{font-size:32px;line-height:1.2;color:var(--wing);font-style:normal;text-shadow:0 1px #52673d}
+.garden-card{border:1px solid #d3dcc3;border-radius:20px;padding:17px;margin:14px 0;background:var(--garden-card)}.garden-card h3{font-size:16px;margin:8px 0}.garden-card p{font-size:12px;line-height:1.8;margin:8px 0}.garden-card small{font-size:10px;color:var(--garden-muted);line-height:1.8}.garden-tree-card{display:flex;align-items:center;gap:12px}.garden-tree-card>div:first-child{width:80px;flex-shrink:0}.garden-tree-card svg{width:80px;height:90px;stroke:none}.garden-tree-card>div:last-child{flex:1;min-width:0}.garden-tree-card p{font-size:10px}.garden-request-card strong{font-size:11px;display:block;margin:13px 0}.garden-request-card .garden-small-button{width:100%;margin:10px 0}.garden-request-card small{display:block}
+.garden-pattern-preview{display:grid;grid-template-columns:repeat(4,16px);gap:4px;justify-content:center;margin:12px auto}.pattern-dot{width:16px;height:16px;border-radius:5px;background:#c7d2b5;border:1px solid #9eae88}.pattern-dot[data-color="purple"]{background:#bb91d0}.pattern-dot[data-color="orange"]{background:#e9b06a}.pattern-dot[data-color="green"]{background:#a7c67e}.pattern-dot[data-color="empty"]{background:transparent;border-style:dashed}
+.garden-plot[data-ghost]:before{content:'';position:absolute;inset:2px;border:3px dotted #fff1c6;z-index:3;pointer-events:none;border-radius:15px}.garden-plot[data-ghost="purple"]:before{border-color:#c697e8}.garden-plot[data-ghost="orange"]:before{border-color:#f6b674}.garden-plot[data-ghost="green"]:before{border-color:#d1ed9c}.garden-plot[data-ghost="empty"]:before{border-color:#ffefd180}
+.garden-scene-tree{position:absolute;right:3px;top:45px;width:48px;height:54px;z-index:1;pointer-events:none}.garden-scene-tree svg{width:100%;height:100%;stroke:none}
+.garden-butterflies i,.garden-butterflies i:nth-child(2){color:var(--visitor-color,#b184d4)}.garden-butterflies[data-visitor="amber"] i{animation-duration:9s}.garden-butterflies[data-visitor="jade"] i{animation-duration:5s}.garden-butterflies[data-visitor="rainbow"] i:nth-child(2){color:#a3c9df;animation-direction:reverse}
+.garden-butterflies[data-visitor="amber"] i{animation-name:gardenAmberFlight}.garden-butterflies[data-visitor="jade"] i{animation-name:gardenJadeFlight}
+@keyframes gardenAmberFlight{0%,100%{transform:translate(0,0) rotate(-7deg)}35%{transform:translate(30px,8px) rotate(18deg)}70%{transform:translate(12px,-20px) rotate(-16deg)}}
+@keyframes gardenJadeFlight{0%,100%{transform:translate(0,0) rotate(3deg)}25%{transform:translate(-16px,16px) rotate(-12deg)}60%{transform:translate(19px,20px) rotate(8deg)}}
+.garden-festival-flag,.garden-festival-crown,.garden-pattern-medal,.garden-scene-fence{display:none;position:absolute;pointer-events:none;z-index:2}.has-festival .garden-festival-flag{display:block;top:17px;left:calc(50% - 26px);width:52px;background:#f6d28e;color:#846335;text-align:center;padding:5px 0 9px;font-size:7px;letter-spacing:1px;clip-path:polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)}.has-crown .garden-festival-crown{display:block;top:46px;left:calc(50% - 13px);font-size:22px;color:#ffeab3;text-shadow:0 1px #877043}.has-pattern .garden-pattern-medal{display:block;left:18px;top:68px;font-size:20px;color:#d58da5}.has-fence .garden-scene-fence{display:block;bottom:0;left:0;right:0;height:15px;background:repeating-linear-gradient(90deg,#eddfb0 0 3px,transparent 3px 13px);border-top:3px solid #eddfb0}
+.garden-view[data-room="greenhouse"] .garden-scene{background:repeating-linear-gradient(90deg,transparent 0 31%,#fffde651 31% 32%),linear-gradient(#cee7dd,#b0cd9c);border-top:6px solid #89a789;border-radius:75px 75px 24px 24px}.garden-view[data-room="greenhouse"] .garden-arch{width:110px;left:calc(50% - 55px);border-color:#f5f7dfaa}
+.garden-view[data-room="pond"] .garden-scene{background:radial-gradient(ellipse at 50% 65%,#85b9b3 0 50%,transparent 51%),linear-gradient(#cde2d9,#a6c692)}.garden-view[data-room="pond"] .garden-scene:after{background:#d6e6b9;width:17%;left:45%}.garden-view:not([data-room="home"]) .garden-plots{grid-template-columns:repeat(3,minmax(0,1fr))}.garden-view[data-room="pond"] .garden-plot{border-radius:50%;background:radial-gradient(ellipse,#789565 15%,#b5cc8f 70%);box-shadow:0 3px 0 #557e744a}
+.garden-view[data-theme="sunset"] .garden-scene{background:linear-gradient(#edc4b6 0 39%,#b4b789 40%,#a1ad78)}.garden-view[data-theme="sunset"] .garden-orb{background:#ffddb0;box-shadow:0 0 0 13px #ffd3a832,0 0 25px #ffc18d73}.garden-view[data-theme="sunset"] .garden-scene:before{background:#a5a47f;box-shadow:0 35px #bcb486}
+.garden-view[data-theme="moonlight"]{--garden-ink:#e4edd9;--garden-muted:#bdcbb4;--garden-paper:#28344a;--garden-card:#36435a;color-scheme:dark}.garden-view[data-theme="moonlight"] .garden-top h2,.garden-view[data-theme="moonlight"] .garden-summary strong,.garden-view[data-theme="moonlight"] .garden-summary p,.garden-view[data-theme="moonlight"] .garden-kicker{color:#dce7ce}.garden-view[data-theme="moonlight"] .garden-scene{background:linear-gradient(#394667 0 39%,#67817e 40%,#698b80)}.garden-view[data-theme="moonlight"] .garden-scene:before{background:#5b7475;box-shadow:0 35px #769087}.garden-view[data-theme="moonlight"] .garden-scene-title{color:#e6e9cc}.garden-view[data-theme="moonlight"] .garden-plot img{filter:drop-shadow(0 0 8px #e9f3b944)}.garden-view[data-theme="moonlight"] .garden-orb{background:#edf2d3;box-shadow:0 0 0 13px #e4eac312,0 0 25px #e5edcf63}.garden-view[data-theme="moonlight"] .garden-plot{background:radial-gradient(ellipse at 50% 66%,#728361aa 0 37%,#a0b98d 40% 60%,#b6cba399 65%)}
+.garden-view[data-theme="moonlight"] [aria-pressed="true"]{background:#546249;color:#f4f5da;border-color:#b9ce9d}.garden-view[data-theme="moonlight"] .garden-message{color:#d9e4c8}
+.garden-view[data-room="pond"][data-theme="sunset"] .garden-scene{background:radial-gradient(ellipse at 50% 65%,#a3b4a6 0 50%,transparent 51%),linear-gradient(#edc4b6,#b5b48b)}.garden-view[data-room="pond"][data-theme="moonlight"] .garden-scene{background:radial-gradient(ellipse at 50% 65%,#5e8591 0 50%,transparent 51%),linear-gradient(#394667,#769087)}
+.garden-view[data-room="greenhouse"][data-theme="sunset"] .garden-scene{background:repeating-linear-gradient(90deg,transparent 0 31%,#fffde651 31% 32%),linear-gradient(#edc4b6,#b5b48b)}.garden-view[data-room="greenhouse"][data-theme="moonlight"] .garden-scene{background:repeating-linear-gradient(90deg,transparent 0 31%,#fffde631 31% 32%),linear-gradient(#394667,#769087)}
+.garden-photo-options{margin-top:20px}.garden-photo-options h3{font-size:16px}.garden-photo-options>label{display:block;margin:12px 0 6px;font-size:12px}.garden-photo-options input[type="text"],.garden-photo-options select{width:100%;min-height:46px;border:1px solid #c5d0b8;background:var(--garden-card);color:var(--garden-ink);border-radius:12px;padding:11px;font:14px system-ui}.garden-photo-checks{display:flex;flex-direction:column;margin:12px 0}.garden-photo-checks label{display:flex;align-items:center;min-height:44px;font-size:12px;gap:7px}.garden-photo-checks input{width:18px;height:18px;accent-color:#628b57}.garden-photo-preview{display:block;width:100%;height:auto;border-radius:15px;margin:12px 0}.garden-download{display:block;text-decoration:none;text-align:center;font:650 13px/1.8 system-ui}.garden-view[data-tab="photo"] .garden-plot{pointer-events:none}.garden-view[data-tab="photo"] .garden-plot:before,.garden-view[data-tab="photo"] .garden-plot:after{display:none}.garden-view.photo-still .garden-butterflies i,.garden-view.photo-still .garden-butterflies i:before,.garden-view.photo-still .garden-butterflies i:after,.garden-view.photo-still .garden-plot img{animation:none!important}
+.garden-news{font-size:11px;line-height:1.8;color:var(--garden-muted);padding:12px;border-radius:12px;background:#89a66c12;margin:18px 0 0}.garden-save{color:var(--garden-muted)}
+@media(max-width:355px){.garden-tabs{padding-left:10px;padding-right:10px}.garden-details{padding-left:9px;padding-right:9px}.garden-details summary span{font-size:8px}.garden-record{padding:12px 9px;gap:8px}.garden-record>img,.garden-record>.rare-flower{width:50px;height:50px}.garden-seed b{font-size:10px}.garden-scene-title{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.garden-view *{scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -272,25 +318,45 @@
  <div class="overlay hide" id="end" role="dialog" aria-modal="true" aria-labelledby="endTitle"><div class="modal-card"><img class="modal-flower" src="data:image/webp;base64,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" alt=""><h2 id="endTitle"></h2><p id="result"></p><button class="btn" id="next">다음 스테이지</button><button class="btn secondary" id="retry">다시 피우기</button></div></div>
  <div class="overlay hide" id="menu" role="dialog" aria-modal="true" aria-labelledby="menuTitle"><div class="modal-card"><span class="eyebrow">FLOWER BLOOM</span><h2 id="menuTitle">잠시 쉬어가세요</h2><div id="helpText" class="help-text hide"><p>인접한 <b>서로 다른 색 봉오리</b> 쪽으로 스와이프하면 꽃이 피어납니다.</p><p>같은 종류의 꽃을 연속으로 피우면 콤보!<br><b>2콤보부터 매회 +0.2초</b>를 얻습니다.<br>같은 색 봉오리끼리 밀면 콤보가 끊깁니다.</p><p>금빛 박자 표시가 반짝일 때 합성하면 PERFECT! 목표를 모두 달성하면 다음 스테이지로 이동합니다.</p></div><button class="btn" id="resumeBtn">계속하기</button><button class="btn secondary" id="restartBtn">현재 스테이지 다시 시작</button><button class="text-btn" id="devOpen">개발자 모드</button></div></div>
  <div class="devPanel hide" id="devPanel"><div class="devHead"><b>개발자 모드</b><button class="devBtn" id="devClose">닫기</button></div><div class="devRow"><button class="devBtn" id="devPrev">◀ 이전 ST</button><button class="devBtn" id="devNext">다음 ST ▶</button><button class="devBtn" id="devComplete">목표 직전</button></div><div class="devRow"><button class="devBtn" id="devTimePlus">시간 +10초</button><button class="devBtn" id="devTimeMinus">시간 -10초</button><button class="devBtn" id="devPause">타이머 정지</button></div><div class="devRow"><button class="devBtn" id="devGoalPlus">목표 +1</button><button class="devBtn" id="devGoalMinus">목표 -1</button><button class="devBtn" id="devReset">현재 ST 리셋</button></div><div class="devInfo" id="devInfo"></div></div>
- <section class="garden-view hide" id="gardenView" role="dialog" aria-modal="true" aria-labelledby="gardenTitle">
-  <header class="garden-top"><div><div class="garden-kicker">FLOWER BLOOM · MY GARDEN</div><h2 id="gardenTitle">나의 작은 정원</h2></div><button class="garden-close" id="gardenClose" aria-label="정원 닫기">×</button></header>
+ <section class="garden-view hide" id="gardenView" role="dialog" aria-modal="true" aria-labelledby="gardenTitle" data-tab="decorate" data-theme="spring" data-room="home">
+  <header class="garden-top"><div><div class="garden-kicker">FLOWER BLOOM · GARDEN WORLD</div><h2 id="gardenTitle">나의 작은 정원</h2></div><button class="garden-close" id="gardenClose" aria-label="정원 닫기">×</button></header>
+  <div class="garden-tabs" id="gardenTabs" role="tablist" aria-label="정원 메뉴"><button id="gardenTab-decorate" data-garden-tab="decorate" role="tab" aria-controls="gardenPanel-decorate" aria-selected="true">꾸미기</button><button id="gardenTab-album" data-garden-tab="album" role="tab" aria-controls="gardenPanel-album" aria-selected="false">꽃과 나비</button><button id="gardenTab-progress" data-garden-tab="progress" role="tab" aria-controls="gardenPanel-progress" aria-selected="false">성장·부탁</button><button id="gardenTab-photo" data-garden-tab="photo" role="tab" aria-controls="gardenPanel-photo" aria-selected="false">사진</button></div>
   <div class="garden-content">
    <div class="garden-summary"><div><strong id="gardenLevel">첫 번째 화단</strong><p id="gardenStats"></p></div><div class="garden-sun" aria-label="보유 햇살">☀ <span id="gardenSun">0</span></div></div>
+   <div class="garden-rooms" id="gardenRooms" aria-label="정원 공간 선택"></div><p class="garden-room-hint" id="gardenRoomHint"></p>
    <div class="garden-scene"><span class="garden-scene-title" aria-hidden="true">bloom with joy</span><i class="garden-orb" aria-hidden="true"></i><i class="garden-arch" aria-hidden="true"></i>
+    <div id="gardenSceneTree" class="garden-scene-tree" role="img" aria-label="응원 나무"></div>
     <div class="garden-butterflies hide" id="gardenButterflies" aria-hidden="true"><i></i><i></i></div>
     <div class="garden-plots" id="gardenPlots" aria-label="정원 화단"></div>
     <p class="garden-scene-note" id="gardenSceneNote">퍼즐에서 피운 꽃이 이곳에 머물러요</p>
-    <span id="gardenBench" class="garden-decor bench hide" role="img" aria-label="정원 벤치">🪑</span><span id="gardenFountain" class="garden-decor fountain hide" role="img" aria-label="정원 분수">⛲</span><span id="gardenLantern" class="garden-decor lantern hide" role="img" aria-label="정원 등불">🏮</span>
+    <span id="gardenBench" class="garden-decor bench hide" role="img" aria-label="정원 의자"></span><span id="gardenFountain" class="garden-decor fountain hide" role="img" aria-label="정원 분수"></span><span id="gardenLantern" class="garden-decor lantern hide" role="img" aria-label="정원 등불"></span>
+    <span class="garden-festival-flag" aria-hidden="true">BLOOM</span><span class="garden-festival-crown" aria-hidden="true">♛</span><span class="garden-pattern-medal" aria-hidden="true">♡</span><i class="garden-scene-fence" aria-hidden="true"></i>
    </div>
-   <p class="garden-message" id="gardenMessage" role="status" aria-live="polite">꽃을 고르고 빈 화단을 눌러 심어 보세요.</p>
-   <div class="garden-heading"><h3>꽃 보관함</h3><span>퍼즐에서 개화할 때마다 +1</span></div>
-   <div class="garden-seeds" id="gardenSeeds"></div>
-   <div class="garden-tools"><button id="gardenMove" aria-pressed="false">↔ 꽃 옮기기</button><button id="gardenRemove" aria-pressed="false">↩ 보관함으로</button></div>
-   <button class="garden-expand" id="gardenExpand"></button>
-   <div class="garden-heading"><h3>정원의 작은 풍경</h3><span>클리어하면 햇살 +10</span></div>
-   <div class="garden-shop" id="gardenShop"></div>
-   <p class="garden-save" id="gardenSave"></p>
-   <button class="garden-expand" id="gardenPlay">퍼즐로 돌아가기 →</button>
+   <div id="gardenPanel-decorate" class="garden-panel" role="tabpanel" aria-labelledby="gardenTab-decorate">
+    <p class="garden-message" id="gardenMessage" role="status" aria-live="polite">꽃을 고르고 빈 화단을 눌러 심어 보세요.</p>
+    <div class="garden-heading"><h3>꽃 보관함</h3><span>퍼즐에서 개화할 때마다 +1</span></div><div class="garden-seeds" id="gardenSeeds"></div>
+    <div class="garden-tools"><button id="gardenMove" aria-pressed="false">↔ 꽃 옮기기</button><button id="gardenRemove" aria-pressed="false">↩ 보관함으로</button></div>
+    <button class="garden-expand" id="gardenExpand"></button>
+    <details class="garden-details"><summary>특별한 꽃 <span>콤보·축제·EXPERT의 기념</span></summary><div class="garden-seeds" id="gardenRareSeeds"></div></details>
+    <div class="garden-heading"><h3>오늘의 빛</h3><span>테마를 바꿔도 배치는 그대로</span></div><div class="garden-themes" id="gardenThemes"></div>
+    <details class="garden-details"><summary>꽃으로 그리는 도안 <span>완성하면 사진 프레임</span></summary><div class="garden-choice-grid" id="gardenPatternChoices"></div><div class="garden-pattern-preview" id="gardenPatternPreview" aria-label="배치 도안"></div><p class="garden-subtle" id="gardenPatternHint"></p></details>
+    <div class="garden-heading"><h3>정원의 작은 풍경</h3><span>클리어하면 햇살 +10</span></div><div class="garden-shop" id="gardenShop"></div>
+    <details class="garden-details"><summary>기념 장식 <span>도감·부탁·축제·도안 보상</span></summary><div class="garden-trophies" id="gardenTrophies"></div></details>
+   </div>
+   <section id="gardenPanel-album" class="garden-panel hide" role="tabpanel" aria-labelledby="gardenTab-album">
+    <div class="garden-heading"><h3>피워 온 꽃의 기록</h3><span>10 · 30 · 75송이</span></div><p class="garden-subtle">심거나 회수해도 개화 기록은 줄지 않아요. 한 종류 10송이면 꽃 이름표를 드려요.</p><div id="gardenAlbum"></div>
+    <div class="garden-heading"><h3>도전을 기억하는 꽃</h3><span>조건마다 한 송이</span></div><div id="gardenSpecialAlbum"></div>
+    <div class="garden-heading"><h3>나비 방문 기록</h3><span id="gardenVisitorCount"></span></div><p class="garden-subtle">방문 조건은 모든 정원에 심은 꽃을 합산합니다. 만난 나비는 언제든 다시 초대할 수 있어요.</p><div class="garden-visitors" id="gardenVisitors"></div>
+   </section>
+   <section id="gardenPanel-progress" class="garden-panel hide" role="tabpanel" aria-labelledby="gardenTab-progress">
+    <article class="garden-card garden-tree-card"><div id="gardenTreeArt" aria-hidden="true"></div><div><span class="garden-kicker">GROW WITH YOU</span><h3 id="gardenTreeName"></h3><p id="gardenTreeProgress"></p><progress id="gardenTreeMeter" max="10" value="0" aria-label="응원 나무 성장"></progress></div></article><p class="garden-subtle">실패해도 피운 꽃은 나무의 성장이 됩니다. 접속하지 않아도 시들지 않아요.</p><div class="garden-choice-grid" id="gardenTreeStyles"></div>
+    <article class="garden-card garden-request-card"><span class="garden-kicker">A LITTLE WISH</span><h3 id="gardenRequestName"></h3><p id="gardenRequestHint"></p><strong id="gardenRequestProgress"></strong><button class="garden-expand" id="gardenRequestClaim"></button><button class="garden-small-button" id="gardenRequestSkip">다른 부탁 받기</button><small id="gardenRequestCount"></small></article>
+    <article class="garden-card"><span class="garden-kicker">FESTIVAL MEMORIES</span><h3>만개 축제의 추억</h3><p id="gardenFestivalRecord"></p><p id="gardenFestivalNext"></p><small>스테이지 4의 만개 축제에서 얻은 기록입니다.</small></article>
+   </section>
+   <section id="gardenPanel-photo" class="garden-panel hide" role="tabpanel" aria-labelledby="gardenTab-photo">
+    <div class="garden-photo-options"><h3>오늘의 정원을 남겨요</h3><p class="garden-subtle">사진에는 화단과 풍경만 담깁니다. 이름과 기록 표시를 선택해 주세요.</p><label for="gardenPhotoName">정원 이름</label><input id="gardenPhotoName" type="text" maxlength="20" value="나의 작은 정원" autocomplete="off"><div class="garden-photo-checks"><label><input id="gardenPhotoStats" type="checkbox" checked> 개화·클리어 기록 표시</label><label><input id="gardenPhotoStill" type="checkbox" checked> 화면 움직임 멈추기</label></div><label for="gardenPhotoFrames">사진 테두리</label><select id="gardenPhotoFrames"><option value="plain">기본 프레임</option></select><p class="garden-subtle">배치 도안을 완성하면 테두리가 추가됩니다.</p><button class="garden-expand" id="gardenPhotoMake">사진 만들기 · PNG</button><p id="gardenPhotoStatus" class="garden-subtle" role="status">사진은 외부에 자동 공유하지 않습니다.</p><img id="gardenPhotoPreview" class="garden-photo-preview hide" alt="저장할 정원 사진 미리보기"><a id="gardenPhotoDownload" class="garden-expand garden-download hide" download="flower-bloom-garden.png">사진 저장 ↓</a></div>
+   </section>
+   <p class="garden-news" id="gardenNews" role="status" aria-live="polite"></p><p class="garden-save" id="gardenSave"></p><button class="garden-expand" id="gardenPlay">퍼즐로 돌아가기 →</button>
   </div>
  </section>
 
@@ -388,169 +454,366 @@ const clock = seconds => {
  return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
 };
 
-// Personal garden: a separate, versioned save; puzzle rules remain independent.
+// Garden World v2. Pure save validation runs before any DOM or game mutation.
 const GARDEN_KEY='flower-bloom.garden.v1';
 const GARDEN_FLOWERS=['purple','orange','green'];
-const GARDEN_DECOR={bench:{name:'쉼터 의자',icon:'🪑',cost:15,element:'gardenBench'},fountain:{name:'작은 분수',icon:'⛲',cost:25,element:'gardenFountain'},lantern:{name:'꽃빛 등불',icon:'🏮',cost:35,element:'gardenLantern'}};
+const GARDEN_SPECIAL={
+ starlight:{base:'purple',name:'별빛 보라꽃',hint:'한 판에서 같은 꽃 8콤보',mark:'★'},
+ sunburst:{base:'orange',name:'축제의 태양꽃',hint:'만개 축제 첫 클리어',mark:'✦'},
+ jade:{base:'green',name:'비취 왕관꽃',hint:'EXPERT 스테이지 첫 클리어',mark:'♛'}
+};
+const GARDEN_THEMES={spring:{name:'봄 햇살',need:0,sky:'#d2e5d7',ground:'#abc58c',ink:'#36553e'},sunset:{name:'노을 정원',need:3,sky:'#f1c1ac',ground:'#b7b281',ink:'#704c4a'},moonlight:{name:'달빛 정원',need:6,sky:'#394667',ground:'#698583',ink:'#e7efda'}};
+const GARDEN_ROOMS={home:{name:'첫 정원',short:'정원'},greenhouse:{name:'꽃빛 온실',short:'온실'},pond:{name:'나비 연못',short:'연못'}};
+const GARDEN_VISITORS={violet:{name:'보랏빛 나비',hint:'보라 계열 꽃 3송이 심기',color:'#b184d4'},amber:{name:'노을 나비',hint:'축제 클리어 + 주황 계열 꽃 3송이',color:'#efb965'},jade:{name:'풀잎 나비',hint:'분수 전시 + 초록 계열 꽃 3송이',color:'#a7ce81'},rainbow:{name:'무지개 나비',hint:'누적 개화 10 + 세 가지 색 심기',color:'#e4a4b5'}};
+const GARDEN_TROPHIES={albumLabel:{name:'꽃 이름표',hint:'한 종류의 꽃 누적 10송이',mark:'✿'},requestFence:{name:'부탁의 울타리',hint:'정원의 부탁 첫 완료',mark:'▥'},festivalFlag:{name:'축제 깃발',hint:'축제 첫 클리어',mark:'⚑'},festivalCrown:{name:'축제 꽃관',hint:'축제 3회 클리어',mark:'♛'},patternFrame:{name:'도안 기념패',hint:'배치 도안 첫 완성',mark:'♡'}};
+const GARDEN_PATTERNS={
+ rainbow:{name:'작은 무지개',capacity:4,slots:['purple','orange','green','purple'],frame:'rainbow'},
+ checker:{name:'꽃 체크무늬',capacity:8,slots:['purple','orange','purple','orange','orange','purple','orange','purple'],frame:'checker'},
+ heart:{name:'하트 꽃밭',capacity:12,slots:['purple','purple','purple','purple','purple','orange','orange','purple',null,'purple','purple',null],frame:'heart'}
+};
+const GARDEN_REQUESTS=[
+ {name:'세 빛깔 꽃다발',hint:'새로 보라·주황·초록꽃을 각각 2송이 피워 주세요.',type:'colors',goal:2},
+ {name:'초록빛 산책',hint:'새로 초록꽃 6송이를 피워 주세요.',type:'green',goal:6},
+ {name:'이어지는 꽃향기',hint:'같은 꽃 5콤보를 달성해 주세요.',type:'combo',goal:5},
+ {name:'열두 송이의 인사',hint:'색과 관계없이 새로 꽃 12송이를 피워 주세요.',type:'total',goal:12}
+];
+const GARDEN_DECOR={bench:{name:'쉼터 의자',cost:15,element:'gardenBench'},fountain:{name:'작은 분수',cost:25,element:'gardenFountain'},lantern:{name:'꽃빛 등불',cost:35,element:'gardenLantern'}};
 function gardenDecorArt(id){
  const drawings={
   bench:'<path d="M10 34v8m28-8v8M7 25v10h34V25" stroke="#655c43"/><rect x="8" y="13" width="32" height="7" rx="2" fill="#b99061" stroke="#7b6248"/><path d="M12 20v9m24-9v9" stroke="#7b6248"/><rect x="6" y="28" width="36" height="6" rx="2" fill="#c5a06e" stroke="#7b6248"/>',
   fountain:'<ellipse cx="24" cy="37" rx="20" ry="7" fill="#8fbbb0" stroke="#618f83"/><path d="M8 36q16 9 32 0M24 30V12M24 14q-12-12-13 5M24 14q12-12 13 5" stroke="#caece3"/><path d="M21 25h6l3 12H18z" fill="#c5cba3" stroke="#829b80"/><path d="M12 23h24q-2 9-12 9t-12-9" fill="#d9dec1" stroke="#829b80"/><circle cx="24" cy="10" r="3" fill="#def7e7" stroke="none"/>',
   lantern:'<path d="M24 4v7M18 12h12M24 37v7" stroke="#846545"/><rect x="12" y="13" width="24" height="24" rx="9" fill="#f5d489" stroke="#aa8456"/><path d="M20 14q-4 11 0 22M28 14q4 11 0 22" stroke="#e6af69"/><path d="M18 38h12" stroke="#846545"/>'
  };
- return '<svg viewBox="0 0 48 48" aria-hidden="true">'+drawings[id]+'</svg>';
+ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+drawings[id]+'</svg>';
 }
 const gardenInt=(n,fallback=0)=>Number.isSafeInteger(n)&&n>=0?Math.min(n,1000000):fallback;
-const freshGarden=()=>({version:1,flowers:{purple:1,orange:1,green:1},earned:{purple:0,orange:0,green:0},sun:0,capacity:4,plots:Array(12).fill(null),decor:[],visibleDecor:[],cleared:[],nextStage:0});
-let gardenSaveError='',gardenReadOnly=false;
+const gardenHas=(object,key)=>typeof key==='string'&&Object.hasOwn(object,key);
+const gardenFlowerValid=id=>GARDEN_FLOWERS.includes(id)||gardenHas(GARDEN_SPECIAL,id);
+const gardenBase=id=>gardenHas(GARDEN_SPECIAL,id)?GARDEN_SPECIAL[id].base:id;
+const gardenFlowerName=id=>gardenHas(GARDEN_SPECIAL,id)?GARDEN_SPECIAL[id].name:F[id]?.n||'';
+const freshGarden=()=>({version:2,flowers:{purple:1,orange:1,green:1},earned:{purple:0,orange:0,green:0},sun:0,capacity:4,plots:Array(12).fill(null),decor:[],visibleDecor:[],cleared:[],nextStage:0,
+ records:{purple:{firstStage:null,bestCombo:0,festival:0},orange:{firstStage:null,bestCombo:0,festival:0},green:{firstStage:null,bestCombo:0,festival:0}},
+ rare:{starlight:0,sunburst:0,jade:0},specialUnlocked:[],theme:'spring',visitors:[],favoriteVisitor:null,
+ festival:{clears:0,maxBlooms:0,bestCombo:0},request:{index:0,baseline:{purple:0,orange:0,green:0},combo:0,completed:0},
+ trophies:[],shownTrophies:[],patterns:[],pattern:null,homeCompleted:false,activeRoom:'home',rooms:{greenhouse:Array(6).fill(null),pond:Array(6).fill(null)},
+ treeStyle:'mint',photo:{name:'나의 작은 정원',showStats:true,still:true,frame:'plain'}
+});
+let gardenSaveError='',gardenReadOnly=false,gardenMigrationBackup=null;
 function normalizeGarden(value){
- if(!value||typeof value!=='object'||value.version!==1)throw new Error('Unsupported garden save');
- const clean=freshGarden();
- for(const name of GARDEN_FLOWERS){clean.flowers[name]=gardenInt(value.flowers?.[name]);clean.earned[name]=gardenInt(value.earned?.[name]);}
+ if(!value||typeof value!=='object'||![1,2].includes(value.version))throw new Error('Unsupported garden save');
+ const clean=freshGarden(),old=value.version===1;
+ const list=(source,allowed)=>allowed.filter(id=>Array.isArray(source)&&source.includes(id));
+ for(const name of GARDEN_FLOWERS){
+  clean.flowers[name]=gardenInt(value.flowers?.[name]);clean.earned[name]=gardenInt(value.earned?.[name]);
+  const record=value.records?.[name]||{};
+  clean.records[name]={firstStage:Number.isInteger(record.firstStage)&&record.firstStage>0&&record.firstStage<=ST.length?record.firstStage:null,bestCombo:gardenInt(record.bestCombo),festival:Math.min(clean.earned[name],gardenInt(record.festival))};
+ }
  clean.sun=gardenInt(value.sun);clean.capacity=[4,8,12].includes(value.capacity)?value.capacity:4;
- clean.plots=Array.from({length:12},(_,i)=>i<clean.capacity&&GARDEN_FLOWERS.includes(value.plots?.[i])?value.plots[i]:null);
- clean.decor=Object.keys(GARDEN_DECOR).filter(name=>Array.isArray(value.decor)&&value.decor.includes(name));
- clean.visibleDecor=clean.decor.filter(name=>Array.isArray(value.visibleDecor)&&value.visibleDecor.includes(name));
- clean.cleared=Array.from({length:ST.length},(_,i)=>i).filter(i=>Array.isArray(value.cleared)&&value.cleared.includes(i));
+ clean.plots=Array.from({length:12},(_,i)=>i<clean.capacity&&gardenFlowerValid(value.plots?.[i])?value.plots[i]:null);
+ clean.decor=list(value.decor,Object.keys(GARDEN_DECOR));clean.visibleDecor=list(value.visibleDecor,clean.decor);
+ clean.cleared=list(value.cleared,Array.from({length:ST.length},(_,i)=>i));
  clean.nextStage=Number.isInteger(value.nextStage)&&value.nextStage>=0&&value.nextStage<ST.length?value.nextStage:0;
+ clean.specialUnlocked=list(value.specialUnlocked,Object.keys(GARDEN_SPECIAL));
+ for(const id of Object.keys(GARDEN_SPECIAL))clean.rare[id]=Math.min(1,gardenInt(value.rare?.[id]));
+ clean.festival={clears:gardenInt(value.festival?.clears),maxBlooms:gardenInt(value.festival?.maxBlooms),bestCombo:gardenInt(value.festival?.bestCombo)};
+ if(old&&clean.cleared.some(i=>ST[i].type==='festival'))clean.festival.clears=1;
+ clean.theme=gardenHas(GARDEN_THEMES,value.theme)&&clean.cleared.length>=GARDEN_THEMES[value.theme].need?value.theme:'spring';
+ clean.visitors=list(value.visitors,Object.keys(GARDEN_VISITORS));clean.favoriteVisitor=clean.visitors.includes(value.favoriteVisitor)?value.favoriteVisitor:null;
+ clean.request.index=gardenInt(value.request?.index);clean.request.completed=gardenInt(value.request?.completed);clean.request.combo=gardenInt(value.request?.combo);
+ for(const name of GARDEN_FLOWERS)clean.request.baseline[name]=old?clean.earned[name]:Math.min(clean.earned[name],gardenInt(value.request?.baseline?.[name]));
+ clean.patterns=list(value.patterns,Object.keys(GARDEN_PATTERNS));
+ clean.pattern=gardenHas(GARDEN_PATTERNS,value.pattern)&&clean.capacity>=GARDEN_PATTERNS[value.pattern].capacity?value.pattern:null;
+ clean.trophies=list(value.trophies,Object.keys(GARDEN_TROPHIES));clean.shownTrophies=list(value.shownTrophies,clean.trophies);
+ clean.homeCompleted=value.homeCompleted===true||(clean.capacity===12&&clean.plots.every(Boolean));
+ for(const id of ['greenhouse','pond'])clean.rooms[id]=Array.from({length:6},(_,i)=>clean.homeCompleted&&gardenFlowerValid(value.rooms?.[id]?.[i])?value.rooms[id][i]:null);
+ clean.activeRoom=clean.homeCompleted&&['greenhouse','pond'].includes(value.activeRoom)?value.activeRoom:'home';
+ clean.treeStyle=['mint','rose','gold'].includes(value.treeStyle)?value.treeStyle:'mint';
+ const name=typeof value.photo?.name==='string'?value.photo.name.replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,20):'';
+ clean.photo={name:name||'나의 작은 정원',showStats:value.photo?.showStats!==false,still:value.photo?.still!==false,frame:clean.patterns.includes(value.photo?.frame)?value.photo.frame:'plain'};
+ // A rare flower is unique: repair duplicates while preserving its discovered state.
+ for(const id of Object.keys(GARDEN_SPECIAL)){
+  let seen=false;
+  for(const plots of [clean.plots,...Object.values(clean.rooms)])for(let i=0;i<plots.length;i++)if(plots[i]===id){if(seen)plots[i]=null;else seen=true;}
+  if(seen)clean.rare[id]=0;
+  if((seen||clean.rare[id])&&!clean.specialUnlocked.includes(id))clean.specialUnlocked.push(id);
+  if(clean.specialUnlocked.includes(id)&&!seen)clean.rare[id]=1;
+ }
  return clean;
 }
 function loadGarden(){
+ gardenMigrationBackup=null;
  try{
-  const raw=localStorage.getItem(GARDEN_KEY);
-  if(!raw)return freshGarden();
-  try{return normalizeGarden(JSON.parse(raw));}
+  const raw=localStorage.getItem(GARDEN_KEY);if(!raw)return freshGarden();
+  try{const parsed=JSON.parse(raw),state=normalizeGarden(parsed);if(parsed.version===1)gardenMigrationBackup=raw;return state;}
   catch{gardenReadOnly=true;gardenSaveError='저장된 정원을 읽지 못했습니다. 기존 기록을 보호하며 이번 정원은 임시로 유지합니다.';return freshGarden();}
  }catch{gardenSaveError='자동 저장을 사용할 수 없습니다. 이 창을 닫으면 정원 변경사항이 사라질 수 있어요.';return freshGarden();}
 }
 let garden=loadGarden(),gardenTool='purple',gardenMoveFrom=null,gardenOpen=false,gardenOwnPause=false,gardenMenuWasVisible=false,gardenFocus=null;
+let gardenTab='decorate',gardenPhotoURL=null,gardenPhotoBusy=false,gardenPhotoEpoch=0;
+let gardenRenderedRoom=null,gardenRenderedPlots=[];
 const gardenInert=new Map();
-let gardenLastReward='',gardenRewardGeneration=-1;
+let gardenLastReward='',gardenRewardGeneration=-1,gardenAnnouncements=[];
+const gardenEarned=()=>GARDEN_FLOWERS.reduce((sum,id)=>sum+garden.earned[id],0);
+const gardenPlots=()=>garden.activeRoom==='home'?garden.plots:garden.rooms[garden.activeRoom];
+const gardenCapacity=()=>garden.activeRoom==='home'?garden.capacity:6;
+const gardenAllPlots=()=>garden.homeCompleted?[...garden.plots,...garden.rooms.greenhouse,...garden.rooms.pond]:garden.plots;
+const gardenStock=id=>gardenHas(GARDEN_SPECIAL,id)?garden.rare[id]:garden.flowers[id];
+function gardenChangeStock(id,delta){const stock=gardenHas(GARDEN_SPECIAL,id)?garden.rare:garden.flowers;stock[id]=gardenInt(stock[id]+delta);}
 function saveGarden(){
  if(gardenReadOnly)return false;
- try{localStorage.setItem(GARDEN_KEY,JSON.stringify(garden));gardenSaveError='';return true;}
- catch{gardenSaveError='자동 저장에 실패했습니다. 이 창을 닫으면 최근 변경사항이 사라질 수 있어요.';return false;}
+ try{
+  if(gardenMigrationBackup!==null){localStorage.setItem(GARDEN_KEY+'.backup-v1',gardenMigrationBackup);gardenMigrationBackup=null;}
+  localStorage.setItem(GARDEN_KEY,JSON.stringify(garden));gardenSaveError='';return true;
+ }catch{gardenSaveError='자동 저장에 실패했습니다. 이 창을 닫으면 최근 변경사항이 사라질 수 있어요.';return false;}
 }
 function gardenEntryText(){
- const count=Object.values(garden.flowers).reduce((a,b)=>a+b,0);
- document.querySelectorAll('[data-open-garden]').forEach(button=>{
-  button.textContent='🌿 나의 정원 · 꽃 '+count+'송이';
- });
+ const count=Object.values(garden.flowers).reduce((a,b)=>a+b,0)+Object.values(garden.rare).reduce((a,b)=>a+b,0);
+ document.querySelectorAll('[data-open-garden]').forEach(button=>{button.textContent='🌿 나의 정원 · 꽃 '+count+'송이';});
+}
+function gardenAnnounce(text){gardenAnnouncements.push(text);if(gardenAnnouncements.length>5)gardenAnnouncements.shift();}
+function gardenAwardSpecial(id){if(garden.specialUnlocked.includes(id))return false;garden.specialUnlocked.push(id);garden.rare[id]=1;gardenAnnounce(GARDEN_SPECIAL[id].name+'을 얻었어요!');return true;}
+function gardenAwardTrophy(id){if(garden.trophies.includes(id))return false;garden.trophies.push(id);garden.shownTrophies.push(id);gardenAnnounce(GARDEN_TROPHIES[id].name+'을 받았어요.');return true;}
+function gardenPatternDone(id){const p=GARDEN_PATTERNS[id];return garden.capacity>=p.capacity&&p.slots.every((color,i)=>color===null?garden.plots[i]===null:gardenBase(garden.plots[i])===color);}
+function updateGardenMilestones(){
+ let changed=false;
+ if(Math.max(...GARDEN_FLOWERS.map(id=>garden.records[id].bestCombo))>=8)changed=gardenAwardSpecial('starlight')||changed;
+ if(garden.festival.clears>=1){changed=gardenAwardSpecial('sunburst')||changed;changed=gardenAwardTrophy('festivalFlag')||changed;}
+ if(garden.cleared.some(i=>ST[i].difficulty==='EXPERT'))changed=gardenAwardSpecial('jade')||changed;
+ if(garden.festival.clears>=3)changed=gardenAwardTrophy('festivalCrown')||changed;
+ if(GARDEN_FLOWERS.some(id=>garden.earned[id]>=10))changed=gardenAwardTrophy('albumLabel')||changed;
+ if(garden.request.completed)changed=gardenAwardTrophy('requestFence')||changed;
+ for(const id of Object.keys(GARDEN_PATTERNS))if(!garden.patterns.includes(id)&&gardenPatternDone(id)){garden.patterns.push(id);gardenAnnounce(GARDEN_PATTERNS[id].name+' 도안 완성! 사진 테두리가 열렸어요.');changed=true;}
+ if(garden.patterns.length)changed=gardenAwardTrophy('patternFrame')||changed;
+ if(!garden.homeCompleted&&garden.capacity===12&&garden.plots.every(Boolean)){garden.homeCompleted=true;gardenAnnounce('첫 정원 완성! 온실과 연못이 열렸어요.');changed=true;}
+ const counts={purple:0,orange:0,green:0};gardenAllPlots().filter(Boolean).forEach(id=>counts[gardenBase(id)]++);
+ const eligible={violet:counts.purple>=3,amber:counts.orange>=3&&garden.festival.clears>=1,jade:counts.green>=3&&garden.visibleDecor.includes('fountain'),rainbow:gardenEarned()>=10&&GARDEN_FLOWERS.every(id=>counts[id]>0)};
+ for(const [id,yes] of Object.entries(eligible))if(yes&&!garden.visitors.includes(id)){garden.visitors.push(id);if(!garden.favoriteVisitor)garden.favoriteVisitor=id;gardenAnnounce(GARDEN_VISITORS[id].name+'가 처음 찾아왔어요!');changed=true;}
+ return changed;
 }
 function collectGardenFlower(name){
  if(!GARDEN_FLOWERS.includes(name))return;
- garden.flowers[name]=gardenInt(garden.flowers[name]+1);
- garden.earned[name]=gardenInt(garden.earned[name]+1);
- saveGarden();gardenEntryText();
+ garden.flowers[name]=gardenInt(garden.flowers[name]+1);garden.earned[name]=gardenInt(garden.earned[name]+1);
+ const record=garden.records[name];if(record.firstStage===null)record.firstStage=si+1;record.bestCombo=Math.max(record.bestCombo,combo);
+ if(T.type==='festival')record.festival=gardenInt(record.festival+1);
+ garden.request.combo=Math.max(garden.request.combo,combo);
+ updateGardenMilestones();saveGarden();gardenEntryText();
 }
 function rewardGardenClear(){
- if(gardenRewardGeneration===generation)return;
- gardenRewardGeneration=generation;
+ if(gardenRewardGeneration===generation)return;gardenRewardGeneration=generation;
  const first=!garden.cleared.includes(si),reward=first?20:10;
  if(first)garden.cleared.push(si);
  garden.sun=gardenInt(garden.sun+reward);garden.nextStage=(si+1)%ST.length;
+ if(T.type==='festival'){garden.festival.clears=gardenInt(garden.festival.clears+1);garden.festival.maxBlooms=Math.max(garden.festival.maxBlooms,total);garden.festival.bestCombo=Math.max(garden.festival.bestCombo,maxCombo);}
+ updateGardenMilestones();
  gardenLastReward='☀ 햇살 +'+reward+(first?' · 첫 클리어 보너스 포함':'')+' · 정원에 모았어요';
- saveGarden();gardenEntryText();
- $('gardenReward').textContent=gardenLastReward;
+ saveGarden();gardenEntryText();$('gardenReward').textContent=gardenLastReward;
 }
 function gardenMessage(text){$('gardenMessage').textContent=text;}
+function gardenSprite(id){return sprite('flower',gardenBase(id))+(gardenHas(GARDEN_SPECIAL,id)?'<em class="rare-mark" aria-hidden="true">'+GARDEN_SPECIAL[id].mark+'</em>':'');}
+function gardenRequestState(){
+ const request=GARDEN_REQUESTS[garden.request.index%GARDEN_REQUESTS.length],delta=Object.fromEntries(GARDEN_FLOWERS.map(id=>[id,Math.max(0,garden.earned[id]-garden.request.baseline[id])]));
+ const value=request.type==='colors'?GARDEN_FLOWERS.reduce((sum,id)=>sum+Math.min(request.goal,delta[id]),0):request.type==='green'?delta.green:request.type==='combo'?garden.request.combo:Object.values(delta).reduce((a,b)=>a+b,0);
+ const goal=request.type==='colors'?request.goal*3:request.goal;
+ return {request,value:Math.min(value,goal),goal,done:value>=goal,delta};
+}
+function gardenTree(){const thresholds=[0,10,30,60,120,240],names=['작은 씨앗','새싹의 인사','푸른 잎사귀','그늘을 만드는 나무','새가 머무는 나무','꽃이 가득한 나무'],xp=gardenEarned();let level=0;for(let i=1;i<thresholds.length;i++)if(xp>=thresholds[i])level=i;return {xp,level,name:names[level],next:thresholds[level+1]??null};}
+function gardenTreeArt(){
+ const tree=gardenTree(),color={mint:'#81ac7c',rose:'#d69cad',gold:'#cfb96d'}[garden.treeStyle];
+ if(tree.level===0)return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 90" aria-hidden="true"><ellipse cx="40" cy="70" rx="5" ry="5" fill="#8b7955"/></svg>';
+ let shapes='<path d="M40 79V34M40 61L26 48M40 51L53 38" fill="none" stroke="#8a7652" stroke-width="5" stroke-linecap="round"/>';
+ if(tree.level<2)shapes+='<ellipse cx="30" cy="40" rx="13" ry="7" fill="'+color+'" transform="rotate(28 30 40)"/><ellipse cx="50" cy="34" rx="13" ry="7" fill="'+color+'" transform="rotate(-28 50 34)"/>';
+ else{shapes+='<circle cx="25" cy="39" r="18" fill="'+color+'"/><circle cx="53" cy="36" r="19" fill="'+color+'"/><circle cx="39" cy="23" r="22" fill="'+color+'"/>';if(tree.level>=4)shapes+='<path d="M43 57q12 8 23-1" stroke="#b89d70" stroke-width="6"/><ellipse cx="53" cy="52" rx="6" ry="4" fill="#ecd7a5"/>';if(tree.level===5)for(const [x,y] of [[23,32],[40,16],[53,32],[36,42]])shapes+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="#ffe7cf"/>';}
+ if(tree.level===2)shapes='<g transform="translate(8 15) scale(.8)">'+shapes+'</g>';
+ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 90" aria-hidden="true">'+shapes+'</svg>';
+}
 function renderGarden(){
- const planted=garden.plots.filter(Boolean).length;
+ const plots=gardenPlots(),capacity=gardenCapacity(),planted=plots.filter(Boolean).length,view=$('gardenView');
+ view.dataset.theme=garden.theme;view.dataset.room=garden.activeRoom;view.dataset.tab=gardenTab;
+ view.classList.toggle('photo-still',gardenTab==='photo'&&garden.photo.still);
+ $('gardenTitle').textContent=garden.activeRoom==='home'?'나의 작은 정원':GARDEN_ROOMS[garden.activeRoom].name;
  $('gardenSun').textContent=garden.sun.toLocaleString('ko-KR');
- $('gardenLevel').textContent=({4:'첫 번째 화단',8:'넓어지는 정원',12:'꽃이 가득한 정원'})[garden.capacity];
- $('gardenStats').textContent='심은 꽃 '+planted+' / '+garden.capacity+' · 클리어 '+garden.cleared.length+' / '+ST.length;
- $('gardenPlots').innerHTML=garden.plots.map((flower,i)=>{
-  const locked=i>=garden.capacity,label=locked?'확장하면 열리는 화단':flower?F[flower].n:'빈 화단';
-  return '<button class="garden-plot '+(locked?'locked':flower?'planted':'empty')+(gardenMoveFrom===i?' selected':'')+'" data-plot="'+i+'" aria-label="'+(i+1)+'번 '+label+'" '+(locked?'disabled':'')+' aria-pressed="'+(gardenMoveFrom===i)+'">'+(locked?'✧':flower?sprite('flower',flower):'')+'</button>';
+ $('gardenLevel').textContent=garden.activeRoom==='home'?({4:'첫 번째 화단',8:'넓어지는 정원',12:'꽃이 가득한 정원'})[garden.capacity]:GARDEN_ROOMS[garden.activeRoom].name;
+ $('gardenStats').textContent='심은 꽃 '+planted+' / '+capacity+' · 클리어 '+garden.cleared.length+' / '+ST.length;
+ const pattern=garden.activeRoom==='home'&&garden.pattern?GARDEN_PATTERNS[garden.pattern]:null;
+ $('gardenPlots').innerHTML=plots.map((flower,i)=>{
+  const locked=i>=capacity,label=locked?'확장하면 열리는 화단':flower?gardenFlowerName(flower):'빈 화단',ghost=pattern&&i<pattern.slots.length?pattern.slots[i]:undefined;
+  return '<button class="garden-plot '+(locked?'locked':flower?'planted':'empty')+(gardenMoveFrom===i?' selected':'')+(gardenHas(GARDEN_SPECIAL,flower)?' rare-flower':'')+(flower&&(gardenRenderedRoom!==garden.activeRoom||gardenRenderedPlots[i]!==flower)?' just-planted':'')+'" data-plot="'+i+'" '+(ghost!==undefined?'data-ghost="'+(ghost||'empty')+'"':'')+' aria-label="'+(i+1)+'번 '+label+(ghost!==undefined?' · 도안 '+(ghost?F[ghost].n:'빈칸'):'')+'" '+(locked?'disabled':'')+' aria-pressed="'+(gardenMoveFrom===i)+'">'+(locked?'✧':flower?gardenSprite(flower):'')+(flower&&garden.shownTrophies.includes('albumLabel')?'<span class="garden-plot-label">'+gardenFlowerName(flower)+'</span>':'')+'</button>';
  }).join('');
- $('gardenSeeds').innerHTML=GARDEN_FLOWERS.map(name=>'<button class="garden-seed" data-seed="'+name+'" aria-pressed="'+(gardenTool===name)+'" aria-label="'+F[name].n+' 선택, 보관 '+garden.flowers[name]+'송이">'+sprite('flower',name)+'<b>'+F[name].n+' · '+garden.flowers[name]+'</b><span>누적 개화 '+garden.earned[name]+'</span></button>').join('');
+ gardenRenderedRoom=garden.activeRoom;gardenRenderedPlots=[...plots];
+ $('gardenSeeds').innerHTML=GARDEN_FLOWERS.map(id=>'<button class="garden-seed" data-seed="'+id+'" aria-pressed="'+(gardenTool===id)+'" aria-label="'+F[id].n+' 선택, 보관 '+garden.flowers[id]+'송이">'+gardenSprite(id)+'<b>'+F[id].n+' · '+garden.flowers[id]+'</b><span>누적 개화 '+garden.earned[id]+'</span></button>').join('');
+ $('gardenRareSeeds').innerHTML=Object.entries(GARDEN_SPECIAL).map(([id,item])=>'<button class="garden-seed rare-flower" data-seed="'+id+'" '+(!garden.specialUnlocked.includes(id)?'disabled':'')+' aria-pressed="'+(gardenTool===id)+'">'+gardenSprite(id)+'<b>'+item.name+'</b><span>'+(garden.specialUnlocked.includes(id)?'보관 '+garden.rare[id]+' · 기념꽃 1송이':item.hint)+'</span></button>').join('');
  $('gardenMove').setAttribute('aria-pressed',gardenTool==='move');$('gardenRemove').setAttribute('aria-pressed',gardenTool==='remove');
  const cost=garden.capacity===4?30:60;
  $('gardenExpand').textContent=garden.capacity===12?'모든 화단이 열렸어요 · 12칸':'화단 4칸 넓히기 · ☀ '+cost;
- $('gardenExpand').disabled=garden.capacity===12||garden.sun<cost;
- $('gardenShop').innerHTML=Object.entries(GARDEN_DECOR).map(([id,item])=>{
-  const owned=garden.decor.includes(id),shown=garden.visibleDecor.includes(id);
-  return '<button class="garden-item" data-decor="'+id+'" aria-pressed="'+shown+'" '+(!owned&&garden.sun<item.cost?'disabled':'')+'><i aria-hidden="true">'+gardenDecorArt(id)+'</i><b>'+item.name+'</b><span>'+(owned?shown?'전시 중 · 누르면 보관':'보유 중 · 누르면 전시':'☀ '+item.cost)+'</span></button>';
- }).join('');
+ $('gardenExpand').disabled=garden.capacity===12||garden.sun<cost;$('gardenExpand').classList.toggle('hide',garden.activeRoom!=='home');
+ $('gardenShop').innerHTML=Object.entries(GARDEN_DECOR).map(([id,item])=>{const owned=garden.decor.includes(id),shown=garden.visibleDecor.includes(id);return '<button class="garden-item" data-decor="'+id+'" aria-pressed="'+shown+'" '+(!owned&&garden.sun<item.cost?'disabled':'')+'><i aria-hidden="true">'+gardenDecorArt(id)+'</i><b>'+item.name+'</b><span>'+(owned?shown?'전시 중 · 누르면 보관':'보유 중 · 누르면 전시':'☀ '+item.cost)+'</span></button>';}).join('');
  for(const [id,item] of Object.entries(GARDEN_DECOR)){$(item.element).innerHTML=gardenDecorArt(id);$(item.element).classList.toggle('hide',!garden.visibleDecor.includes(id));}
- const butterflies=new Set(garden.plots.filter(Boolean)).size===3;
- $('gardenButterflies').classList.toggle('hide',!butterflies);
- $('gardenSceneNote').textContent=butterflies?'세 가지 꽃향기를 따라 나비가 찾아왔어요':'세 가지 색 꽃을 심으면 나비가 찾아와요';
- $('gardenSave').textContent=gardenSaveError||'정원은 이 기기·브라우저에 자동 저장됩니다.\n처음에는 꽃 3송이를 드려요. 스테이지 첫 클리어는 햇살 +20!';
- $('gardenSave').classList.toggle('error',Boolean(gardenSaveError));
- gardenEntryText();
+ const butterflies=new Set(plots.filter(Boolean).map(gardenBase)).size===3||Boolean(garden.favoriteVisitor);
+ $('gardenButterflies').classList.toggle('hide',!butterflies);$('gardenButterflies').dataset.visitor=garden.favoriteVisitor||'default';
+ $('gardenButterflies').style.setProperty('--visitor-color',GARDEN_VISITORS[garden.favoriteVisitor]?.color||'#ac84cb');
+ $('gardenSceneNote').textContent=gardenTab==='photo'?garden.photo.name:garden.favoriteVisitor?GARDEN_VISITORS[garden.favoriteVisitor].name+'가 함께 쉬어 가요':butterflies?'세 가지 꽃향기를 따라 나비가 찾아왔어요':'세 가지 색 꽃을 심으면 나비가 찾아와요';
+ $('gardenSceneTree').innerHTML=gardenTreeArt();$('gardenSceneTree').setAttribute('aria-label',gardenTree().name);
+ const scene=document.querySelector('.garden-scene');scene.classList.toggle('has-fence',garden.shownTrophies.includes('requestFence'));scene.classList.toggle('has-festival',garden.shownTrophies.includes('festivalFlag'));scene.classList.toggle('has-crown',garden.shownTrophies.includes('festivalCrown'));scene.classList.toggle('has-pattern',garden.shownTrophies.includes('patternFrame'));
+ renderGardenWorld();
+ $('gardenSave').textContent=gardenSaveError||'이 기기·브라우저에 자동 저장됩니다. 사이트 데이터 삭제 시 기록도 삭제됩니다.';
+ $('gardenSave').classList.toggle('error',Boolean(gardenSaveError));gardenEntryText();
+}
+function renderGardenWorld(){
+ document.querySelectorAll('[data-garden-tab]').forEach(button=>{const selected=button.dataset.gardenTab===gardenTab;button.setAttribute('aria-selected',selected);button.tabIndex=selected?0:-1;});
+ for(const id of ['decorate','album','progress','photo'])$('gardenPanel-'+id).classList.toggle('hide',gardenTab!==id);
+ $('gardenRooms').innerHTML=Object.entries(GARDEN_ROOMS).map(([id,item])=>'<button data-room="'+id+'" aria-pressed="'+(garden.activeRoom===id)+'" '+(id!=='home'&&!garden.homeCompleted?'disabled':'')+'>'+item.short+(id!=='home'&&!garden.homeCompleted?' · 잠김':'')+'</button>').join('');
+ $('gardenRoomHint').textContent=garden.homeCompleted?'온실·연못에도 꽃을 옮길 수 있어요. 보관함은 함께 사용합니다.':'첫 정원 12칸을 모두 채우면 온실과 연못이 열려요.';
+ $('gardenThemes').innerHTML=Object.entries(GARDEN_THEMES).map(([id,item])=>'<button data-theme="'+id+'" aria-pressed="'+(garden.theme===id)+'" '+(garden.cleared.length<item.need?'disabled':'')+'><i style="background:'+item.sky+'" aria-hidden="true"></i>'+item.name+(garden.cleared.length<item.need?'<small>첫 클리어 '+garden.cleared.length+'/'+item.need+'</small>':'')+'</button>').join('');
+ $('gardenTrophies').innerHTML=Object.entries(GARDEN_TROPHIES).map(([id,item])=>'<button data-trophy="'+id+'" aria-pressed="'+garden.shownTrophies.includes(id)+'" '+(!garden.trophies.includes(id)?'disabled':'')+'><b>'+item.mark+' '+item.name+'</b><small>'+(garden.trophies.includes(id)?garden.shownTrophies.includes(id)?'전시 중 · 보관하기':'보유 중 · 전시하기':item.hint)+'</small></button>').join('');
+ $('gardenAlbum').innerHTML=GARDEN_FLOWERS.map(id=>{const n=garden.earned[id],record=garden.records[id],rank=n>=75?'만개':n>=30?'성장':n>=10?'새싹':'기록 시작',next=[10,30,75].find(target=>n<target);return '<article class="garden-record">'+sprite('flower',id)+'<div><h4>'+F[id].n+' <span>'+rank+'</span></h4><p>누적 '+n+'송이 · 최고 '+record.bestCombo+'콤보<br>첫 개화 '+(record.firstStage?'ST'+record.firstStage:n?'이전 버전 기록':'아직 없음')+' · 축제 개화 '+record.festival+'송이</p><small>'+(next?'다음 도감 단계까지 '+(next-n)+'송이':'모든 도감 단계 달성')+'</small><progress max="'+(next||75)+'" value="'+Math.min(n,next||75)+'" aria-label="'+F[id].n+' 도감 진행"></progress></div></article>';}).join('');
+ $('gardenSpecialAlbum').innerHTML=Object.entries(GARDEN_SPECIAL).map(([id,item])=>'<article class="garden-record '+(garden.specialUnlocked.includes(id)?'':'undiscovered')+'"><div class="rare-flower">'+gardenSprite(id)+'</div><div><h4>'+item.name+'</h4><p>'+item.hint+'</p><small>'+(garden.specialUnlocked.includes(id)?'발견 완료 · '+(garden.rare[id]?'보관함에 있어요':'정원에 심어 두었어요'):'조건을 달성하면 1송이 지급')+'</small></div></article>').join('');
+ $('gardenVisitors').innerHTML=Object.entries(GARDEN_VISITORS).map(([id,item])=>'<button data-visitor="'+id+'" aria-pressed="'+(garden.favoriteVisitor===id)+'" '+(!garden.visitors.includes(id)?'disabled':'')+'><i class="visitor-swatch" style="--wing:'+item.color+'" aria-hidden="true">❦</i><b>'+item.name+'</b><small>'+(garden.visitors.includes(id)?garden.favoriteVisitor===id?'정원에 머무는 중':'발견 완료 · 정원에 초대':item.hint)+'</small></button>').join('');
+ $('gardenVisitorCount').textContent=garden.visitors.length+' / '+Object.keys(GARDEN_VISITORS).length+'종';
+ const tree=gardenTree();$('gardenTreeArt').innerHTML=gardenTreeArt();$('gardenTreeName').textContent=tree.name;$('gardenTreeProgress').textContent='누적 개화 '+tree.xp+'송이 · '+(tree.next?'다음 성장까지 '+(tree.next-tree.xp)+'송이':'마지막 성장 단계에 도달했어요');
+ $('gardenTreeMeter').max=tree.next||240;$('gardenTreeMeter').value=Math.min(tree.xp,tree.next||240);
+ $('gardenTreeStyles').innerHTML=Object.entries({mint:'푸른 잎',rose:'분홍 잎',gold:'금빛 잎'}).map(([id,label])=>'<button data-tree-style="'+id+'" aria-pressed="'+(garden.treeStyle===id)+'" '+(id!=='mint'&&tree.level<3?'disabled':'')+'>'+label+(id!=='mint'&&tree.level<3?' · 개화 60':'')+'</button>').join('');
+ const state=gardenRequestState();$('gardenRequestName').textContent=state.request.name;$('gardenRequestHint').textContent=state.request.hint;
+ $('gardenRequestProgress').textContent=state.request.type==='colors'?GARDEN_FLOWERS.map(id=>F[id].n+' '+Math.min(state.request.goal,state.delta[id])+'/'+state.request.goal).join(' · '):state.value+' / '+state.goal;
+ $('gardenRequestClaim').disabled=!state.done;$('gardenRequestClaim').textContent=state.done?'부탁 완료 · 햇살 8 받기':'완료하면 햇살 8 · 첫 완료는 울타리';
+ $('gardenRequestCount').textContent='완료한 부탁 '+garden.request.completed+'회 · 바꾸면 현재 부탁의 진척만 초기화됩니다.';
+ $('gardenFestivalRecord').textContent='축제 '+garden.festival.clears+'회 클리어 · 최고 개화 '+garden.festival.maxBlooms+'송이 · 최고 '+garden.festival.bestCombo+'콤보';
+ $('gardenFestivalNext').textContent=garden.festival.clears>=3?'태양꽃·축제 깃발·꽃관을 모두 모았어요.':garden.festival.clears?'축제 '+(3-garden.festival.clears)+'회 더 클리어하면 꽃관을 얻어요.':'축제 첫 클리어로 태양꽃과 축제 깃발을 얻어요.';
+ $('gardenPatternChoices').innerHTML='<button data-pattern="none" aria-pressed="'+(garden.pattern===null)+'">자유 배치</button>'+Object.entries(GARDEN_PATTERNS).map(([id,p])=>'<button data-pattern="'+id+'" aria-pressed="'+(garden.pattern===id)+'" '+(garden.capacity<p.capacity?'disabled':'')+'>'+p.name+(garden.patterns.includes(id)?' ✓':garden.capacity<p.capacity?' · '+p.capacity+'칸':'')+'</button>').join('');
+ renderGardenPattern();
+ $('gardenPhotoName').value=garden.photo.name;$('gardenPhotoStats').checked=garden.photo.showStats;$('gardenPhotoStill').checked=garden.photo.still;
+ $('gardenPhotoFrames').innerHTML='<option value="plain">기본 프레임</option>'+garden.patterns.map(id=>'<option value="'+id+'">'+GARDEN_PATTERNS[id].name+' 기념 프레임</option>').join('');$('gardenPhotoFrames').value=garden.photo.frame;
+ $('gardenNews').textContent=gardenAnnouncements.length?gardenAnnouncements.join(' · '):'피운 꽃은 실패해도 남아요. 정원과 함께 천천히 자라요.';
+}
+function renderGardenPattern(){
+ const p=GARDEN_PATTERNS[garden.pattern];
+ if(!p){$('gardenPatternPreview').replaceChildren();$('gardenPatternHint').textContent='도안을 고르면 첫 정원 화단에 색 안내가 나타납니다. 꽃은 직접 심고 언제든 회수할 수 있어요.';return;}
+ $('gardenPatternPreview').innerHTML=p.slots.map(color=>'<i class="pattern-dot" data-color="'+(color||'empty')+'" aria-label="'+(color?F[color].n:'빈칸')+'"></i>').join('');
+ const needed={purple:0,orange:0,green:0},available={...garden.flowers};p.slots.filter(Boolean).forEach(id=>needed[id]++);garden.plots.filter(Boolean).forEach(id=>available[gardenBase(id)]++);
+ for(const id of Object.keys(GARDEN_SPECIAL))available[GARDEN_SPECIAL[id].base]+=garden.rare[id];
+ const missing=GARDEN_FLOWERS.filter(id=>needed[id]>available[id]).map(id=>F[id].n+' '+(needed[id]-available[id])+'송이');
+ const cells=p.slots.reduce((sum,id,i)=>sum+(id===null?garden.plots[i]!==null:gardenBase(garden.plots[i])!==id),0);
+ $('gardenPatternHint').textContent=(garden.patterns.includes(garden.pattern)?'완성 기록 ✓ · 사진 프레임 보유. ':'')+(gardenPatternDone(garden.pattern)?'현재 배치도 도안과 같아요!':'첫 정원에서 '+cells+'칸을 맞춰 주세요. ')+(missing.length?'추가로 모을 꽃: '+missing.join(', '):'현재 꽃으로 배치할 수 있어요.');
 }
 function openGarden(){
  if(clearing||gardenOpen)return;
  gardenFocus=document.activeElement;gardenOwnPause=!menuPaused;gardenMenuWasVisible=!$('menu').classList.contains('hide');
- if(gardenOwnPause)openMenu();
- $('menu').classList.add('hide');gardenOpen=true;gardenMoveFrom=null;
- for(const child of $('app').children){if(child!==$('gardenView')){gardenInert.set(child,child.inert);child.inert=true;}}
- renderGarden();gardenMessage('꽃을 고르고 빈 화단을 눌러 심어 보세요.');
+ if(gardenOwnPause)openMenu();$('menu').classList.add('hide');gardenOpen=true;gardenMoveFrom=null;
+ for(const child of $('app').children)if(child!==$('gardenView')){gardenInert.set(child,child.inert);child.inert=true;}
+ if(updateGardenMilestones())saveGarden();renderGarden();gardenMessage('꽃을 고르고 빈 화단을 눌러 심어 보세요.');
  $('gardenView').classList.remove('hide');$('gardenView').scrollTop=0;$('gardenClose').focus();
 }
 function closeGarden(){
- if(!gardenOpen)return;
- gardenOpen=false;$('gardenView').classList.add('hide');
+ if(!gardenOpen)return;gardenOpen=false;$('gardenView').classList.add('hide');
  for(const [child,inert] of gardenInert)child.inert=inert;gardenInert.clear();
  if(gardenOwnPause)closeMenu();else if(gardenMenuWasVisible)$('menu').classList.remove('hide');
  if(gardenFocus?.isConnected)gardenFocus.focus();
 }
+function gardenCommit(message,focusSelector){updateGardenMilestones();saveGarden();renderGarden();if(message)gardenMessage(message);if(focusSelector)document.querySelector(focusSelector)?.focus();}
 function editGardenPlot(index){
- if(!gardenOpen||!Number.isInteger(index)||index<0||index>=garden.capacity)return;
- const old=garden.plots[index];let message='';
+ if(!gardenOpen||gardenTab!=='decorate'||!Number.isInteger(index)||index<0||index>=gardenCapacity())return;
+ const plots=gardenPlots(),old=plots[index];let message='';
  if(gardenTool==='remove'){
   if(!old){gardenMessage('보관할 꽃이 있는 화단을 눌러 주세요.');return;}
-  garden.flowers[old]=gardenInt(garden.flowers[old]+1);garden.plots[index]=null;message=F[old].n+'을 보관함으로 옮겼어요.';
+  gardenChangeStock(old,1);plots[index]=null;message=gardenFlowerName(old)+'을 보관함으로 옮겼어요.';
  }else if(gardenTool==='move'){
-  if(gardenMoveFrom===null){
-   if(!old){gardenMessage('먼저 옮길 꽃을 눌러 주세요.');return;}
-   gardenMoveFrom=index;renderGarden();gardenMessage('옮길 화단을 눌러 주세요. 꽃이 있으면 서로 자리를 바꿔요.');return;
-  }
-  [garden.plots[index],garden.plots[gardenMoveFrom]]=[garden.plots[gardenMoveFrom],old];gardenMoveFrom=null;message='꽃의 자리를 바꿨어요.';
+  if(gardenMoveFrom===null){if(!old){gardenMessage('먼저 옮길 꽃을 눌러 주세요.');return;}gardenMoveFrom=index;renderGarden();gardenMessage('옮길 화단을 눌러 주세요. 꽃이 있으면 서로 자리를 바꿔요.');$('gardenPlots').querySelector('[data-plot="'+index+'"]').focus();return;}
+  [plots[index],plots[gardenMoveFrom]]=[plots[gardenMoveFrom],old];gardenMoveFrom=null;message='꽃의 자리를 바꿨어요.';
  }else{
-  if(!GARDEN_FLOWERS.includes(gardenTool))return;
+  if(!gardenFlowerValid(gardenTool))return;
   if(old===gardenTool){gardenMessage('이미 같은 꽃이 피어 있어요.');return;}
-  if(garden.flowers[gardenTool]<1){gardenMessage('이 꽃을 모두 심었어요. 퍼즐에서 더 피워 주세요.');return;}
-  garden.flowers[gardenTool]--;if(old)garden.flowers[old]=gardenInt(garden.flowers[old]+1);
-  garden.plots[index]=gardenTool;message=F[gardenTool].n+'이 정원에 피었어요!'+(old?' 이전 꽃은 보관함에 돌려드렸어요.':'');
+  if(gardenStock(gardenTool)<1){gardenMessage('이 꽃을 모두 심었어요. 퍼즐에서 더 피우거나 다른 정원에서 회수해 주세요.');return;}
+  gardenChangeStock(gardenTool,-1);if(old)gardenChangeStock(old,1);plots[index]=gardenTool;
+  message=gardenFlowerName(gardenTool)+'이 정원에 피었어요!'+(old?' 이전 꽃은 보관함에 돌려드렸어요.':'');
  }
- saveGarden();renderGarden();gardenMessage(message);$('gardenPlots').querySelector('[data-plot="'+index+'"]').focus();
+ gardenCommit(message,'#gardenPlots [data-plot="'+index+'"]');
 }
-function expandGarden(){
- if(!gardenOpen||garden.capacity>=12)return;
- const cost=garden.capacity===4?30:60;
- if(garden.sun<cost)return;
- garden.sun-=cost;garden.capacity+=4;saveGarden();renderGarden();gardenMessage('새 화단 4칸이 열렸어요. 더 많은 꽃을 심어 보세요!');
-}
+function expandGarden(){if(!gardenOpen||garden.activeRoom!=='home'||garden.capacity>=12)return;const cost=garden.capacity===4?30:60;if(garden.sun<cost)return;garden.sun-=cost;garden.capacity+=4;gardenCommit('새 화단 4칸이 열렸어요. 더 많은 꽃을 심어 보세요!');}
 function decorateGarden(id){
- if(!gardenOpen||!Object.hasOwn(GARDEN_DECOR,id))return;
- const item=GARDEN_DECOR[id],owned=garden.decor.includes(id);
+ if(!gardenOpen||!gardenHas(GARDEN_DECOR,id))return;const item=GARDEN_DECOR[id],owned=garden.decor.includes(id);
  if(!owned){if(garden.sun<item.cost)return;garden.sun-=item.cost;garden.decor.push(id);garden.visibleDecor.push(id);}
- else if(garden.visibleDecor.includes(id))garden.visibleDecor=garden.visibleDecor.filter(name=>name!==id);
- else garden.visibleDecor.push(id);
- saveGarden();renderGarden();gardenMessage(item.name+(garden.visibleDecor.includes(id)?'을 정원에 놓았어요.':'을 보관했어요. 언제든 다시 놓을 수 있어요.'));
- $('gardenShop').querySelector('[data-decor="'+id+'"]').focus();
+ else if(garden.visibleDecor.includes(id))garden.visibleDecor=garden.visibleDecor.filter(name=>name!==id);else garden.visibleDecor.push(id);
+ gardenCommit(item.name+(garden.visibleDecor.includes(id)?'을 정원에 놓았어요.':'을 보관했어요. 언제든 다시 놓을 수 있어요.'),'#gardenShop [data-decor="'+id+'"]');
+}
+function selectGardenTab(id){if(!gardenOpen||!['decorate','album','progress','photo'].includes(id))return;gardenTab=id;gardenMoveFrom=null;renderGarden();$('gardenView').scrollTop=0;document.querySelector('[data-garden-tab="'+id+'"]').focus();}
+function selectGardenRoom(id){if(!gardenOpen||!gardenHas(GARDEN_ROOMS,id)||(id!=='home'&&!garden.homeCompleted))return;garden.activeRoom=id;gardenMoveFrom=null;gardenCommit(GARDEN_ROOMS[id].name+'으로 왔어요.','#gardenRooms [data-room="'+id+'"]');}
+function selectGardenTheme(id){if(!gardenOpen||!gardenHas(GARDEN_THEMES,id)||garden.cleared.length<GARDEN_THEMES[id].need)return;garden.theme=id;gardenCommit(GARDEN_THEMES[id].name+'을 적용했어요.','#gardenThemes [data-theme="'+id+'"]');}
+function resetGardenRequest(){garden.request.index=gardenInt(garden.request.index+1);garden.request.baseline={...garden.earned};garden.request.combo=0;}
+function claimGardenRequest(){if(!gardenOpen||!gardenRequestState().done)return;garden.sun=gardenInt(garden.sun+8);garden.request.completed=gardenInt(garden.request.completed+1);resetGardenRequest();gardenAnnounce('정원의 부탁 완료! 햇살 8개를 받았어요.');gardenCommit('햇살 8개를 받았어요. 다음 부탁을 확인해 보세요.');}
+function skipGardenRequest(){if(!gardenOpen)return;if(gardenRequestState().value>0&&!window.confirm('현재 부탁의 진척을 초기화하고 다른 부탁을 받을까요? 모은 꽃은 유지됩니다.'))return;resetGardenRequest();gardenCommit('새로운 부탁을 받았어요.');}
+function selectGardenPattern(id){if(!gardenOpen)return;if(id==='none')garden.pattern=null;else if(gardenHas(GARDEN_PATTERNS,id)&&garden.capacity>=GARDEN_PATTERNS[id].capacity)garden.pattern=id;else return;gardenCommit('도안은 첫 정원에 적용됩니다. 꽃을 직접 심어 완성해 보세요.','#gardenPatternChoices [data-pattern="'+id+'"]');}
+function updateGardenPhotoSettings(){
+ garden.photo.name=$('gardenPhotoName').value.trim().replace(/[\u0000-\u001f\u007f]/g,'').slice(0,20)||'나의 작은 정원';garden.photo.showStats=$('gardenPhotoStats').checked;garden.photo.still=$('gardenPhotoStill').checked;
+ const frame=$('gardenPhotoFrames').value;garden.photo.frame=garden.patterns.includes(frame)?frame:'plain';saveGarden();
+ $('gardenView').classList.toggle('photo-still',gardenTab==='photo'&&garden.photo.still);if(gardenTab==='photo')$('gardenSceneNote').textContent=garden.photo.name;
+ $('gardenPhotoStatus').textContent='설정을 바꾼 뒤 사진 만들기를 눌러 새 사진을 만들어 주세요.';
+}
+function gardenLoadPicture(url){return new Promise((resolve,reject)=>{const picture=new Image();picture.onload=()=>resolve(picture);picture.onerror=()=>reject(new Error('사진용 그림을 불러오지 못했습니다.'));picture.src=url;});}
+function gardenSvgURL(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}
+async function makeGardenPhoto(){
+ if(!gardenOpen||gardenPhotoBusy)return;gardenPhotoBusy=true;const epoch=++gardenPhotoEpoch;
+ updateGardenPhotoSettings();$('gardenPhotoMake').disabled=true;$('gardenPhotoStatus').textContent='정원의 사진을 만들고 있어요…';
+ // Snapshot once: changing a tab or save while images decode cannot mix two gardens.
+ const state=JSON.parse(JSON.stringify(garden)),plots=state.activeRoom==='home'?state.plots:state.rooms[state.activeRoom],capacity=state.activeRoom==='home'?state.capacity:6,theme=GARDEN_THEMES[state.theme],treeSvg=gardenTreeArt();
+ try{
+  const canvas=document.createElement('canvas');canvas.width=1000;canvas.height=1280;const ctx=canvas.getContext('2d');if(!ctx)throw new Error('이 브라우저에서는 사진을 만들 수 없습니다.');
+  const rounded=(x,y,w,h,r,fill)=>{ctx.fillStyle=fill;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();};
+  rounded(0,0,1000,1280,0,state.theme==='moonlight'?'#222b42':'#f6f4e9');
+  ctx.fillStyle=state.theme==='moonlight'?'#dee8d4':'#69815c';ctx.textAlign='center';ctx.font='600 20px system-ui';ctx.fillText('FLOWER BLOOM · MY GARDEN',500,70);
+  ctx.font='600 42px system-ui';ctx.fillText(state.photo.name,500,140,850);ctx.font='22px system-ui';ctx.fillText(GARDEN_ROOMS[state.activeRoom].name+' · '+theme.name,500,184);
+  ctx.save();ctx.beginPath();ctx.roundRect(60,225,880,840,[155,155,50,50]);ctx.clip();
+  const sky=ctx.createLinearGradient(0,225,0,1065);sky.addColorStop(0,theme.sky);sky.addColorStop(.42,theme.sky);sky.addColorStop(.43,theme.ground);sky.addColorStop(1,theme.ground);ctx.fillStyle=sky;ctx.fillRect(60,225,880,840);
+  ctx.fillStyle=state.theme==='moonlight'?'#e4e8c8':'#fff0bc';ctx.beginPath();ctx.arc(740,315,43,0,Math.PI*2);ctx.fill();
+  if(state.activeRoom==='greenhouse'){ctx.strokeStyle='#fff8d890';ctx.lineWidth=7;ctx.strokeRect(125,270,750,740);for(const x of [375,625]){ctx.beginPath();ctx.moveTo(x,270);ctx.lineTo(x,1000);ctx.stroke();}}
+  if(state.activeRoom==='pond'){ctx.fillStyle='#77aead';ctx.beginPath();ctx.ellipse(500,755,440,245,0,0,Math.PI*2);ctx.fill();}
+  const columns=state.activeRoom==='home'?4:3,cell=columns===4?175:210,gap=20,startX=(1000-(columns*cell+(columns-1)*gap))/2,startY=410;
+  const images={};for(const id of new Set(plots.filter(Boolean).map(gardenBase)))images[id]=await gardenLoadPicture(asset('flower-'+id));
+  for(let i=0;i<plots.length;i++){
+   const x=startX+(i%columns)*(cell+gap),y=startY+Math.floor(i/columns)*(cell+gap),id=plots[i];
+   rounded(x,y,cell,cell,38,i<capacity?'#eff5ce44':'#a9bc9344');if(i>=capacity)continue;
+   ctx.fillStyle='#6e875650';ctx.beginPath();ctx.ellipse(x+cell/2,y+cell*.64,cell*.36,cell*.2,0,0,Math.PI*2);ctx.fill();
+   if(id){ctx.drawImage(images[gardenBase(id)],x-5,y-13,cell+10,cell+10);if(gardenHas(GARDEN_SPECIAL,id)){ctx.fillStyle='#ffe199';ctx.font='bold 36px system-ui';ctx.fillText(GARDEN_SPECIAL[id].mark,x+cell*.8,y+cell*.2);}}
+  }
+  for(const id of state.visibleDecor){const picture=await gardenLoadPicture(gardenSvgURL(gardenDecorArt(id)));const x=id==='bench'?80:id==='fountain'?800:825,y=id==='lantern'?335:970;ctx.drawImage(picture,x,y,110,90);}
+  ctx.drawImage(await gardenLoadPicture(gardenSvgURL(treeSvg)),110,270,105,118);
+  if(state.shownTrophies.includes('requestFence')){ctx.strokeStyle='#f0e2b4';ctx.lineWidth=7;for(let x=105;x<900;x+=35){ctx.beginPath();ctx.moveTo(x,1030);ctx.lineTo(x,1060);ctx.stroke();}ctx.beginPath();ctx.moveTo(95,1040);ctx.lineTo(905,1040);ctx.stroke();}
+  if(state.shownTrophies.includes('festivalFlag')){ctx.fillStyle='#f0c278';ctx.beginPath();ctx.moveTo(410,320);ctx.lineTo(590,320);ctx.lineTo(500,370);ctx.closePath();ctx.fill();}
+  if(state.shownTrophies.includes('festivalCrown')){ctx.font='42px system-ui';ctx.fillStyle='#ffe6a0';ctx.fillText('♛',500,308);}
+  if(state.favoriteVisitor||new Set(plots.filter(Boolean).map(gardenBase)).size===3){ctx.fillStyle=GARDEN_VISITORS[state.favoriteVisitor]?.color||'#b184d4';for(const [x,y] of [[320,355],[675,385]]){ctx.beginPath();ctx.ellipse(x-10,y,12,19,-.5,0,Math.PI*2);ctx.ellipse(x+10,y,12,19,.5,0,Math.PI*2);ctx.fill();}}
+  ctx.restore();
+  if(state.photo.frame!=='plain'){ctx.strokeStyle={rainbow:'#b2a1ce',checker:'#c4946e',heart:'#d18da5'}[state.photo.frame];ctx.lineWidth=10;ctx.beginPath();ctx.roundRect(30,25,940,1230,35);ctx.stroke();ctx.font='22px system-ui';ctx.fillStyle=state.theme==='moonlight'?'#edf2dc':'#65795b';ctx.fillText(GARDEN_PATTERNS[state.photo.frame].name+' · 도안 완성 기념',500,1217);}
+  ctx.fillStyle=state.theme==='moonlight'?'#edf2dc':'#426047';ctx.font='24px system-ui';
+  ctx.fillText(state.photo.showStats?'누적 개화 '+GARDEN_FLOWERS.reduce((sum,id)=>sum+state.earned[id],0)+'송이 · 클리어 '+state.cleared.length+' / '+ST.length:'작은 꽃이 피우는, 빛나는 하루',500,1130);
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('사진 저장 파일을 만들지 못했습니다.')),'image/png'));
+  if(epoch!==gardenPhotoEpoch)return;
+  if(gardenPhotoURL)URL.revokeObjectURL(gardenPhotoURL);gardenPhotoURL=URL.createObjectURL(blob);$('gardenPhotoPreview').src=gardenPhotoURL;$('gardenPhotoPreview').classList.remove('hide');
+  $('gardenPhotoDownload').href=gardenPhotoURL;$('gardenPhotoDownload').classList.remove('hide');$('gardenPhotoStatus').textContent='사진이 준비됐어요. 사진 저장을 눌러 받으세요. 외부에 자동 공유하지 않습니다.';
+ }catch(error){$('gardenPhotoStatus').textContent=error.message||'사진을 만들지 못했습니다. 다시 시도해 주세요.';}
+ finally{gardenPhotoBusy=false;$('gardenPhotoMake').disabled=false;}
 }
 function setupGarden(){
  const button='<button class="btn secondary garden-entry" data-open-garden>🌿 나의 정원</button>';
- $('startBtn').insertAdjacentHTML('afterend','<p class="garden-reward" id="gardenReward" role="status"></p>'+button);
- $('retry').insertAdjacentHTML('afterend',button);$('resumeBtn').insertAdjacentHTML('afterend',button);
- document.querySelectorAll('[data-open-garden]').forEach(el=>el.addEventListener('click',openGarden));
- $('gardenClose').onclick=closeGarden;$('gardenPlay').onclick=closeGarden;
+ $('startBtn').insertAdjacentHTML('afterend','<p class="garden-reward" id="gardenReward" role="status"></p>'+button);$('retry').insertAdjacentHTML('afterend',button);$('resumeBtn').insertAdjacentHTML('afterend',button);
+ document.querySelectorAll('[data-open-garden]').forEach(el=>el.addEventListener('click',openGarden));$('gardenClose').onclick=closeGarden;$('gardenPlay').onclick=closeGarden;
  $('gardenPlots').onclick=e=>{const target=e.target.closest('[data-plot]');if(target)editGardenPlot(Number(target.dataset.plot));};
- $('gardenSeeds').onclick=e=>{const target=e.target.closest('[data-seed]');if(!target)return;gardenTool=target.dataset.seed;gardenMoveFrom=null;renderGarden();gardenMessage(F[gardenTool].n+'을 심을 화단을 눌러 주세요.');$('gardenSeeds').querySelector('[data-seed="'+gardenTool+'"]').focus();};
+ const selectSeed=e=>{const target=e.target.closest('[data-seed]');if(!target||target.disabled)return;gardenTool=target.dataset.seed;gardenMoveFrom=null;renderGarden();gardenMessage(gardenFlowerName(gardenTool)+'을 심을 화단을 눌러 주세요.');document.querySelector('[data-seed="'+gardenTool+'"]').focus();};
+ $('gardenSeeds').onclick=selectSeed;$('gardenRareSeeds').onclick=selectSeed;
  for(const [id,tool] of [['gardenMove','move'],['gardenRemove','remove']])$(id).onclick=()=>{gardenTool=tool;gardenMoveFrom=null;renderGarden();gardenMessage(tool==='move'?'옮길 꽃을 먼저 눌러 주세요.':'보관함에 돌려놓을 꽃을 눌러 주세요.');};
- $('gardenExpand').onclick=expandGarden;$('gardenShop').onclick=e=>{const target=e.target.closest('[data-decor]');if(target)decorateGarden(target.dataset.decor);};
+ $('gardenExpand').onclick=expandGarden;
+ const delegate=(id,attribute,handler)=>$(id).addEventListener('click',e=>{const target=e.target.closest('['+attribute+']');if(target&&!target.disabled)handler(target.getAttribute(attribute));});
+ delegate('gardenShop','data-decor',decorateGarden);delegate('gardenTabs','data-garden-tab',selectGardenTab);delegate('gardenRooms','data-room',selectGardenRoom);delegate('gardenThemes','data-theme',selectGardenTheme);delegate('gardenPatternChoices','data-pattern',selectGardenPattern);
+ $('gardenTabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const ids=['decorate','album','progress','photo'],index=ids.indexOf(gardenTab);selectGardenTab(ids[e.key==='Home'?0:e.key==='End'?3:(index+(e.key==='ArrowRight'?1:3))%4]);});
+ delegate('gardenTrophies','data-trophy',id=>{if(!garden.trophies.includes(id))return;garden.shownTrophies=garden.shownTrophies.includes(id)?garden.shownTrophies.filter(x=>x!==id):[...garden.shownTrophies,id];gardenCommit('기념 장식의 전시 상태를 바꿨어요.','#gardenTrophies [data-trophy="'+id+'"]');});
+ delegate('gardenVisitors','data-visitor',id=>{if(!garden.visitors.includes(id))return;garden.favoriteVisitor=id;gardenCommit(GARDEN_VISITORS[id].name+'를 정원에 초대했어요.','#gardenVisitors [data-visitor="'+id+'"]');});
+ delegate('gardenTreeStyles','data-tree-style',id=>{if(!['mint','rose','gold'].includes(id)||(id!=='mint'&&gardenTree().level<3))return;garden.treeStyle=id;gardenCommit('응원 나무의 잎 색을 바꿨어요.','#gardenTreeStyles [data-tree-style="'+id+'"]');});
+ $('gardenRequestClaim').onclick=claimGardenRequest;$('gardenRequestSkip').onclick=skipGardenRequest;$('gardenPhotoMake').onclick=makeGardenPhoto;
+ for(const id of ['gardenPhotoName','gardenPhotoStats','gardenPhotoStill','gardenPhotoFrames'])$(id).addEventListener('change',updateGardenPhotoSettings);
  $('gardenView').addEventListener('keydown',e=>{
-  if(e.key==='Escape'){e.preventDefault();closeGarden();return;}
-  if(e.key!=='Tab')return;
-  const buttons=Array.from($('gardenView').querySelectorAll('button:not(:disabled)')).filter(el=>el.getClientRects().length);
-  const first=buttons[0],last=buttons[buttons.length-1];
+  if(e.key==='Escape'){e.preventDefault();closeGarden();return;}if(e.key!=='Tab')return;
+  const controls=Array.from($('gardenView').querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]')).filter(el=>el.getClientRects().length),first=controls[0],last=controls[controls.length-1];
   if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
  });
- window.addEventListener('storage',e=>{if(e.key!==GARDEN_KEY)return;gardenSaveError='';gardenReadOnly=false;garden=loadGarden();gardenMoveFrom=null;gardenEntryText();if(gardenOpen)renderGarden();});
- gardenEntryText();
+ window.addEventListener('storage',e=>{if(e.key!==GARDEN_KEY)return;gardenSaveError='';gardenReadOnly=false;garden=loadGarden();gardenMoveFrom=null;if(updateGardenMilestones())saveGarden();gardenEntryText();if(gardenOpen)renderGarden();});
+ const changed=updateGardenMilestones();if(changed||gardenMigrationBackup!==null)saveGarden();gardenEntryText();
 }
 
 // Scheduled board callbacks must never affect a different stage/reset.
