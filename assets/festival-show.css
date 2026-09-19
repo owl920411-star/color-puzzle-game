@@ -1,0 +1,29 @@
+/* Animated atmosphere stays behind the puzzle. Confetti never captures input. */
+.festival-atmosphere{display:none;position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;contain:strict}
+#app[data-scene="festival"] .festival-atmosphere{display:block;background:radial-gradient(ellipse at 10% 0,#ff73df33,transparent 35%),radial-gradient(ellipse at 90% 0,#6eebff38,transparent 38%)}
+#festivalCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;contain:strict}
+.festival-beam{position:absolute;bottom:-12%;width:56%;height:118%;transform-origin:50% 100%;clip-path:polygon(0 0,100% 0,51% 100%,49% 100%);mix-blend-mode:screen;opacity:.5;filter:blur(5px);animation:festivalSweep 8s ease-in-out infinite alternate;animation-play-state:paused}
+.beam-one{left:-18%;background:linear-gradient(#fd80de55,#fb7ab115,transparent);--from:-32deg;--to:22deg}
+.beam-two{right:-18%;background:linear-gradient(#81eaff55,#81eaff12,transparent);--from:30deg;--to:-24deg;animation-delay:-3s}
+.beam-three{left:23%;background:linear-gradient(#ffe4a938,#ffe4a911,transparent);--from:-18deg;--to:18deg;animation-duration:11s;animation-delay:-5s}
+.festival-lights{position:absolute;left:0;right:0;top:18px;height:19px;display:flex;justify-content:space-around;border-top:1px solid #ffe4a955;transform:rotate(-2deg)}
+.festival-lights i{display:block;width:7px;height:10px;border-radius:40% 40% 50% 50%;background:var(--bulb);box-shadow:0 0 6px 2px var(--bulb),0 0 18px var(--bulb);animation:festivalBulb 2.8s ease-in-out infinite alternate;animation-delay:var(--delay);animation-play-state:paused}
+.festival-active .festival-beam,.festival-active .festival-lights i{animation-play-state:running}
+.festival-paused .festival-beam,.festival-paused .festival-lights i{animation-play-state:paused}
+#app[data-scene="festival"] .board-shell:before{border-color:#ffe4a3;background:radial-gradient(circle,#fff4bf 0 2px,#ffb755 3px,transparent 4px) 0 0/21px 21px,linear-gradient(125deg,#a458ab,#ecac79 27%,#9063ba 56%,#70b9c6 78%,#e69dcc);box-shadow:inset 0 0 0 2px #fff4c7,inset 0 0 0 5px #97558c,0 0 9px #ffd16b,0 0 22px #ed7bdd66,0 5px 0 #753c73}
+#app[data-scene="festival"] .grid{background:#78669b;outline-color:#ffdd94;border-color:#d9a2dc;box-shadow:inset 0 0 10px #30274a99,0 0 10px #ffcc8455}
+#app[data-scene="festival"] .board-shell:after{content:"★ LET’S PARTY! ★";background:linear-gradient(100deg,#c3519e,#7555a8,#30868f);border-color:#ffe9ab;box-shadow:0 2px 0 #67356f,0 0 10px #f9a6d7;color:#fff6b9}
+#app[data-scene="festival"] .mission{box-shadow:inset 0 0 0 2px #fff3cd,0 3px 0 #a85b57,0 0 15px #ffb37466}
+#app[data-scene="festival"] #start .modal-card{border:2px solid #fbd68d;box-shadow:inset 0 0 0 3px #fff6dc,0 0 28px #f787d455,0 15px 45px #170f2477}
+#app[data-scene="festival"] #start .modal-card:before{content:"FESTIVAL TIME!";color:#e8a23e;text-shadow:0 2px 0 #95512c,0 0 12px #fff0bf;font-size:clamp(22px,6.7vw,30px)}
+#app[data-scene="festival"] .bloom-mode:before{box-shadow:inset 0 0 0 2px #fffce8,inset 0 0 0 5px #f7b448,0 0 12px #ffdd76,0 0 28px #fa75cf99,0 0 44px #c785ed66}
+.festival-banner{position:absolute;top:6%;left:7%;right:7%;z-index:9;padding:15px 10px;text-align:center;border:2px solid #fff2b2;border-radius:24px 9px;background:linear-gradient(115deg,#703490f5,#bf3c91f5,#e59146f5);box-shadow:0 5px 0 #63316f,0 0 30px #ffc46480;pointer-events:none;transform:rotate(-3deg);animation:festivalWelcome 1.7s ease both}
+.festival-banner b{display:block;color:#fff0a1;font:1000 clamp(23px,7vw,32px)/1.1 system-ui,sans-serif;letter-spacing:-1px;text-shadow:0 3px #86365a,0 0 10px #ffbd5070}
+.festival-banner span{display:block;margin-top:7px;color:#fff6e0;font:700 10px/1.4 system-ui,sans-serif}
+.festival-paused .festival-banner{animation-play-state:paused}
+#app[data-scene="festival"] .stageClear{background:radial-gradient(ellipse,#633268eb,#201b47dc);color:#fff0af;text-shadow:0 0 16px #ffb34d}
+@keyframes festivalSweep{from{transform:rotate(var(--from))}to{transform:rotate(var(--to))}}
+@keyframes festivalBulb{from{opacity:.65;transform:scale(.9)}to{opacity:1;transform:scale(1.08)}}
+@keyframes festivalWelcome{0%{opacity:0;transform:translateY(-22px) rotate(-5deg) scale(.85)}18%,70%{opacity:1;transform:translateY(0) rotate(-3deg) scale(1)}100%{opacity:0;transform:translateY(-14px) rotate(-1deg) scale(.98)}}
+@media(max-height:650px){.festival-banner{top:1%;padding:10px}.festival-banner b{font-size:24px}.festival-banner span{font-size:8px;margin-top:3px}.festival-lights{top:14px}}
+@media(prefers-reduced-motion:reduce){.festival-beam,.festival-lights i{animation:none!important}.festival-beam{opacity:.2}.festival-banner,#festivalCanvas{display:none}.festival-lights i{box-shadow:0 0 5px var(--bulb)}}

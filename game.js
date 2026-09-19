@@ -120,6 +120,7 @@ function later(fn, ms) {
 }
 function stopClocks() { clearInterval(timer); clearInterval(beatTimer); timer=beatTimer=null; }
 function cancelBoardWork() {
+ window.FestivalShow?.stop();
  generation++;
  pending.forEach(clearTimeout); pending.clear();
  stopClocks(); busy.clear(); startPointer=null;
@@ -169,6 +170,7 @@ function triggerBloom() {
  $('boardShell').classList.add('bloom-mode');
  $('bloomBadge').textContent='FEVER TIME · ×'+BLOOM_SCORE_MULTIPLIER;
  frameFlowers(true);
+ if(T.type==='festival')window.FestivalShow?.fever();
 }
 function ui() {
  T=ST[si];
@@ -522,6 +524,7 @@ function merge(a,b) {
  const points=bloomPoints*(butterflyBonus?BUTTERFLY_SCORE_MULTIPLIER:1);
  score+=points;total++;goals[name]=(goals[name]||0)+1;
  if(combo>=2){time=Math.min(T.t+COMBO_TIME_CAP,time+COMBO_TIME_BONUS);comboEffect(board[b].el);}
+ if(T.type==='festival')window.FestivalShow?.burst(board[b].el,combo,perfect);
  ui();floater(points,perfect);mergeRibbon(board[a].el,board[b].el);particles(board[b].el,name,perfect);
  if(butterflyBonus&&combo<2&&!reducedMotion&&navigator.vibrate)navigator.vibrate(BUTTERFLY_VIBRATION);
  const flower=document.createElement('img');flower.src=asset('flower-'+name);flower.alt=F[name].n;
@@ -550,6 +553,7 @@ function resetState() {
 function begin() {
  cancelBoardWork();T=ST[si];resetState();build();ui();fitBoard();
  $('start').classList.add('hide');run=true;beatAt=Date.now();
+ if(T.type==='festival')window.FestivalShow?.start();
  scheduleButterfly(true);
  recoverDeadBoard();
  beatTimer=setInterval(()=>{
@@ -574,6 +578,7 @@ function prepareStage(index) {
 function stageClear() {
  if(clearing||!run)return;
  clearing=true;run=false;stopClocks();endBloom();cancelPointer();
+ if(T.type==='festival')window.FestivalShow?.clear();
  savePuzzleStage((si+1)%ST.length);
  resetButterfly();
  const fx=document.createElement('div');fx.className='stageClear';
@@ -588,6 +593,7 @@ function stageClear() {
 }
 function finish() {
  if(!run)return;
+ window.FestivalShow?.stop();
  run=false;stopClocks();endBloom();cancelPointer();
  resetButterfly();
  $('endTitle').textContent=resultTitle();
@@ -610,6 +616,7 @@ function openMenu(help=false) {
  $('menuTitle').textContent=help?'농작물을 수확하는 방법':'잠시 쉬어가세요';
  $('resumeBtn').textContent=run?'계속하기':'닫기';
  $('menu').classList.remove('hide');
+ window.FestivalShow?.pause(true);
 }
 function closeMenu() {
  if(menuPaused){
@@ -622,6 +629,7 @@ function closeMenu() {
   bloomPausedRemaining=0;
  }
  menuPaused=false;$('menu').classList.add('hide');
+ window.FestivalShow?.pause(false);
 }
 function toggleDev(show) {
  const hidden=$('devPanel').classList.contains('hide');
@@ -720,5 +728,5 @@ Promise.allSettled(required.map(name=>new Promise((resolve,reject)=>{
  const missing=results.filter(r=>r.status==='rejected').map(r=>r.reason);
  if(missing.length){$('assetWarning').classList.remove('hide');console.warn('Missing Farm Friends assets:',missing);}
  document.documentElement.dataset.assetsReady=missing.length?'partial':'true';
- document.documentElement.dataset.farmVersion='puzzle-focus-2';
+ document.documentElement.dataset.farmVersion='festival-spectacle-3';
 });
