@@ -1,7 +1,0 @@
-const fs=require('node:fs'),E=require('../dist/engine.js');
-function metrics(p){let left=p.arrows.slice(),depth=0;const legal=left.filter(a=>!E.blocker(a,left,p.n)).length;while(left.length){const ids=new Set(left.filter(a=>!E.blocker(a,left,p.n)).map(a=>a.id));if(!ids.size)throw Error('Unsolvable');left=left.filter(a=>!ids.has(a.id));depth++;}return {depth,legal,count:p.arrows.length,coverage:p.arrows.reduce((s,a)=>s+a.cells.length,0)/(p.n*p.n)};}
-const baseline=Array.from({length:30},(_,i)=>({stage:i+1,...metrics(E.generate(i+1))}));
-const selected=[];
-for(const stage of [5,9,17]){const pool=[];for(let seed=1;seed<=12000;seed++){const p=E.procedural(stage,seed*9127+stage*71),m=metrics(p);if(m.legal<=3&&m.depth>=6&&m.coverage>=.72)pool.push({p,m,seed,score:m.depth*8-m.legal*5+m.count*.3});}pool.sort((a,b)=>b.score-a.score);if(pool.length<10)throw Error('Insufficient hard layouts '+stage+' '+pool.length);selected.push(...pool.slice(0,10).sort((a,b)=>a.m.depth-b.m.depth||a.score-b.score));}
-fs.writeFileSync('dist/levels.js',`/* Curated hard layouts, generated offline; deterministic and solvable. */\n(function(root){const levels=${JSON.stringify(selected.map(x=>x.p))};if(typeof module!=='undefined')module.exports=levels;else root.JellyLevels=levels;})(typeof window!=='undefined'?window:globalThis);\n`);
-const report=selected.map((x,i)=>({stage:i+1,size:x.p.n,seed:x.seed,...x.m}));fs.writeFileSync('tests/opening-metrics.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({before:baseline,after:report}));

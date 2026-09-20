@@ -1,26 +1,31 @@
-/* Original Arrow Flow puzzle engine. Paths are stored tail to head. */
-(function(root){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.GlassEngine=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-const dirs=[[1,0],[0,1],[-1,0],[0,-1]];
-const key=([x,y])=>x+','+y;
-const inside=(p,n)=>p[0]>=0&&p[1]>=0&&p[0]<n&&p[1]<n;
-function rng(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-function direction(a){let h=a.cells.at(-1),p=a.cells.at(-2);return[h[0]-p[0],h[1]-p[1]];}
-function blocker(a,arrows,n){const d=direction(a),h=a.cells.at(-1);let p=[h[0]+d[0],h[1]+d[1]];const occupied=new Map();for(const b of arrows)if(b.id!==a.id)for(const c of b.cells)occupied.set(key(c),b.id);while(inside(p,n)){if(occupied.has(key(p)))return{at:p,id:occupied.get(key(p))};p=[p[0]+d[0],p[1]+d[1]];}return null;}
-function procedural(stage,seed=7129+stage*9011,options={}){const n=options.n??Math.min(11,8+Math.floor((stage-1)/8)),random=rng(seed),used=new Set(),arrows=[];const target=Math.floor(n*n*(options.density??(stage===1?.65:.88)));let attempts=0;
-while(used.size<target&&attempts++<2400){let h=[Math.floor(random()*n),Math.floor(random()*n)],d=dirs[Math.floor(random()*4)];if(used.has(key(h)))continue;let ray=new Set(),p=[h[0]+d[0],h[1]+d[1]],clear=true;while(inside(p,n)){ray.add(key(p));if(used.has(key(p))){clear=false;break;}p=[p[0]+d[0],p[1]+d[1]];}if(!clear)continue;
-let prev=[h[0]-d[0],h[1]-d[1]];if(!inside(prev,n)||used.has(key(prev)))continue;let cells=[h,prev],local=new Set(cells.map(key)),max=(options.minLength??3)+Math.floor(random()*(options.lengthRange??(stage<4?3:7))),last=[-d[0],-d[1]];
-while(cells.length<max){const end=cells.at(-1),opts=dirs.map(v=>({v,p:[end[0]+v[0],end[1]+v[1]],rank:random()+(v[0]===last[0]&&v[1]===last[1]?.28:0)})).filter(o=>inside(o.p,n)&&!used.has(key(o.p))&&!local.has(key(o.p))&&!ray.has(key(o.p))).sort((a,b)=>b.rank-a.rank);if(!opts.length)break;const pick=opts[0];cells.push(pick.p);local.add(key(pick.p));last=pick.v;}
-cells.reverse();const a={id:arrows.length,cells,color:arrows.length%4};arrows.push(a);for(const c of cells)used.add(key(c));}
-return{n,arrows};}
-const curated=typeof module!=='undefined'?require('./levels.js'):root.JellyLevels;
-function generate(stage){return JSON.parse(JSON.stringify(curated[stage-1]));}
-function pick(x,y,arrows,n){const s=416/n,gx=(x-32)/s,gy=(y-32)/s,c=[Math.floor(gx),Math.floor(gy)];if(!inside(c,n))return null;return arrows.find(a=>a.cells.some(p=>p[0]===c[0]&&p[1]===c[1]))?.id??null;}
-const isEvent=stage=>Number.isInteger(stage)&&stage>=1&&stage<=100&&stage%5===0;
-function eventType(stage){if(!isEvent(stage))return 'normal';if(stage===100)return 'finale';if(stage===50)return 'layers';return ['rescue','key','ice','twins','royal'][(stage/5-1)%5];}
-function eventLocked(stage,a,arrows){const type=eventType(stage);if(a.id!==0)return false;if(['rescue','royal','finale'].includes(type))return arrows.some(b=>b.id!==0);if(type==='key'){const keyId=generate(stage).arrows.at(-1).id;return arrows.some(b=>b.id===keyId);}if(type==='ice'){return arrows.some(b=>b.id!==0&&b.cells.some(p=>a.cells.some(q=>Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])===1)));}return false;}
-function moveGroup(stage,a,arrows){return eventType(stage)==='twins'&&a.id<2?arrows.filter(b=>b.id<2):[a];}
-function moveBlocker(stage,a,arrows,n){const group=moveGroup(stage,a,arrows),ids=new Set(group.map(b=>b.id));for(const b of group){const hit=blocker(b,arrows.filter(c=>!ids.has(c.id)||c.id===b.id),n);if(hit)return hit;}return null;}
-function wave(stage,index){const p=generate(index===2?(stage===100?99:stage+1):stage);if(index===2)for(const a of p.arrows)a.cells=a.cells.map(([x,y])=>[p.n-1-x,p.n-1-y]);return p;}
-const api={generate,procedural,blocker,direction,inside,pick,isEvent,eventType,eventLocked,moveGroup,moveBlocker,wave};if(typeof module!=='undefined')module.exports=api;else root.Puzzle=api;
-})(typeof window!=='undefined'?window:globalThis);
+const W=10,H=20,DIRS=[[0,-1,1,4],[1,0,2,8],[0,1,4,1],[-1,0,8,2]];
+const SHAPES={I:[[0,1],[1,1],[2,1],[3,1]],O:[[0,0],[1,0],[0,1],[1,1]],T:[[1,0],[0,1],[1,1],[2,1]],S:[[1,0],[2,0],[0,1],[1,1]],Z:[[0,0],[1,0],[1,1],[2,1]],J:[[0,0],[0,1],[1,1],[2,1]],L:[[2,0],[0,1],[1,1],[2,1]]};
+function hash(text){let h=2166136261;for(const c of String(text)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function random(seed){let n=hash(seed);return()=>{n+=0x6D2B79F5;let t=n;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+function maskRotate(m){return((m<<1)&15)|(m>>3);}
+function blank(){return Array.from({length:H},()=>Array(W).fill(null));}
+function clearPlan(board){const rows=[];for(let y=0;y<H;y++)if(board[y].every(Boolean))rows.push(y);if(!rows.length)return null;
+ const seen=new Set(),cells=[];for(const y of rows)for(let x=0;x<W;x++){const k=y*W+x;seen.add(k);cells.push({x,y,depth:0,cell:board[y][x]});}
+ for(let i=0;i<cells.length;i++){const a=cells[i];for(const[dx,dy,bit,opposite]of DIRS){const x=a.x+dx,y=a.y+dy;if(x<0||x>=W||y<0||y>=H||seen.has(y*W+x))continue;const b=board[y][x];if(b&&(a.cell.mask&bit)&&(b.mask&opposite)){seen.add(y*W+x);cells.push({x,y,depth:a.depth+1,cell:b});}}}
+ return{rows,cells,extra:cells.length-rows.length*W};}
+function applyClear(board,plan){for(const c of plan.cells)board[c.y][c.x]=null;const falls=[];for(let x=0;x<W;x++){let target=H-1;for(let y=H-1;y>=0;y--){if(board[y][x]){const cell=board[y][x];board[y][x]=null;board[target][x]=cell;if(target!==y)falls.push({x,from:y,to:target,cell});target--;}}}return falls;}
+class Game{
+ constructor(seed='glass',mode='sprint'){this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;for(let i=0;i<4;i++)this.queue.push(this.makePiece());this.spawn();}
+ makePiece(){if(!this.bag.length){this.bag=Object.keys(SHAPES);for(let i=6;i>0;i--){const j=Math.floor(this.rng()*(i+1));[this.bag[i],this.bag[j]]=[this.bag[j],this.bag[i]];}}
+ const type=this.bag.pop(),masks=[3,6,9,12,5,10,15];return{type,size:type==='I'?4:type==='O'?2:3,x:3,y:0,cells:SHAPES[type].map(([x,y])=>({x,y,mask:this.rng()<.66?masks[Math.floor(this.rng()*masks.length)]:0,id:++this.serial,type}))};}
+ spawn(){this.active=this.queue.shift();this.queue.push(this.makePiece());this.active.x=this.active.type==='O'?4:3;this.active.y=0;this.holdUsed=false;if(!this.fits(this.active))this.over=true;return!this.over;}
+ fits(p,dx=0,dy=0){return p.cells.every(c=>{const x=p.x+c.x+dx,y=p.y+c.y+dy;return x>=0&&x<W&&y>=0&&y<H&&!this.board[y][x];});}
+ move(dx,dy=0){if(!this.active||!this.fits(this.active,dx,dy))return false;this.active.x+=dx;this.active.y+=dy;return true;}
+ rotate(){if(!this.active)return false;const p=this.active;const next={...p,cells:p.cells.map(c=>({...c,x:p.size-1-c.y,y:c.x,mask:maskRotate(c.mask)}))};for(const[dx,dy]of[[0,0],[-1,0],[1,0],[-2,0],[2,0],[0,-1],[-1,-1],[1,-1],[0,-2]])if(this.fits(next,dx,dy)){next.x+=dx;next.y+=dy;this.active=next;return true;}return false;}
+ dropDistance(){if(!this.active)return 0;let d=0;while(this.fits(this.active,0,d+1))d++;return d;}
+ hold(){if(this.holdUsed||!this.active)return false;const p=this.active;p.x=3;p.y=0;if(this.held){this.active=this.held;this.held=p;this.active.x=this.active.type==='O'?4:3;this.active.y=0;if(!this.fits(this.active))this.over=true;}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
+ lock(){if(!this.active)return;for(const c of this.active.cells)this.board[this.active.y+c.y][this.active.x+c.x]={...c};this.pieces++;this.active=null;}
+ resolve(plan,chain){const falls=applyClear(this.board,plan);this.lines+=plan.rows.length;this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0))*chain;this.score+=gain;return{falls,gain};}
+ get level(){return 1+Math.floor(this.lines/8);}
+ get gravity(){return Math.max(130,920*Math.pow(.83,this.level-1));}
+}
+function tutorial(){const g=new Game('learn','tutorial');const cell=(mask=0)=>({mask,id:++g.serial,type:'I'});for(let x=0;x<6;x++)g.board[19][x]=cell();g.board[19][3]=cell(1);g.board[18][3]=cell(5);g.board[17][3]=cell(6);g.board[17][4]=cell(8);g.board[18][4]=cell();g.active={type:'I',size:4,x:6,y:0,cells:SHAPES.I.map(([x,y])=>({...cell(),x,y}))};return g;}
+return{W,H,DIRS,SHAPES,hash,random,maskRotate,blank,clearPlan,applyClear,Game,tutorial};
+});
