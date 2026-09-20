@@ -22,51 +22,45 @@
 
 .event-jelly.event-locked .jelly-body{stroke:#2777a3;stroke-dasharray:2 3;stroke-width:3}.event-jelly:not(.event-locked) .jelly-body{stroke:#a16f09;stroke-dasharray:none}.event-level-mark{white-space:normal;line-height:1.25;font-size:10px}
 
-/* Glass Glow: stage-one visual skin, original geometry and input preserved. */
-body.ribbon-stage{color:#ecedff;min-height:100vh;background:radial-gradient(ellipse at 15% 12%,#3e325a 0,transparent 45%),radial-gradient(ellipse at 92% 55%,#153f51 0,transparent 48%),#10162c}
-.ribbon-stage .brand{color:#f0efff}.ribbon-stage .brand-mark{border-radius:50%;background:linear-gradient(140deg,#dbbcff,#7bacef 55%,#82e9d2);color:#27304f;box-shadow:inset 0 1px 3px #fff9,0 3px 16px #c5a9ff30}
-.ribbon-stage .eyebrow{color:#c2b4ec;letter-spacing:2.5px}.ribbon-stage h1{color:#f1ecff;letter-spacing:-1px}
-.ribbon-stage .title-row p,.ribbon-stage .under-board,.ribbon-stage .footnote{color:#acb7d1}
-.ribbon-stage .calm-tag{color:#c0dcd9;border-color:#536274;background:#ffffff08}
-.ribbon-stage .game{background:#172138;border:1px solid #7780a45c;border-radius:30px;box-shadow:0 24px 65px #0005,inset 0 1px #ffffff20}
-.ribbon-stage .game-top{background:linear-gradient(120deg,#35314a,#1a3042)}
-.ribbon-stage .small-label,.ribbon-stage .chevron,.ribbon-stage .stage-meta{color:#b5bdd7}.ribbon-stage .stage-meta{border-color:#566078}.ribbon-stage .stage-meta span:first-child{color:#b3dedc}
-.ribbon-stage .heart-empty{color:#4b5067}.ribbon-stage .hearts{color:#ffb3ce}
-.ribbon-stage .progress-track{background:#283349}.ribbon-stage #progress{background:linear-gradient(90deg,#bba6f5,#8cdef1,#acf3d7)}
-.ribbon-stage .board-wrap{background:radial-gradient(ellipse at 25% 15%,#38345188,transparent 70%),#141e33}
-.ribbon-stage #board{background:transparent}.ribbon-stage #board>rect{fill:#172439;rx:24}
-.ribbon-stage .floor-cell{fill:transparent;stroke:none}.ribbon-stage .floor-cell.covered{fill:#26354c;fill-opacity:.23;rx:30}.ribbon-stage .floor-cell.revealed{fill:transparent}
-.ribbon-stage #hidden-picture{image-rendering:auto}
-.ribbon-stage .picture-label,.ribbon-stage .picture-label strong,.ribbon-stage .board-caption{color:#b0bbd4}.ribbon-stage .tiny-arrow{color:#b5eadc}
-.ribbon-stage .jelly-link{stroke-width:7;opacity:.62;stroke-linecap:round}
-.ribbon-stage .tools{background:#1b273d;border-color:#48536b;padding-bottom:18px}
-.ribbon-stage .tools button{background:#2e3b52;color:#e1e7fa;border-radius:22px}.ribbon-stage .tools button:hover{background:#41536d}
-.ribbon-stage .tools .hint-button{background:linear-gradient(120deg,#c5b5f2,#a5dfe8);color:#26334c;box-shadow:0 4px 18px #a5dfe81a}
-.ribbon-stage .icon-button{background:#30394f;color:#eeeaff;border-color:#626984}
-.ribbon-stage .developer-tools{background:#1b263c;border-color:#42516a}.ribbon-stage .developer-tools p{color:#adbdd5}.ribbon-stage .developer-tools button{background:#35455e;color:#e9eeff}
-.ribbon-stage .event-collection{color:#bcb3ce}
-
-/* Second pass: continuous satin ribbons instead of repeated beads. */
-body.ribbon-stage{background:radial-gradient(ellipse at 0 0,#543651 0,transparent 48%),radial-gradient(ellipse at 100% 50%,#194957 0,transparent 55%),#11182b}
-.ribbon-stage .game{border-radius:32px;background:#1a2438;box-shadow:0 25px 65px #0006,inset 0 1px #ffffff30}
-.ribbon-stage .board-wrap{background:radial-gradient(ellipse at 50% 0,#39415a66,transparent 65%),#141f32}
-.ribbon-stage #board>rect{fill:#172438;rx:30}
-.ribbon-stage .floor-cell.covered{fill:none;stroke:none}
-.ribbon-stage .jelly-link{opacity:0}
-.ribbon-path{pointer-events:none;stroke-linecap:round;stroke-linejoin:round}
-.ribbon-outline{stroke:#091322;opacity:.85}
-.ribbon-color{stroke:currentColor}
-.ribbon-satin{stroke:url(#ribbon-satin)}
-.ribbon-thread{stroke:#fff;opacity:.5}
-.ribbon-tip{fill:currentColor;stroke:#effaff;stroke-width:1.1;stroke-linejoin:round}
-.ribbon-direction{fill:none;stroke:#11213b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.ribbon-stage .jelly.hinted .ribbon-outline,.ribbon-stage .jelly.dev-legal .ribbon-outline{stroke:#bdffe7;stroke-dasharray:5 4;opacity:1}
-.ribbon-stage .jelly.wrong .ribbon-outline,.ribbon-stage .jelly.blocking .ribbon-outline{stroke:#ffb2ca;opacity:1}
-.ribbon-stage .jelly:focus-visible .ribbon-outline,.ribbon-stage .jelly.pressed .ribbon-outline{stroke:#fff;opacity:1}
-.ribbon-stage .ribbon-leaving .ribbon-thread{stroke-dasharray:8 14;animation:ribbon-stream .42s linear infinite;opacity:.95}
-@keyframes ribbon-stream{to{stroke-dashoffset:-44}}
-.ribbon-stage .picture-label>span{font-size:0}.ribbon-stage .picture-label>span:after{content:'UNRAVEL THE LIGHT';font-size:9px;letter-spacing:2px}
-.ribbon-stage .tools .hint-button{background:linear-gradient(115deg,#f4bfda,#c4b9ef 45%,#a6e1de)}
-.ribbon-stage .brand-mark{background:linear-gradient(140deg,#f4b7d0,#c0b4ee,#92dace)}
-@media(prefers-reduced-motion:reduce){.ribbon-stage .ribbon-leaving .ribbon-thread{animation:none}}
-
+/* Crystal Studio — composed, bright, dimensional stage-one art direction. */
+body.crystal-stage{background:radial-gradient(ellipse at 0 0,#f4e5dc 0,transparent 50%),radial-gradient(ellipse at 100% 70%,#e0ece9 0,transparent 48%),#f5f2ec;color:#293d43;min-height:100vh}
+.crystal-stage .site-header{max-width:660px;padding-top:24px;padding-bottom:20px}
+.crystal-stage .brand{font-size:23px;letter-spacing:-1px;color:#294347;gap:5px}.crystal-stage .brand-light{font-weight:400}
+.crystal-stage .brand-mark{background:#294b50;color:#c6e7df;border-radius:12px;font-size:34px;box-shadow:inset 0 1px #ffffff40}
+.crystal-stage main{max-width:560px;margin-top:14px}.crystal-stage .eyebrow{font-size:10px;letter-spacing:2.6px;color:#8a8172;margin-bottom:13px}
+.crystal-stage h1{font-size:32px;font-weight:750;letter-spacing:-1.4px;color:#293f43}.crystal-stage .title-row{margin-bottom:24px}.crystal-stage .title-row p{font-size:13px;color:#7c8886;line-height:1.6}
+.crystal-stage .calm-tag{border:1px solid #d8dfd4;color:#64827b;background:#f9fcf680;border-radius:9px;font-size:10px;padding:8px}
+.crystal-stage .game{background:#fffdf7;border:1px solid #fff;border-radius:28px;box-shadow:0 18px 48px #46595517,0 2px 5px #46595508;overflow:hidden}
+.crystal-stage .game-top{background:#fffdf8;padding:19px 20px;gap:14px}.crystal-stage .small-label{font-size:9px;letter-spacing:1.5px;color:#92998f}.crystal-stage .level-button strong{font-size:29px;color:#334d50}
+.crystal-stage .stage-meta{border-color:#e4e7dd;color:#91988b;font-size:11px;gap:5px}.crystal-stage .stage-meta span:first-child{color:#568c80}.crystal-stage .hearts{color:#d9818d;font-size:19px;letter-spacing:1px}.crystal-stage .heart-empty{color:#e8e8df}
+.crystal-stage .progress-track{height:3px;background:#eaf0e7}.crystal-stage #progress{background:linear-gradient(90deg,#6eb7a5,#b8d5a6)}
+.crystal-stage .board-wrap{padding:10px 7px 0;background:#eef1e9}.crystal-stage #board{background:transparent}
+.crystal-stage #board>rect{fill:#e4eae1;rx:20}.crystal-stage #hidden-picture{image-rendering:auto}
+.crystal-stage .floor-cell.covered{fill:#e4eae1;stroke:none}.crystal-stage .floor-cell.revealed{fill:#fffaf0;fill-opacity:.12;stroke:none}
+.crystal-stage .picture-label{padding:9px 21px 3px;color:#92a094}.crystal-stage .picture-label strong{color:#7c9385;font-size:10px}
+.crystal-stage .picture-label>span{font-size:0}.crystal-stage .picture-label>span:after{content:'THE HIDDEN CANVAS';font-size:8px;letter-spacing:1.7px}
+.crystal-stage .board-caption{font-size:12px;color:#778b80;min-height:49px;padding:8px 13px}.crystal-stage .tiny-arrow{color:#719f8b}
+.crystal-stage .jelly-link{stroke-width:8;opacity:.75}
+.crystal-stage .crystal-shadow{fill:#465b65;opacity:.19}
+.crystal-stage .crystal-body{fill:currentColor;stroke:#ffffffaa;stroke-width:1.1}
+.crystal-facet-top{fill:#fff;opacity:.55}.crystal-facet-left{fill:#fff;opacity:.23}.crystal-facet-right{fill:#19325b;opacity:.24}.crystal-facet-bottom{fill:#17305d;opacity:.31}
+.crystal-window{fill:url(#crystal-window);stroke:#ffffff45;stroke-width:.6}
+.crystal-shine{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;opacity:.85}
+.crystal-direction-disc{fill:#fff;fill-opacity:.88;stroke:#fff;stroke-width:.6}
+.crystal-direction{fill:none;stroke:#334d65;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.crystal-stage .jelly.hinted .crystal-body,.crystal-stage .jelly.dev-legal .crystal-body{stroke:#215c4b;stroke-width:3;stroke-dasharray:3 2}
+.crystal-stage .jelly.wrong .crystal-body,.crystal-stage .jelly.blocking .crystal-body{stroke:#a43156;stroke-width:3}
+.crystal-stage .jelly:focus-visible .crystal-body{stroke:#244851;stroke-width:3}
+.crystal-stage .jelly.pressed .crystal-body{filter:brightness(1.1);stroke:#fff;stroke-width:2}
+.crystal-stage .crystal-leaving .crystal-shine{animation:crystal-light .4s ease-out}
+@keyframes crystal-light{50%{stroke-width:3;opacity:1}100%{opacity:.6}}
+.crystal-spark{transform-box:fill-box;transform-origin:center;animation:crystal-spark .45s ease-out forwards}
+@keyframes crystal-spark{from{opacity:1;translate:0 0}to{opacity:0;translate:var(--sx) var(--sy)}}
+.crystal-stage .tools{background:#fffdf7;border-top:1px solid #e9eee2;padding:16px 13px;gap:9px}.crystal-stage .tools button{border-radius:14px;background:#f1f3eb;color:#6b7e74;font-size:12px;min-height:47px}.crystal-stage .tools button:hover{background:#e6ece2}
+.crystal-stage .tools .hint-button{background:#345d58;color:#f4f9ee;box-shadow:0 5px 12px #345d5820}.crystal-stage .tools .hint-button:hover{background:#244c47}
+.crystal-stage .under-board{color:#8a9587;font-size:10px;margin-top:18px}.crystal-stage .event-collection{color:#a09c8d;font-size:11px;margin:18px 0}.crystal-stage .footnote{color:#9b9e90;letter-spacing:.7px;font-size:11px}
+.crystal-stage .developer-tools{background:#ffffff40;border:1px solid #dfe4d8;border-radius:13px;color:#7f8b7b;font-size:12px;padding:12px 14px;margin-top:22px}.crystal-stage .developer-tools summary{font-size:12px;min-height:24px}.crystal-stage .developer-tools button{background:#e8eee2;color:#587462}.crystal-stage .developer-tools p{color:#7e8d7b}
+.crystal-stage .icon-button{background:#fffdf5;border-color:#dfe3d7;color:#76897c}
+.crystal-stage dialog{background:#fffdf7;border-color:#e4e8dd;color:#334d50}.crystal-stage dialog .primary{background:#345d58}.crystal-stage dialog .reward-picture{border-color:#e5ecdf;border-radius:20px}.crystal-stage dialog .level-tile.current{background:#345d58;border-color:#345d58}
+@media(max-width:420px){.crystal-stage .site-header{padding:18px 20px}.crystal-stage main{padding:0 14px;margin-top:10px}.crystal-stage h1{font-size:29px}.crystal-stage .title-row{gap:8px;margin-bottom:20px}.crystal-stage .title-row p{font-size:11px}.crystal-stage .calm-tag{font-size:9px;padding:7px 6px}.crystal-stage .game-top{padding:16px}.crystal-stage .board-wrap{padding:8px 3px 0}.crystal-stage .tools{padding:13px 10px}}
+@media(prefers-reduced-motion:reduce){.crystal-spark,.crystal-stage .crystal-leaving .crystal-shine{animation:none}}
