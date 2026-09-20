@@ -23,40 +23,50 @@
 .event-jelly.event-locked .jelly-body{stroke:#2777a3;stroke-dasharray:2 3;stroke-width:3}.event-jelly:not(.event-locked) .jelly-body{stroke:#a16f09;stroke-dasharray:none}.event-level-mark{white-space:normal;line-height:1.25;font-size:10px}
 
 /* Glass Glow: stage-one visual skin, original geometry and input preserved. */
-body.glass-stage{color:#ecedff;min-height:100vh;background:radial-gradient(ellipse at 15% 12%,#3e325a 0,transparent 45%),radial-gradient(ellipse at 92% 55%,#153f51 0,transparent 48%),#10162c}
-.glass-stage .brand{color:#f0efff}.glass-stage .brand-mark{border-radius:50%;background:linear-gradient(140deg,#dbbcff,#7bacef 55%,#82e9d2);color:#27304f;box-shadow:inset 0 1px 3px #fff9,0 3px 16px #c5a9ff30}
-.glass-stage .eyebrow{color:#c2b4ec;letter-spacing:2.5px}.glass-stage h1{color:#f1ecff;letter-spacing:-1px}
-.glass-stage .title-row p,.glass-stage .under-board,.glass-stage .footnote{color:#acb7d1}
-.glass-stage .calm-tag{color:#c0dcd9;border-color:#536274;background:#ffffff08}
-.glass-stage .game{background:#172138;border:1px solid #7780a45c;border-radius:30px;box-shadow:0 24px 65px #0005,inset 0 1px #ffffff20}
-.glass-stage .game-top{background:linear-gradient(120deg,#35314a,#1a3042)}
-.glass-stage .small-label,.glass-stage .chevron,.glass-stage .stage-meta{color:#b5bdd7}.glass-stage .stage-meta{border-color:#566078}.glass-stage .stage-meta span:first-child{color:#b3dedc}
-.glass-stage .heart-empty{color:#4b5067}.glass-stage .hearts{color:#ffb3ce}
-.glass-stage .progress-track{background:#283349}.glass-stage #progress{background:linear-gradient(90deg,#bba6f5,#8cdef1,#acf3d7)}
-.glass-stage .board-wrap{background:radial-gradient(ellipse at 25% 15%,#38345188,transparent 70%),#141e33}
-.glass-stage #board{background:transparent}.glass-stage #board>rect{fill:#172439;rx:24}
-.glass-stage .floor-cell{fill:transparent;stroke:none}.glass-stage .floor-cell.covered{fill:#26354c;fill-opacity:.23;rx:30}.glass-stage .floor-cell.revealed{fill:transparent}
-.glass-stage #hidden-picture{image-rendering:auto}
-.glass-stage .picture-label,.glass-stage .picture-label strong,.glass-stage .board-caption{color:#b0bbd4}.glass-stage .tiny-arrow{color:#b5eadc}
-.glass-stage .jelly-link{stroke-width:7;opacity:.62;stroke-linecap:round}
-.glass-stage .glass-shadow{fill:#020816;opacity:.45}
-.glass-stage .glass-body{fill:currentColor;stroke:#ffffff98;stroke-width:1.2;fill-opacity:.93}
-.glass-stage .glass-depth{pointer-events:none}
-.glass-stage .glass-caustic{fill:#e1ffff;opacity:.36}
-.glass-stage .glass-arc{fill:none;stroke:#f5ffff;stroke-width:1.4;opacity:.55;stroke-linecap:round}
-.glass-stage .glass-highlight{fill:white;opacity:.88}.glass-stage .glass-glint{fill:#fff;opacity:.85}
-.glass-stage .glass-direction-disc{fill:#101c36;fill-opacity:.73;stroke:#ffffff80;stroke-width:.7}
-.glass-stage .glass-direction{fill:none;stroke:#fff;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
-.glass-stage .jelly.hinted .glass-body,.glass-stage .jelly.dev-legal .glass-body{stroke:#c4ffdf;stroke-width:3;stroke-dasharray:4 2}
-.glass-stage .jelly.wrong .glass-body,.glass-stage .jelly.blocking .glass-body{stroke:#ff879e;stroke-width:3}
-.glass-stage .jelly:focus-visible .glass-body{stroke:white;stroke-width:3}
-.glass-stage .jelly.pressed .glass-body{stroke:white;stroke-width:2.5}
-.glass-stage .glass-leaving .glass-caustic{animation:glass-flash .45s ease-out}
-@keyframes glass-flash{0%{opacity:.36}35%{opacity:.9}100%{opacity:.36}}
-.glass-stage .tools{background:#1b273d;border-color:#48536b;padding-bottom:18px}
-.glass-stage .tools button{background:#2e3b52;color:#e1e7fa;border-radius:22px}.glass-stage .tools button:hover{background:#41536d}
-.glass-stage .tools .hint-button{background:linear-gradient(120deg,#c5b5f2,#a5dfe8);color:#26334c;box-shadow:0 4px 18px #a5dfe81a}
-.glass-stage .icon-button{background:#30394f;color:#eeeaff;border-color:#626984}
-.glass-stage .developer-tools{background:#1b263c;border-color:#42516a}.glass-stage .developer-tools p{color:#adbdd5}.glass-stage .developer-tools button{background:#35455e;color:#e9eeff}
-.glass-stage .event-collection{color:#bcb3ce}
-@media(prefers-reduced-motion:reduce){.glass-stage .glass-leaving .glass-caustic{animation:none}}
+body.ribbon-stage{color:#ecedff;min-height:100vh;background:radial-gradient(ellipse at 15% 12%,#3e325a 0,transparent 45%),radial-gradient(ellipse at 92% 55%,#153f51 0,transparent 48%),#10162c}
+.ribbon-stage .brand{color:#f0efff}.ribbon-stage .brand-mark{border-radius:50%;background:linear-gradient(140deg,#dbbcff,#7bacef 55%,#82e9d2);color:#27304f;box-shadow:inset 0 1px 3px #fff9,0 3px 16px #c5a9ff30}
+.ribbon-stage .eyebrow{color:#c2b4ec;letter-spacing:2.5px}.ribbon-stage h1{color:#f1ecff;letter-spacing:-1px}
+.ribbon-stage .title-row p,.ribbon-stage .under-board,.ribbon-stage .footnote{color:#acb7d1}
+.ribbon-stage .calm-tag{color:#c0dcd9;border-color:#536274;background:#ffffff08}
+.ribbon-stage .game{background:#172138;border:1px solid #7780a45c;border-radius:30px;box-shadow:0 24px 65px #0005,inset 0 1px #ffffff20}
+.ribbon-stage .game-top{background:linear-gradient(120deg,#35314a,#1a3042)}
+.ribbon-stage .small-label,.ribbon-stage .chevron,.ribbon-stage .stage-meta{color:#b5bdd7}.ribbon-stage .stage-meta{border-color:#566078}.ribbon-stage .stage-meta span:first-child{color:#b3dedc}
+.ribbon-stage .heart-empty{color:#4b5067}.ribbon-stage .hearts{color:#ffb3ce}
+.ribbon-stage .progress-track{background:#283349}.ribbon-stage #progress{background:linear-gradient(90deg,#bba6f5,#8cdef1,#acf3d7)}
+.ribbon-stage .board-wrap{background:radial-gradient(ellipse at 25% 15%,#38345188,transparent 70%),#141e33}
+.ribbon-stage #board{background:transparent}.ribbon-stage #board>rect{fill:#172439;rx:24}
+.ribbon-stage .floor-cell{fill:transparent;stroke:none}.ribbon-stage .floor-cell.covered{fill:#26354c;fill-opacity:.23;rx:30}.ribbon-stage .floor-cell.revealed{fill:transparent}
+.ribbon-stage #hidden-picture{image-rendering:auto}
+.ribbon-stage .picture-label,.ribbon-stage .picture-label strong,.ribbon-stage .board-caption{color:#b0bbd4}.ribbon-stage .tiny-arrow{color:#b5eadc}
+.ribbon-stage .jelly-link{stroke-width:7;opacity:.62;stroke-linecap:round}
+.ribbon-stage .tools{background:#1b273d;border-color:#48536b;padding-bottom:18px}
+.ribbon-stage .tools button{background:#2e3b52;color:#e1e7fa;border-radius:22px}.ribbon-stage .tools button:hover{background:#41536d}
+.ribbon-stage .tools .hint-button{background:linear-gradient(120deg,#c5b5f2,#a5dfe8);color:#26334c;box-shadow:0 4px 18px #a5dfe81a}
+.ribbon-stage .icon-button{background:#30394f;color:#eeeaff;border-color:#626984}
+.ribbon-stage .developer-tools{background:#1b263c;border-color:#42516a}.ribbon-stage .developer-tools p{color:#adbdd5}.ribbon-stage .developer-tools button{background:#35455e;color:#e9eeff}
+.ribbon-stage .event-collection{color:#bcb3ce}
+
+/* Second pass: continuous satin ribbons instead of repeated beads. */
+body.ribbon-stage{background:radial-gradient(ellipse at 0 0,#543651 0,transparent 48%),radial-gradient(ellipse at 100% 50%,#194957 0,transparent 55%),#11182b}
+.ribbon-stage .game{border-radius:32px;background:#1a2438;box-shadow:0 25px 65px #0006,inset 0 1px #ffffff30}
+.ribbon-stage .board-wrap{background:radial-gradient(ellipse at 50% 0,#39415a66,transparent 65%),#141f32}
+.ribbon-stage #board>rect{fill:#172438;rx:30}
+.ribbon-stage .floor-cell.covered{fill:none;stroke:none}
+.ribbon-stage .jelly-link{opacity:0}
+.ribbon-path{pointer-events:none;stroke-linecap:round;stroke-linejoin:round}
+.ribbon-outline{stroke:#091322;opacity:.85}
+.ribbon-color{stroke:currentColor}
+.ribbon-satin{stroke:url(#ribbon-satin)}
+.ribbon-thread{stroke:#fff;opacity:.5}
+.ribbon-tip{fill:currentColor;stroke:#effaff;stroke-width:1.1;stroke-linejoin:round}
+.ribbon-direction{fill:none;stroke:#11213b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ribbon-stage .jelly.hinted .ribbon-outline,.ribbon-stage .jelly.dev-legal .ribbon-outline{stroke:#bdffe7;stroke-dasharray:5 4;opacity:1}
+.ribbon-stage .jelly.wrong .ribbon-outline,.ribbon-stage .jelly.blocking .ribbon-outline{stroke:#ffb2ca;opacity:1}
+.ribbon-stage .jelly:focus-visible .ribbon-outline,.ribbon-stage .jelly.pressed .ribbon-outline{stroke:#fff;opacity:1}
+.ribbon-stage .ribbon-leaving .ribbon-thread{stroke-dasharray:8 14;animation:ribbon-stream .42s linear infinite;opacity:.95}
+@keyframes ribbon-stream{to{stroke-dashoffset:-44}}
+.ribbon-stage .picture-label>span{font-size:0}.ribbon-stage .picture-label>span:after{content:'UNRAVEL THE LIGHT';font-size:9px;letter-spacing:2px}
+.ribbon-stage .tools .hint-button{background:linear-gradient(115deg,#f4bfda,#c4b9ef 45%,#a6e1de)}
+.ribbon-stage .brand-mark{background:linear-gradient(140deg,#f4b7d0,#c0b4ee,#92dace)}
+@media(prefers-reduced-motion:reduce){.ribbon-stage .ribbon-leaving .ribbon-thread{animation:none}}
+
