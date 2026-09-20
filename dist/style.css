@@ -21,3 +21,39 @@
 .event-banner{padding:13px 18px;background:#fff2cc;color:#695017;line-height:1.5}.event-banner strong,.event-banner span{display:block}.event-banner strong{font-size:15px}.event-banner span{font-size:14px}.event-jelly .jelly-body{stroke:#9b640b;stroke-width:3;stroke-dasharray:5 2}.event-star{fill:#895705;stroke:#fff5ce;stroke-width:1;paint-order:stroke;font-size:17px;font-weight:800;pointer-events:none}.event-collection{text-align:center;font-size:14px;color:#79602a}.event-award{margin:16px 0;padding:12px;background:#fff2cc;border-radius:12px;color:#695017}.level-tile.event-level{height:76px;border-color:#b98e37}.event-level-mark{display:block;font-size:11px;line-height:1.6}.level-tile.current .event-level-mark{color:white}
 
 .event-jelly.event-locked .jelly-body{stroke:#2777a3;stroke-dasharray:2 3;stroke-width:3}.event-jelly:not(.event-locked) .jelly-body{stroke:#a16f09;stroke-dasharray:none}.event-level-mark{white-space:normal;line-height:1.25;font-size:10px}
+
+/* Neon Core preview: scoped to stage 01. No continuous filters or particles. */
+body.neon-stage{background:radial-gradient(ellipse at 50% 20%,#152943 0,#080f1e 70%);color:#e3ecff;min-height:100vh}
+.neon-stage .brand{color:#e3ecff}.neon-stage .brand-mark{background:#18364d;color:#72efed;border:1px solid #39777f}
+.neon-stage .eyebrow{color:#76dddc;letter-spacing:2px}
+.neon-stage .title-row p,.neon-stage .under-board,.neon-stage .footnote{color:#9baec9}
+.neon-stage .calm-tag{color:#a7d8e3;border-color:#315268;background:#102233}
+.neon-stage .game{background:#101c2e;border-color:#36536c;box-shadow:0 20px 60px #0005,0 0 28px #4bded00a}
+.neon-stage .game-top{background:linear-gradient(135deg,#1a2a40,#101b2e)}
+.neon-stage .small-label,.neon-stage .chevron,.neon-stage .stage-meta{color:#a5b9d4}
+.neon-stage .stage-meta{border-color:#33455e}.neon-stage .stage-meta span:first-child{color:#75e7dc}
+.neon-stage .heart-empty{color:#39465d}.neon-stage .progress-track{background:#24344b}
+.neon-stage #progress{background:linear-gradient(90deg,#43bdec,#82ffe0)}
+.neon-stage .board-wrap,.neon-stage #board{background:#0b1425}
+.neon-stage #board>rect{fill:#17283d}
+.neon-stage .floor-cell.covered{fill:#1d3047;stroke:#304962;stroke-width:.6}
+.neon-stage .floor-cell.revealed{fill:#0a1729;fill-opacity:.25}
+.neon-stage .picture-label,.neon-stage .picture-label strong,.neon-stage .board-caption{color:#9bb1ce}
+.neon-stage .tiny-arrow{color:#74f0dc}
+.neon-stage .jelly-link{stroke-width:12;opacity:.8}
+.neon-stage .core-shell{fill:#101c2d;stroke:#6b839c;stroke-width:1.3}
+.neon-stage .core-energy{fill:currentColor;fill-opacity:.85;stroke:currentColor;stroke-width:2}
+.neon-stage .core-shine{fill:none;stroke:#fff;stroke-opacity:.85;stroke-width:2;stroke-linecap:round}
+.neon-stage .core-direction{fill:none;stroke:#081522;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke}
+.neon-stage .jelly.pressed .core-shell{stroke:#fff;stroke-width:3}
+.neon-stage .jelly.hinted .core-shell,.neon-stage .jelly.dev-legal .core-shell{stroke:#91ffd8;stroke-width:3;stroke-dasharray:4 2}
+.neon-stage .jelly.wrong .core-shell,.neon-stage .jelly.blocking .core-shell{stroke:#ff758f;stroke-width:3}
+.neon-stage .jelly:focus-visible .core-shell{stroke:#fff;stroke-width:3}
+.neon-stage .tools{border-color:#2c4059;background:#111e31}
+.neon-stage .tools button{background:#20324a;color:#dceaff}
+.neon-stage .tools button:hover{background:#304b67}
+.neon-stage .tools .hint-button{background:#72ebd8;color:#0a2332;box-shadow:0 3px 16px #72ebd820}
+.neon-stage .icon-button{background:#17263c;border-color:#3e536d;color:#c8e4f8}
+.neon-stage .developer-tools{background:#122037;border-color:#304963}
+.neon-stage .developer-tools p{color:#abc0dc}.neon-stage .developer-tools button{background:#243c59;color:#deefff}
+.neon-stage .event-collection{color:#b4a883}
