@@ -3,3 +3,4 @@ Branch: dev
 Purpose: verify Cloudflare automatic non-production branch deployment.
 Retry: static assets deployment configuration enabled.
 Version configuration test: 3
+Preview alias test: dev
