@@ -89,6 +89,7 @@ function updateHUD(){
  $('mode-label').textContent=materials[game.material].name+' · '+modes[mode];$('material-guide').textContent=materials[game.material].rule;$('play-section').setAttribute('data-material',game.material);$('clear-label').textContent=game.material==='glass'?'제거':'연결 제거';$('clear-unit').textContent=game.material==='glass'?'줄':'묶음';$('extra-label').textContent=game.material==='glass'?'균열 파쇄':'제거한 칸';$('seed-label').textContent=mode==='tutorial'?'LEARN':state==='menu'?'READY':game.seed.slice(-9);
  $('side-best').textContent=best().toLocaleString();$('side-best-label').textContent=modes[mode];
  $('best-mini').textContent='BEST '+best().toLocaleString()+' · 연쇄 '+(Number(saved.records[bestKey()]?.chain)||0);
+ $('rail-drop').disabled=state!=='playing';
  $('hold').disabled=state!=='playing'||game.holdUsed||mode==='tutorial';
  $('touchpad').setAttribute('aria-disabled',String(state!=='playing'));$('pause').disabled=!['playing','resolving','paused'].includes(state);$('pause').setAttribute('aria-label',state==='paused'?'계속하기':'일시정지');
  for(const b of document.querySelectorAll('.controls button'))b.disabled=state!=='playing';
@@ -335,7 +336,7 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
   const chrome=shell.getBoundingClientRect().height-space.getBoundingClientRect().height;
   const gap=parseFloat(getComputedStyle(space).columnGap)||0;
   const widthLimit=(space.clientWidth-rail.getBoundingClientRect().width-gap)*2;
-  const floor=Math.min(300,widthLimit);
+  const floor=Math.min(380,widthLimit);
   const target=Math.floor(Math.max(floor,Math.min(widthLimit,height-chrome-8)));
   if(target>0&&section.style.getPropertyValue('--board-h')!==target+'px')section.style.setProperty('--board-h',target+'px');
  }
