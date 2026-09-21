@@ -48,7 +48,7 @@ function settleStep(board,material,step=0){
   const x=step%2?W-1-n:n,cell=board[y][x];if(!cell)continue;
   let target=!board[y+1][x]?x:null;
   const dirs=(cell.id+step)%2?[-1,1]:[1,-1];
-  if(target===null)for(const dir of dirs){const nx=x+dir;if(nx>=0&&nx<W&&!board[y+1][nx]){target=nx;break;}}
+  if(target===null)for(const dir of dirs){const nx=x+dir;if(nx>=0&&nx<W&&!board[y+1][nx]&&(material!=='sand'||!board[y][nx])){target=nx;break;}}
   if(target===null&&material==='water'){
    const paths=[];
    for(const dir of dirs)for(let d=1;d<W;d++){const nx=x+dir*d;if(nx<0||nx>=W||board[y][nx])break;if(!board[y+1][nx]){paths.push({x:nx,d});break;}}
@@ -59,7 +59,7 @@ function settleStep(board,material,step=0){
  return moves;
 }
 class Game{
- constructor(seed='glass',mode='sprint',material='glass',difficulty='standard'){this.difficulty=['calm','standard','challenge'].includes(difficulty)?difficulty:'standard';this.material=['glass','sand','water','jelly'].includes(material)?material:'glass';this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;for(let i=0;i<4;i++)this.queue.push(this.makePiece());if(this.difficulty==='challenge')this.prepareChallenge();this.spawn();}
+ constructor(seed='glass',mode='sprint',material='glass',difficulty='standard'){this.difficulty=['calm','standard','challenge'].includes(difficulty)?difficulty:'standard';this.material=['glass','sand','water','jelly'].includes(material)?material:'glass';this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;this.sandColors=2;for(let i=0;i<4;i++)this.queue.push(this.makePiece());if(this.difficulty==='challenge')this.prepareChallenge();this.spawn();}
  prepareChallenge(){
   const offset=hash(this.seed+'-terrain')%W;
   for(let y=H-3;y<H;y++)for(let x=0;x<W;x++){
@@ -79,7 +79,7 @@ class Game{
  hold(){if(this.holdUsed||!this.active)return false;const p=this.active;p.x=3;p.y=0;if(this.held){this.active=this.held;this.held=p;this.active.x=this.active.type==='O'?4:3;this.active.y=0;if(!this.fits(this.active))this.over=true;}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
  lock(){if(!this.active)return;for(const c of this.active.cells)this.board[this.active.y+c.y][this.active.x+c.x]={...c};this.pieces++;this.active=null;}
  resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const chainMultiplier=this.material==='sand'?Math.pow(2,Math.max(0,chain-1)):chain;const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chainMultiplier;this.score+=gain;return{falls,gain};}
- get colorCount(){return this.material==='sand'?2:4;}
+ get colorCount(){return this.material==='sand'?Math.max(2,Math.min(3,this.sandColors||2)):4;}
  get level(){return 1+Math.floor(this.lines/8);}
  get gravity(){if(this.stageSpeed)return Math.max(200,920*this.stageSpeed*Math.pow(.96,Math.floor(this.lines/8)));return Math.max(this.difficulty==='calm'?180:this.difficulty==='challenge'?110:130,920*Math.pow(.83,this.level-1)*(this.difficulty==='calm'?1.4:this.difficulty==='challenge'?.76:1));}
  get lockDelay(){return this.difficulty==='calm'?850:650;}
