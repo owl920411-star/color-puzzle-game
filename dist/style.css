@@ -197,3 +197,6 @@ body[data-material="sand"] .board-frame{border-color:#eab86e99}body[data-materia
  .stage-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.stage-grid button{min-height:44px;font-size:14px}
  .hud{gap:12px}.hud>div{gap:5px}.hud strong{font-size:19px}
 }
+
+/* DEV stage tester */
+.dev-badge{margin-top:8px;padding:8px 10px;border:1px dashed #70e7dc88;border-radius:9px;color:#aef9ed;background:#0a2b32aa;font-size:12px;text-align:center}.lobby-tools:has([data-screen="dev-toggle"]){flex-wrap:wrap}.lobby [data-screen="dev-toggle"] span{color:#ffe89a}
