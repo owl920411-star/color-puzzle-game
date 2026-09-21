@@ -22,7 +22,7 @@ function harness(realCanvas=false){
  function step(ms=16){now+=ms;const f=raf.shift();assert.ok(f,'animation frame remains scheduled');f(now);}
  function screen(a,mode){const b=new El('','BUTTON');b.dataset=mode?{mode}:{screen:a};byId.screen.child.emit('click',{target:b});}
  function press(a,id=1){const b=a==='hold'?byId.hold:controls.find(b=>b.dataset.action===a);b.emit('pointerdown',{pointerId:id});b.emit('pointerup',{pointerId:id});}
- return{byId,doc,win,step,screen,press,controls,stored,get game(){return instances[instances.length-1];},render:()=>byId.board.raw?.toBuffer('image/png')};
+ return{byId,doc,win,step,advance:ms=>now+=ms,screen,press,controls,stored,get game(){return instances[instances.length-1];},render:()=>byId.board.raw?.toBuffer('image/png')};
 }
 test('menu, tutorial, exact clear score and same-seed retry work through real UI handlers',()=>{
  const h=harness();h.step();assert.match(h.byId.screen.child.innerHTML,/GLASSFALL/);h.screen('tutorial');assert.equal(h.byId.screen.hidden,true);h.press('drop');for(let i=0;i<15;i++)h.step(60);assert.match(h.byId.screen.child.innerHTML,/균열이 이어졌어요/);assert.equal(h.byId.lines.textContent,1);assert.equal(h.byId.extra.textContent,3);assert.equal(h.byId.hold.disabled,true);assert.equal(h.byId.pause.disabled,true);h.screen('start-sprint');const seed=h.byId['seed-label'].textContent;h.press('drop');h.byId.pause.emit('click');h.screen('retry');assert.equal(h.byId['seed-label'].textContent,seed);assert.equal(h.byId.score.textContent,'0');
@@ -44,67 +44,108 @@ test('grounded adjustment does not bank gravity time and lock delay permits 600m
  h.press('right');assert.equal(g.active.y,17);
  for(let i=0;i<4;i++)h.step(100);assert.equal(g.active.y,17,'moving off a ledge should receive a fresh gravity interval');
 });
-test('direct position input selects exact columns without rotating or dropping',()=>{
- const h=harness();h.screen('start');const range=h.byId.position,y=h.game.active.y,shape=JSON.stringify(h.game.active.cells);
- for(const target of [Number(range.max),Number(range.min),3,4,3]){range.value=String(target);range.emit('input');assert.equal(h.game.active.x,target);assert.equal(h.game.active.y,y);assert.equal(JSON.stringify(h.game.active.cells),shape);}
- assert.equal(h.game.pieces,0);
+function touch(surface,type,x,y,id=1){surface.emit(type,{pointerId:id,clientX:x,clientY:y});}
+function begin(h,surface='touchpad'){h.screen('start');const s=h.byId[surface];touch(s,'pointerdown',100,100);return s;}
+test('short swipe moves one column; long swipe tracks distance on either surface',()=>{
+ for(const surface of ['touchpad','board']){
+  const h=harness(),s=begin(h,surface),x=h.game.active.x;
+  h.advance(60);touch(s,'pointerup',114,101);assert.equal(h.game.active.x,x+1);
+  touch(s,'pointerdown',100,100,2);touch(s,'pointermove',40,101,2);assert.equal(h.game.active.x,x-1);
+  touch(s,'pointerup',40,101,2);assert.equal(h.game.active.x,x-1);assert.equal(h.game.pieces,0);
+ }
 });
-test('board round trips return to the same column without accumulated drift',()=>{
- const h=harness();h.screen('start');const board=h.byId.board,x=h.game.active.x;
- board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});
+test('horizontal round trips have no accumulated drift or jitter at snap boundaries',()=>{
+ const h=harness(),s=begin(h),x=h.game.active.x;
  for(let cycle=0;cycle<5;cycle++){
-  for(const px of [108,104,116,100,124,130,118,162,130,100])board.emit('pointermove',{pointerId:1,clientX:px,clientY:100});
+  for(const px of [119,121,118,122,119]){touch(s,'pointermove',px,100);assert.equal(h.game.active.x,x+1);}
+  for(const px of [130,118,162,130,100])touch(s,'pointermove',px,100);
   assert.equal(h.game.active.x,x);
  }
- board.emit('pointerup',{pointerId:1,clientX:100,clientY:100});assert.equal(h.game.active.x,x);
+ touch(s,'pointerup',100,100);assert.equal(h.game.active.x,x);
 });
-test('small initial vertical wobble does not capture horizontal gestures',()=>{
- const h=harness();h.screen('start');const board=h.byId.board,x=h.game.active.x,y=h.game.active.y;
- board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});
- board.emit('pointermove',{pointerId:1,clientX:108,clientY:109});
- board.emit('pointermove',{pointerId:1,clientX:170,clientY:110});
- assert.equal(h.game.active.x,x+2);assert.equal(h.game.active.y,y);
+test('small initial vertical wobble allows horizontal intent; diagonal strokes do not drop',()=>{
+ const h=harness(),s=begin(h),x=h.game.active.x,y=h.game.active.y;
+ touch(s,'pointermove',108,109);touch(s,'pointermove',170,110);assert.equal(h.game.active.x,x+2);assert.equal(h.game.active.y,y);
+ touch(s,'pointerup',170,110);touch(s,'pointerdown',100,100,2);h.advance(60);touch(s,'pointerup',150,150,2);assert.equal(h.game.pieces,0);assert.equal(h.game.active.y,y);
 });
-test('board taps never rotate and snap boundaries tolerate small finger jitter',()=>{
- const h=harness();h.screen('start');const board=h.byId.board,shape=JSON.stringify(h.game.active.cells),x=h.game.active.x;
- board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});board.emit('pointerup',{pointerId:1,clientX:105,clientY:102});assert.equal(JSON.stringify(h.game.active.cells),shape);
- board.emit('pointerdown',{pointerId:2,clientX:100,clientY:100});
- for(const px of [119,121,118,122,119]){board.emit('pointermove',{pointerId:2,clientX:px,clientY:100});assert.equal(h.game.active.x,x+1);}
- board.emit('pointermove',{pointerId:2,clientX:100,clientY:100});assert.equal(h.game.active.x,x);
+test('horizontal intent cannot become rotation or hard drop during the same contact',()=>{
+ for(const endY of [20,200]){
+  const h=harness(),s=begin(h),shape=JSON.stringify(h.game.active.cells);
+  touch(s,'pointermove',140,100);h.advance(80);touch(s,'pointerup',140,endY);
+  assert.equal(JSON.stringify(h.game.active.cells),shape);assert.equal(h.game.pieces,0);
+ }
 });
-test('a wall rebases board dragging so reversing needs only a normal small move',()=>{
- const h=harness();h.screen('start');const board=h.byId.board;
- board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});board.emit('pointermove',{pointerId:1,clientX:-500,clientY:100});assert.equal(h.game.active.x,0);
- board.emit('pointermove',{pointerId:1,clientX:-480,clientY:100});assert.equal(h.game.active.x,1);
- h.press('hold',2);const x=h.game.active.x;board.emit('pointermove',{pointerId:1,clientX:-440,clientY:100});assert.equal(h.game.active.x,x);
+test('taps do nothing and upward swipe rotates only once until release',()=>{
+ const h=harness(),s=begin(h);let rotations=0;const rotate=h.game.rotate.bind(h.game);h.game.rotate=()=>{rotations++;return rotate();};
+ touch(s,'pointerup',105,102);assert.equal(rotations,0);
+ touch(s,'pointerdown',100,100,2);
+ for(const y of [76,50,70,100,20,180])touch(s,'pointermove',100,y,2);
+ touch(s,'pointerup',100,180,2);assert.equal(rotations,1);assert.equal(h.game.pieces,0);
+ touch(s,'pointerdown',100,100,3);touch(s,'pointerup',100,60,3);assert.equal(rotations,2);
 });
-test('direct selection cannot teleport through an occupied cell',()=>{
- const h=harness();h.screen('start');const g=h.game,p=g.active,edge=Math.max(...p.cells.map(c=>c.x));const c=p.cells.find(c=>c.x===edge);
- g.board[p.y+c.y][p.x+edge+1]={type:'I',mask:0,id:999};const x=p.x;
- h.byId.position.value=h.byId.position.max;h.byId.position.emit('input');assert.equal(g.active.x,x);assert.equal(Number(h.byId.position.value),x);
+test('fast downward swipe commits only on release, once per contact, on both surfaces',()=>{
+ for(const surface of ['touchpad','board']){
+  const h=harness(),s=begin(h,surface);h.advance(100);touch(s,'pointermove',103,180);
+  assert.equal(h.game.pieces,0);assert.match(h.byId['pad-hint'].textContent,/손을 떼면/);
+  touch(s,'pointerup',103,180);assert.equal(h.game.pieces,1);const id=h.game.active.cells[0].id;
+  touch(s,'pointerup',103,180);s.emit('click');assert.equal(h.game.pieces,1);assert.equal(h.game.active.cells[0].id,id);
+ }
+ const h=harness(),s=begin(h);h.advance(250);touch(s,'pointerup',100,240);assert.equal(h.game.pieces,1,'a sufficiently fast longer flick remains valid at 250ms');
 });
-test('range gesture ownership blocks input after the piece is replaced',()=>{
- const h=harness();h.screen('start');const range=h.byId.position;
- range.emit('pointerdown',{pointerId:1});h.press('drop',2);const x=h.game.active.x;
- range.value=range.max;range.emit('input');assert.equal(h.game.active.x,x);
- range.emit('pointerup',{pointerId:1});range.emit('pointerdown',{pointerId:3});range.value=range.max;range.emit('input');assert.equal(h.game.active.x,Number(range.max));
+test('tutorial can be completed using only a downward swipe',()=>{
+ const h=harness();h.screen('tutorial');const s=h.byId.touchpad;
+ touch(s,'pointerdown',100,100);h.advance(80);touch(s,'pointerup',100,170);
+ for(let i=0;i<15;i++)h.step(60);assert.match(h.byId.screen.child.innerHTML,/균열이 이어졌어요/);
 });
-test('a fresh touch recovers range ownership after a lost release during blur',()=>{
- const h=harness();h.screen('start');const range=h.byId.position;
- range.emit('pointerdown',{pointerId:1});h.win.emit('blur');h.screen('resume');
- range.emit('pointerdown',{pointerId:2});range.value=range.max;range.emit('input');
- assert.equal(h.game.active.x,Number(range.max));
+test('slow downward drag lowers by distance and can never upgrade to hard drop',()=>{
+ const h=harness(),s=begin(h),y=h.game.active.y;
+ h.advance(180);touch(s,'pointermove',103,140);assert.equal(h.game.active.y,y+1);
+ h.advance(40);touch(s,'pointermove',103,190);touch(s,'pointerup',103,190);
+ assert.equal(h.game.active.y,y+3);assert.equal(h.game.pieces,0);
 });
-test('focused native range keeps keyboard events and rotation updates its legal bounds',()=>{
- const h=harness();h.screen('start');const range=h.byId.position,x=h.game.active.x;
- h.doc.emit('keydown',{key:'ArrowRight',repeat:false,target:range});assert.equal(h.game.active.x,x);
- h.press('rotate');const min=-Math.min(...h.game.active.cells.map(c=>c.x)),max=9-Math.max(...h.game.active.cells.map(c=>c.x));assert.equal(Number(range.min),min);assert.equal(Number(range.max),max);
- range.value=String(min);range.emit('input');assert.equal(h.game.active.x,min);
+test('holding a ready flick clears its drop preview and soft drops instead',()=>{
+ const h=harness(),s=begin(h);h.advance(100);touch(s,'pointermove',100,180);assert.match(h.byId['pad-hint'].textContent,/손을 떼면/);
+ h.step(250);assert.match(h.byId['pad-hint'].textContent,/천천히/);
+ touch(s,'pointerup',100,180);assert.equal(h.game.pieces,0);
 });
-test('a second pointer cannot cancel a board gesture and deliberate down-drag stays soft',()=>{
- const h=harness();h.screen('start');const board=h.byId.board,x=h.game.active.x,y=h.game.active.y;
- board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});board.emit('pointerdown',{pointerId:2,clientX:200,clientY:100});board.emit('pointercancel',{pointerId:2});
- board.emit('pointermove',{pointerId:1,clientX:106,clientY:136});assert.equal(h.game.active.y,y+1);assert.equal(h.game.active.x,x);assert.equal(h.game.pieces,0);
+test('retracted downward flick never drops and returning to origin removes ready feedback',()=>{
+ const h=harness(),s=begin(h);h.advance(60);touch(s,'pointermove',100,190);
+ h.advance(10);touch(s,'pointermove',100,150);touch(s,'pointerup',100,150);assert.equal(h.game.pieces,0);
+ touch(s,'pointerdown',100,100,2);h.advance(60);touch(s,'pointermove',100,180,2);touch(s,'pointermove',100,100,2);
+ assert.doesNotMatch(h.byId['pad-hint'].textContent,/손을 떼면/);touch(s,'pointerup',100,100,2);assert.equal(h.game.pieces,0);
+});
+test('wall and obstacle collisions do not accumulate travel or permit teleporting',()=>{
+ const h=harness(),s=begin(h);
+ touch(s,'pointermove',-500,100);assert.equal(h.game.active.x,0);
+ touch(s,'pointermove',-480,100);assert.equal(h.game.active.x,1);
+ touch(s,'pointerup',-480,100);
+ const g=h.game,p=g.active,edge=Math.max(...p.cells.map(c=>c.x)),c=p.cells.find(c=>c.x===edge),x=p.x;
+ g.board[p.y+c.y][p.x+edge+1]={type:'I',mask:0,id:999};
+ touch(s,'pointerdown',100,100,2);touch(s,'pointerup',400,100,2);assert.equal(g.active.x,x);
+});
+test('reversing vertical intent cancels without turning a downward swipe into rotation',()=>{
+ const h=harness(),s=begin(h),shape=JSON.stringify(h.game.active.cells);
+ h.advance(60);touch(s,'pointermove',100,160);h.advance(60);touch(s,'pointerup',100,70);
+ assert.equal(JSON.stringify(h.game.active.cells),shape);assert.equal(h.game.pieces,0);
+ touch(s,'pointerdown',100,100,2);touch(s,'pointermove',100,85,2);h.advance(60);touch(s,'pointerup',100,180,2);
+ assert.equal(h.game.pieces,0);assert.equal(h.game.active.y,0);
+});
+test('cancelled flicks never act and secondary pointers cannot steal or cancel ownership',()=>{
+ for(const name of ['pointercancel','lostpointercapture']){
+  const h=harness(),s=begin(h);h.advance(60);touch(s,'pointermove',100,180);s.emit(name,{pointerId:1});touch(s,'pointerup',100,180);assert.equal(h.game.pieces,0);
+ }
+ const h=harness(),s=begin(h),x=h.game.active.x;
+ touch(s,'pointerdown',200,100,2);s.emit('pointercancel',{pointerId:2});touch(s,'pointerup',200,190,2);
+ touch(s,'pointerup',130,100);assert.equal(h.game.active.x,x+1);assert.equal(h.game.pieces,0);
+});
+test('old contact cannot act on a replacement piece or after pause and fresh contact recovers',()=>{
+ for(const change of ['hold','drop','blur']){
+  const h=harness(),s=begin(h);h.advance(50);touch(s,'pointermove',100,180);
+  if(change==='blur'){h.win.emit('blur');h.screen('resume');}else h.press(change,2);
+  const count=h.game.pieces,id=h.game.active.cells[0].id;
+  touch(s,'pointerup',100,180);assert.equal(h.game.pieces,count);assert.equal(h.game.active.cells[0].id,id);
+  touch(s,'pointerdown',100,100,3);h.advance(60);touch(s,'pointerup',100,180,3);assert.equal(h.game.pieces,count+1);
+ }
 });
 if(process.env.GLASS_RENDER_PATH){const h=harness(true);h.screen('tutorial');h.step();fs.writeFileSync(process.env.GLASS_RENDER_PATH,h.render());}
 module.exports={harness};
