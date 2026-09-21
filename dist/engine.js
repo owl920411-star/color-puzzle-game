@@ -25,9 +25,9 @@ function groups(board){
  }
  return result;
 }
-function materialPlan(board,material='glass'){
+function materialPlan(board,material='glass',sandTarget=10){
  if(material==='glass')return clearPlan(board);
- const eligible=groups(board).filter(cells=>cells.length>=(material==='sand'?10:material==='water'?10:8));
+ const target=Math.max(10,Number(sandTarget)||10);const eligible=groups(board).filter(cells=>cells.length>=(material==='sand'?target:material==='water'?10:8));
  if(!eligible.length)return null;
  const cells=eligible.flat();return{rows:[],cells,extra:cells.length,groups:eligible.length};
 }
