@@ -15,4 +15,10 @@ test('unlock needs a clear and replay never downgrades earned stars',()=>{
  g.pieces=2;g.board[19][0]={type:'I',mask:0,id:999};assert.equal(L.stars(L.stages[0],g),1);L.record(progress,L.stages[0],g);assert.equal(L.total(progress),3);assert.equal(progress.gap.pieces,1);
  const failed=L.create(1);L.record(progress,L.stages[1],failed);assert.equal(L.unlocked(2,progress),false);
 });
+test('fall lab supports distinct one, two and three star solutions with the same fixed pieces',()=>{
+ for(const [expected,route]of [[3,[[6,0]]],[2,[[4,1]]],[1,[[0,0],[6,0]]]]){
+  const g=L.create(6);for(const [i,[x,r]]of route.entries()){place(g,x,r);if(i<route.length-1){assert.equal(L.cleared(L.stages[6],g),false);assert.ok(g.spawn());}}
+  assert.equal(L.cleared(L.stages[6],g),true);assert.equal(L.stars(L.stages[6],g),expected);
+ }
+});
 module.exports={solutions,place};
