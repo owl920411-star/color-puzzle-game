@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 // Minimal DOM adapter exercises actual app input/state handlers without claiming browser layout QA.
-function harness(realCanvas=false){
- const all=[],byId={},raf=[],stored=new Map();let now=1000;let napi;
+function harness(realCanvas=false,initialSaved=null){
+ const all=[],byId={},raf=[],stored=new Map();let now=1000;let napi;if(initialSaved)stored.set('glassfall-v1',JSON.stringify(initialSaved));
  if(realCanvas)napi=require(require.resolve('@napi-rs/canvas',{paths:[process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES]}));
  const noop=()=>{},gradient={addColorStop:noop};const fallback=new Proxy({createLinearGradient:()=>gradient},{get:(o,k)=>o[k]||noop,set:(o,k,v)=>(o[k]=v,true)});
  class El{
@@ -18,9 +18,9 @@ function harness(realCanvas=false){
  const controls=[...html.matchAll(/<button\b[^>]*data-action="([^"]+)"/g)].map(m=>m[1]).filter(a=>a!=='hold').map(a=>new El('', 'BUTTON',a));byId.hold.dataset.action='hold';
  const doc=new El();doc.getElementById=id=>byId[id];doc.querySelectorAll=s=>s==='[data-action]'?[...controls,byId.hold]:s==='.controls button'?controls:[];
  const win=new El();Object.assign(win,{devicePixelRatio:1,crypto:{getRandomValues:v=>{v[0]=123456;return v;}}});
- const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
+ const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};context.GlassEngine=win.GlassEngine;vm.runInContext(fs.readFileSync(require.resolve('../dist/lab.js'),'utf8'),context);win.GlassLab=context.GlassLab;vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
  function step(ms=16){now+=ms;const f=raf.shift();assert.ok(f,'animation frame remains scheduled');f(now);}
- function screen(a,mode){const b=new El('','BUTTON');b.dataset=mode?{mode}:{screen:a};byId.screen.child.emit('click',{target:b});}
+ function screen(a,mode,extra={}){const b=new El('','BUTTON');b.dataset=mode?{mode}:{screen:a,...extra};byId.screen.child.emit('click',{target:b});}
  function press(a,id=1){const b=a==='hold'?byId.hold:controls.find(b=>b.dataset.action===a);b.emit('pointerdown',{pointerId:id});b.emit('pointerup',{pointerId:id});}
  return{byId,doc,win,step,advance:ms=>now+=ms,screen,press,controls,stored,get game(){return instances[instances.length-1];},render:()=>byId.board.raw?.toBuffer('image/png')};
 }
@@ -166,6 +166,42 @@ test('old contact cannot act on a replacement piece or after pause and fresh con
   touch(s,'pointerup',100,180);assert.equal(h.game.pieces,count);assert.equal(h.game.active.cells[0].id,id);
   touch(s,'pointerdown',100,100,3);h.advance(60);touch(s,'pointerup',100,180,3);assert.equal(h.game.pieces,count+1);
  }
+});
+test('lab introduction, finite pieces, no gravity and saved progression work through the real UI',()=>{
+ const h=harness();h.screen('lab-list');assert.match(h.byId.screen.child.innerHTML,/균열 연구실/);h.screen('',null,{lab:'1'});assert.match(h.byId.screen.child.innerHTML,/균열 연구실/,'locked entry cannot be started');
+ const solutions=[[[6,0]],[[2,1]],[[0,0],[2,0]],[[6,0]],[[4,1],[2,0]],[[4,1]],[[6,0]],[[4,0]],[[0,0],[6,0]]];
+ for(let index=0;index<solutions.length;index++){
+  h.screen('',null,{lab:String(index)});assert.match(h.byId.screen.child.innerHTML,/연구 시작/);assert.equal(h.byId.hold.disabled,true);
+  const y=h.game.active.y;h.step(10000);assert.equal(h.game.active.y,y,'briefing cannot run physics');
+  h.screen('lab-play');h.step(200000);assert.equal(h.game.active.y,y,'lab has no time limit or automatic fall');assert.equal(h.byId.screen.hidden,true);
+  h.byId['lab-hint-button'].emit('click');assert.equal(h.byId['lab-hint'].hidden,false);assert.ok(h.byId['lab-hint'].textContent.length>10);
+  for(const [x,turns]of solutions[index]){
+   for(let n=0;n<turns;n++){touch(h.byId.touchpad,'pointerdown',100,100);h.advance(50);touch(h.byId.touchpad,'pointerup',100,100);}
+   let moves=0;while(h.game.active.x!==x&&moves++<12)h.press(h.game.active.x<x?'right':'left');assert.equal(h.game.active.x,x);
+   touch(h.byId.touchpad,'pointerdown',100,100);h.advance(60);touch(h.byId.touchpad,'pointerup',100,180);
+   for(let n=0;n<22;n++)h.step(60);
+  }
+  assert.match(h.byId.screen.child.innerHTML,/RESEARCH COMPLETE/);assert.match(h.byId.screen.child.innerHTML,/이번 결과 3별/);assert.equal(h.byId.pause.disabled,true);
+  const persisted=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(Object.keys(persisted.lab).length,index+1);
+  if(index===0){const reloaded=harness(false,persisted);reloaded.screen('lab-list');reloaded.screen('',null,{lab:'1'});assert.match(reloaded.byId.screen.child.innerHTML,/연구 시작/);}
+  if(index<8){h.screen('lab-next');assert.match(h.byId.screen.child.innerHTML,/연구 시작/);h.screen('lab-list');}
+ }
+ h.screen('lab-list');assert.match(h.byId.screen.child.innerHTML,/9\/9 연구 완료/);assert.match(h.byId.screen.child.innerHTML,/★ 27/);
+ h.screen('menu');h.screen('start');assert.equal(h.byId['lab-goal'].hidden,true);assert.equal(h.byId['time-label'].textContent,'남은 시간');
+});
+test('last-piece cascade resolves before lab success; failure grants no stars and retry resets the board',()=>{
+ const progress={};const L=require('../dist/lab.js');for(const s of L.stages.slice(0,5))progress[s.id]={stars:1};
+ const h=harness(false,{lab:progress,best:{sprint:123},badges:{fracture:true}});h.screen('lab-list');h.screen('',null,{lab:'5'});h.screen('lab-play');const before=JSON.stringify(h.game.board);
+ h.press('left');h.press('drop');for(let n=0;n<22;n++)h.step(60);assert.match(h.byId.screen.child.innerHTML,/TRY ANOTHER WAY/);
+ assert.equal(JSON.parse(h.stored.get('glassfall-v1')).lab.turn,undefined);
+ h.screen('retry');assert.equal(JSON.stringify(h.game.board),before);assert.equal(h.game.pieces,0);assert.equal(h.byId.screen.hidden,true);
+ touch(h.byId.board,'pointerdown',100,100);h.advance(60);touch(h.byId.board,'pointerup',100,100);h.press('drop');for(let n=0;n<22;n++)h.step(60);assert.match(h.byId.screen.child.innerHTML,/RESEARCH COMPLETE/);
+ const saved=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(saved.best.sprint,123);assert.equal(saved.badges.fracture,true);assert.equal(saved.lab.turn.stars,3);
+});
+test('regular mode stores chain records and compares the previous run only for the same seed',()=>{
+ const h=harness();h.screen('start');h.game.maxChain=2;h.game.extra=5;h.game.score=200;h.step(180000);assert.match(h.byId.screen.child.innerHTML,/이 모드 최고 연쇄 2/);
+ const saved=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(saved.records.sprint.chain,2);assert.equal(saved.records.sprint.extra,5);
+ h.screen('retry');h.game.score=250;h.step(180000);assert.match(h.byId.screen.child.innerHTML,/이전 기록보다 \+50점/);assert.match(h.byId.screen.child.innerHTML,/최고 연쇄 2/);
 });
 if(process.env.GLASS_RENDER_PATH){const h=harness(true);h.screen('tutorial');h.step();fs.writeFileSync(process.env.GLASS_RENDER_PATH,h.render());}
 module.exports={harness};
