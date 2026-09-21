@@ -65,12 +65,12 @@ class Game{
   for(let y=H-3;y<H;y++)for(let x=0;x<W;x++){
    if(this.material==='glass'&&x===(offset+(H-y)*3)%W)continue;
    if(this.material!=='glass'&&y===H-3&&(x+offset)%3===0)continue;
-   this.board[y][x]={id:++this.serial,type:'J',mask:0,paint:(x+y*2+offset)%4};
+   this.board[y][x]={id:++this.serial,type:'J',mask:0,paint:(x+y*2+offset)%this.colorCount};
   }
   if(this.material!=='glass')for(let step=0;step<H*W;step++)if(!settleStep(this.board,this.material,step).length)break;
  }
  makePiece(){if(!this.bag.length){this.bag=Object.keys(SHAPES);for(let i=6;i>0;i--){const j=Math.floor(this.rng()*(i+1));[this.bag[i],this.bag[j]]=[this.bag[j],this.bag[i]];}}
- const type=this.bag.pop(),masks=[3,6,9,12,5,10,15],paint=this.material==='glass'?undefined:Math.floor(this.rng()*4);return{type,size:type==='I'?4:type==='O'?2:3,x:3,y:0,cells:SHAPES[type].map(([x,y])=>({x,y,mask:this.rng()<.66?masks[Math.floor(this.rng()*masks.length)]:0,id:++this.serial,type,...(paint===undefined?{}:{paint,mask:0})}))};}
+ const type=this.bag.pop(),masks=[3,6,9,12,5,10,15],paint=this.material==='glass'?undefined:Math.floor(this.rng()*this.colorCount);return{type,size:type==='I'?4:type==='O'?2:3,x:3,y:0,cells:SHAPES[type].map(([x,y])=>({x,y,mask:this.rng()<.66?masks[Math.floor(this.rng()*masks.length)]:0,id:++this.serial,type,...(paint===undefined?{}:{paint,mask:0})}))};}
  spawn(){this.active=this.queue.shift();this.queue.push(this.makePiece());this.active.x=this.active.type==='O'?4:3;this.active.y=0;this.holdUsed=false;if(!this.fits(this.active))this.over=true;return!this.over;}
  fits(p,dx=0,dy=0){return p.cells.every(c=>{const x=p.x+c.x+dx,y=p.y+c.y+dy;return x>=0&&x<W&&y>=0&&y<H&&!this.board[y][x];});}
  move(dx,dy=0){if(!this.active||!this.fits(this.active,dx,dy))return false;this.active.x+=dx;this.active.y+=dy;return true;}
@@ -79,6 +79,7 @@ class Game{
  hold(){if(this.holdUsed||!this.active)return false;const p=this.active;p.x=3;p.y=0;if(this.held){this.active=this.held;this.held=p;this.active.x=this.active.type==='O'?4:3;this.active.y=0;if(!this.fits(this.active))this.over=true;}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
  lock(){if(!this.active)return;for(const c of this.active.cells)this.board[this.active.y+c.y][this.active.x+c.x]={...c};this.pieces++;this.active=null;}
  resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chain;this.score+=gain;return{falls,gain};}
+ get colorCount(){return this.material==='sand'?3:4;}
  get level(){return 1+Math.floor(this.lines/8);}
  get gravity(){return Math.max(this.difficulty==='calm'?180:this.difficulty==='challenge'?110:130,920*Math.pow(.83,this.level-1)*(this.difficulty==='calm'?1.4:this.difficulty==='challenge'?.76:1));}
  get lockDelay(){return this.difficulty==='calm'?850:650;}
