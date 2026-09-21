@@ -9,7 +9,7 @@ function harness(realCanvas=false){
   addEventListener(n,f){(this.listeners[n]||=[]).push(f)}
   emit(n,e={}){e={button:0,detail:1,preventDefault:noop,target:this,...e};for(const f of this.listeners[n]||[])f(e);return e;}
   setAttribute(k,v){this.attrs[k]=v;} querySelector(){return this.child ||=new El();}
-  closest(s){return (s==='button'||s.includes('button,'))&&this.tagName==='BUTTON'?this:null;}
+  closest(s){return s.split(',').map(v=>v.trim()).includes(this.tagName.toLowerCase())?this:null;}
   getContext(){if(napi){this.raw ||=napi.createCanvas(this.width,this.height);return this.raw.getContext('2d');}return fallback;}
   getBoundingClientRect(){return{width:300,height:600,left:0,top:0};}
   setPointerCapture(){} showModal(){this.open=true;}close(){this.open=false;this.emit('close');}
@@ -36,39 +36,6 @@ test('pause and background suspend time; a delayed visible frame uses real elaps
 test('cancelled held controls stop repeat, and Space on a focused button is not intercepted',()=>{
  const h=harness();h.screen('start');const left=h.controls.find(b=>b.dataset.action==='left');left.emit('pointerdown',{pointerId:7});left.emit('pointercancel',{pointerId:7});const x=h.game.active.x,score=h.byId.score.textContent;h.step(200);assert.equal(h.game.active.x,x);assert.equal(h.byId.score.textContent,score);h.doc.emit('keydown',{key:' ',repeat:false,target:h.byId.sound});assert.equal(h.byId.score.textContent,score);
 });
-test('small horizontal drags respond and diagonal motion never lowers the piece',()=>{
- const h=harness();h.screen('start');const pad=h.byId.touchpad,x=h.game.active.x,y=h.game.active.y;
- pad.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});
- pad.emit('pointermove',{pointerId:1,clientX:117,clientY:110});
- assert.equal(h.game.active.x,x+1);assert.equal(h.game.active.y,y);
- pad.emit('pointermove',{pointerId:1,clientX:149,clientY:160});
- assert.equal(h.game.active.x,x+2);assert.equal(h.game.active.y,y);
- const shape=JSON.stringify(h.game.active.cells);
- pad.emit('pointerup',{pointerId:1,clientX:149,clientY:160});
- assert.equal(JSON.stringify(h.game.active.cells),shape,'drag release must not rotate');
-});
-test('pad short taps rotate once, long presses and cancelled gestures never rotate',()=>{
- const h=harness();h.screen('start');const pad=h.byId.touchpad,initial=JSON.stringify(h.game.active.cells);
- pad.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});pad.emit('pointerup',{pointerId:1,clientX:102,clientY:101});
- const rotated=JSON.stringify(h.game.active.cells);assert.notEqual(rotated,initial);
- pad.emit('click',{detail:1});assert.equal(JSON.stringify(h.game.active.cells),rotated);
- pad.emit('pointerdown',{pointerId:2,clientX:100,clientY:100});h.step(350);pad.emit('pointerup',{pointerId:2,clientX:100,clientY:100});
- assert.equal(JSON.stringify(h.game.active.cells),rotated);
- pad.emit('pointerdown',{pointerId:3,clientX:100,clientY:100});pad.emit('pointercancel',{pointerId:3});pad.emit('pointerup',{pointerId:3,clientX:100,clientY:100});assert.equal(JSON.stringify(h.game.active.cells),rotated);
-});
-test('vertical drags soft-drop only and a second finger cannot cancel the owner',()=>{
- const h=harness();h.screen('start');const pad=h.byId.touchpad,x=h.game.active.x,y=h.game.active.y,id=h.game.active.cells[0].id;
- pad.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});pad.emit('pointerdown',{pointerId:2,clientX:200,clientY:100});pad.emit('pointercancel',{pointerId:2});
- pad.emit('pointermove',{pointerId:1,clientX:106,clientY:126});
- assert.equal(h.game.active.x,x);assert.equal(h.game.active.y,y+1);assert.equal(h.game.active.cells[0].id,id);
- pad.emit('pointerup',{pointerId:1,clientX:106,clientY:126});assert.equal(h.game.pieces,0);
-});
-test('a wall does not accumulate drag debt, and hold ends the old gesture',()=>{
- const h=harness();h.screen('start');const pad=h.byId.touchpad;
- pad.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});pad.emit('pointermove',{pointerId:1,clientX:-500,clientY:100});assert.equal(h.game.active.x,0);
- pad.emit('pointermove',{pointerId:1,clientX:-490,clientY:100});assert.equal(h.game.active.x,1);
- h.press('hold',2);const x=h.game.active.x;pad.emit('pointermove',{pointerId:1,clientX:-450,clientY:100});assert.equal(h.game.active.x,x);
-});
 test('grounded adjustment does not bank gravity time and lock delay permits 600ms',()=>{
  const h=harness();h.screen('start');const g=h.game;
  g.active={type:'O',size:2,x:3,y:17,cells:[{x:0,y:0,id:999,mask:0,type:'O'},{x:1,y:0,id:1000,mask:0,type:'O'},{x:0,y:1,id:1001,mask:0,type:'O'},{x:1,y:1,id:1002,mask:0,type:'O'}]};
@@ -76,6 +43,68 @@ test('grounded adjustment does not bank gravity time and lock delay permits 600m
  for(let i=0;i<6;i++)h.step(100);assert.equal(g.pieces,0);
  h.press('right');assert.equal(g.active.y,17);
  for(let i=0;i<4;i++)h.step(100);assert.equal(g.active.y,17,'moving off a ledge should receive a fresh gravity interval');
+});
+test('direct position input selects exact columns without rotating or dropping',()=>{
+ const h=harness();h.screen('start');const range=h.byId.position,y=h.game.active.y,shape=JSON.stringify(h.game.active.cells);
+ for(const target of [Number(range.max),Number(range.min),3,4,3]){range.value=String(target);range.emit('input');assert.equal(h.game.active.x,target);assert.equal(h.game.active.y,y);assert.equal(JSON.stringify(h.game.active.cells),shape);}
+ assert.equal(h.game.pieces,0);
+});
+test('board round trips return to the same column without accumulated drift',()=>{
+ const h=harness();h.screen('start');const board=h.byId.board,x=h.game.active.x;
+ board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});
+ for(let cycle=0;cycle<5;cycle++){
+  for(const px of [108,104,116,100,124,130,118,162,130,100])board.emit('pointermove',{pointerId:1,clientX:px,clientY:100});
+  assert.equal(h.game.active.x,x);
+ }
+ board.emit('pointerup',{pointerId:1,clientX:100,clientY:100});assert.equal(h.game.active.x,x);
+});
+test('small initial vertical wobble does not capture horizontal gestures',()=>{
+ const h=harness();h.screen('start');const board=h.byId.board,x=h.game.active.x,y=h.game.active.y;
+ board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});
+ board.emit('pointermove',{pointerId:1,clientX:108,clientY:109});
+ board.emit('pointermove',{pointerId:1,clientX:170,clientY:110});
+ assert.equal(h.game.active.x,x+2);assert.equal(h.game.active.y,y);
+});
+test('board taps never rotate and snap boundaries tolerate small finger jitter',()=>{
+ const h=harness();h.screen('start');const board=h.byId.board,shape=JSON.stringify(h.game.active.cells),x=h.game.active.x;
+ board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});board.emit('pointerup',{pointerId:1,clientX:105,clientY:102});assert.equal(JSON.stringify(h.game.active.cells),shape);
+ board.emit('pointerdown',{pointerId:2,clientX:100,clientY:100});
+ for(const px of [119,121,118,122,119]){board.emit('pointermove',{pointerId:2,clientX:px,clientY:100});assert.equal(h.game.active.x,x+1);}
+ board.emit('pointermove',{pointerId:2,clientX:100,clientY:100});assert.equal(h.game.active.x,x);
+});
+test('a wall rebases board dragging so reversing needs only a normal small move',()=>{
+ const h=harness();h.screen('start');const board=h.byId.board;
+ board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});board.emit('pointermove',{pointerId:1,clientX:-500,clientY:100});assert.equal(h.game.active.x,0);
+ board.emit('pointermove',{pointerId:1,clientX:-480,clientY:100});assert.equal(h.game.active.x,1);
+ h.press('hold',2);const x=h.game.active.x;board.emit('pointermove',{pointerId:1,clientX:-440,clientY:100});assert.equal(h.game.active.x,x);
+});
+test('direct selection cannot teleport through an occupied cell',()=>{
+ const h=harness();h.screen('start');const g=h.game,p=g.active,edge=Math.max(...p.cells.map(c=>c.x));const c=p.cells.find(c=>c.x===edge);
+ g.board[p.y+c.y][p.x+edge+1]={type:'I',mask:0,id:999};const x=p.x;
+ h.byId.position.value=h.byId.position.max;h.byId.position.emit('input');assert.equal(g.active.x,x);assert.equal(Number(h.byId.position.value),x);
+});
+test('range gesture ownership blocks input after the piece is replaced',()=>{
+ const h=harness();h.screen('start');const range=h.byId.position;
+ range.emit('pointerdown',{pointerId:1});h.press('drop',2);const x=h.game.active.x;
+ range.value=range.max;range.emit('input');assert.equal(h.game.active.x,x);
+ range.emit('pointerup',{pointerId:1});range.emit('pointerdown',{pointerId:3});range.value=range.max;range.emit('input');assert.equal(h.game.active.x,Number(range.max));
+});
+test('a fresh touch recovers range ownership after a lost release during blur',()=>{
+ const h=harness();h.screen('start');const range=h.byId.position;
+ range.emit('pointerdown',{pointerId:1});h.win.emit('blur');h.screen('resume');
+ range.emit('pointerdown',{pointerId:2});range.value=range.max;range.emit('input');
+ assert.equal(h.game.active.x,Number(range.max));
+});
+test('focused native range keeps keyboard events and rotation updates its legal bounds',()=>{
+ const h=harness();h.screen('start');const range=h.byId.position,x=h.game.active.x;
+ h.doc.emit('keydown',{key:'ArrowRight',repeat:false,target:range});assert.equal(h.game.active.x,x);
+ h.press('rotate');const min=-Math.min(...h.game.active.cells.map(c=>c.x)),max=9-Math.max(...h.game.active.cells.map(c=>c.x));assert.equal(Number(range.min),min);assert.equal(Number(range.max),max);
+ range.value=String(min);range.emit('input');assert.equal(h.game.active.x,min);
+});
+test('a second pointer cannot cancel a board gesture and deliberate down-drag stays soft',()=>{
+ const h=harness();h.screen('start');const board=h.byId.board,x=h.game.active.x,y=h.game.active.y;
+ board.emit('pointerdown',{pointerId:1,clientX:100,clientY:100});board.emit('pointerdown',{pointerId:2,clientX:200,clientY:100});board.emit('pointercancel',{pointerId:2});
+ board.emit('pointermove',{pointerId:1,clientX:106,clientY:136});assert.equal(h.game.active.y,y+1);assert.equal(h.game.active.x,x);assert.equal(h.game.pieces,0);
 });
 if(process.env.GLASS_RENDER_PATH){const h=harness(true);h.screen('tutorial');h.step();fs.writeFileSync(process.env.GLASS_RENDER_PATH,h.render());}
 module.exports={harness};
