@@ -21,32 +21,23 @@
 @media(max-width:650px){:root{--board-h:max(280px,min(calc(100svh - 306px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),calc((100vw - 96px)*2)))}.swipe-pad,.thumb-row .hold-box{height:104px}.swipe-pad{gap:6px;padding:9px 8px}.swipe-pad strong{font-size:14px}.swipe-guide{gap:15px}.swipe-guide span{font-size:12px;gap:4px}.swipe-pad .pad-hint{font-size:12px}.manual-controls summary{min-height:30px;padding:4px 2px}.bottom-note{font-size:11px;margin-top:2px}.thumb-row{margin-bottom:2px}.control-deck{padding-top:2px}}
 @media(max-height:700px) and (max-width:650px){:root{--board-h:max(280px,min(calc(100svh - 278px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),calc((100vw - 96px)*2)))}.swipe-pad,.thumb-row .hold-box{height:90px}.swipe-pad{gap:4px;padding:5px 7px}.swipe-guide b{font-size:22px}.swipe-guide{gap:12px}.swipe-pad strong{font-size:13px}.swipe-pad .pad-hint{font-size:11px}.manual-controls summary{font-size:12px;min-height:26px;padding:3px 2px}}
 
-/* The lab makes objectives and personal progress part of the play loop. */
-.lab-entry{display:flex;align-items:center;justify-content:space-between;gap:8px}.lab-entry span{font-size:12px;white-space:nowrap}.menu-lab-note{font-size:11px;color:#8cbdbe;margin:7px 0 15px}.lab-total{display:flex;flex-direction:column;gap:2px;margin:4px 0 15px}.lab-total strong{color:#f2d79b;font-size:29px;font-weight:500}.lab-total small{font-size:15px;color:#8caaae}.lab-total>span{font-size:12px;color:#a6bbc8}.lab-chapter{margin-top:17px;text-align:left}.lab-chapter>strong{font-size:12px;font-weight:500;color:#9ecacb}.lab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px}.lab-grid button{min-width:0;min-height:62px;padding:8px 2px;border:1px solid #41616a;border-radius:9px;background:linear-gradient(140deg,#213e47,#142a36);display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center}.lab-grid b{font-size:20px;font-weight:500;color:#e6faf7}.lab-grid span{font-size:12px;letter-spacing:1px;color:#f0d69b}.lab-grid button:disabled{opacity:.4;background:#13222b}.lab-grid button:disabled span{color:#849baa;letter-spacing:0}.lab-menu h2{font-size:27px}.lab-footnote{font-size:12px!important;line-height:1.65!important;color:#93b1bd!important;margin:15px 0!important}.lab-conditions{display:flex;flex-direction:column;gap:7px;text-align:left;padding:13px 12px;margin:12px 0;background:#06192266;border:1px solid #335461;border-radius:9px}.lab-conditions span{font-size:12px;color:#9fb6c5}.lab-conditions .met{color:#f0d99f}.result-stars{font-size:34px;color:#f4d899;letter-spacing:5px;margin:10px 0;text-shadow:0 0 18px #eccd7222}.lab-result-hint{padding:10px;border:1px solid #47606b;border-radius:8px;color:#d0e8e6!important;margin-top:12px!important}.run-reflection{font-size:12px;color:#b7dbd2;line-height:1.7;margin:0 0 13px}.lab-goal{padding:10px 12px;margin:0 0 10px;border:1px solid #42606c;border-radius:10px;background:linear-gradient(120deg,#183c4399,#1d293e99);display:flex;flex-direction:column;gap:3px}.lab-goal-heading{display:flex;justify-content:space-between;align-items:center;gap:6px}.lab-goal-heading strong{color:#b9efe2;font-size:13px;font-weight:500}.lab-goal-heading>div{display:flex;gap:5px}.lab-goal button{min-height:34px;padding:5px 8px;background:#19303b;border:1px solid #43606d;border-radius:7px;color:#bfd7db;font-size:12px}.lab-goal>span{color:#edf7f6;font-size:13px}.lab-goal>small{color:#8eb5be;font-size:12px}.lab-goal p{font-size:12px;color:#d4e9d9;border-top:1px solid #456067;padding-top:7px;margin:4px 0 0;line-height:1.65}.lab-active .hold-box:disabled{opacity:.25}
-@media(max-width:650px){.play-section.lab-active{--board-h:max(280px,min(calc(100svh - 405px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),calc((100vw - 96px)*2)))}.lab-goal{margin-bottom:9px;padding:7px 10px}.lab-grid{gap:5px}.lab-grid button{min-height:57px}.lab-grid b{font-size:18px}.lab-total strong{font-size:25px}.lab-menu h2{font-size:24px}.lab-entry{font-size:13px}.lab-brief h2{font-size:22px}.lab-conditions{padding:10px 7px;gap:6px}.lab-conditions span{font-size:12px}.lab-goal-heading strong{font-size:12px}.lab-total{margin-bottom:10px}}
-
-/* Mobile research: reserve room for the board and a full-width gesture pad. */
+/* Mobile menus retain the full phone width. */
 @media(max-width:650px){
- .lab-active .hud{grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
- .lab-active .hud>div{flex-direction:row;align-items:baseline;gap:7px}
- .lab-active .hud>div:first-child,.lab-active .hud>div:last-child{display:none}
- .lab-active .hud>div:nth-child(3){justify-content:flex-end}
- .lab-active .hud strong{font-size:20px}
- .lab-active .hold-box,.lab-active .bottom-note{display:none}
- .lab-active .swipe-pad{height:80px;gap:3px;padding:5px 8px}
- .lab-active .lab-goal{padding:6px 9px;gap:2px;margin-bottom:8px}
- .lab-goal-heading strong{font-size:14px;line-height:1.4;min-width:0}
- .lab-goal-heading>div{flex-shrink:0}
- .lab-goal button{min-height:40px;min-width:44px;font-size:14px}
- .lab-goal>span{font-size:14px;line-height:1.5}
- .lab-active .status{min-height:24px;margin:3px 0}
  .manual-controls summary{font-size:14px;min-height:36px;padding:7px 2px}
  /* Menus use the phone width instead of the narrow 10-column board. */
  .screen{position:fixed;inset:max(58px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));width:auto;max-width:430px;margin:0 auto;padding:20px 18px;z-index:10;border:1px solid #42606c;border-radius:14px;background:#0c1c29f5;overscroll-behavior:contain}
  .screen-content{max-width:360px;margin:auto}
- .screen p,.screen .text-btn,.screen .primary,.screen .secondary,.menu-tabs button,.lab-conditions span{font-size:14px}
+ .screen p,.screen .text-btn,.screen .primary,.screen .secondary,.menu-tabs button{font-size:14px}
  .screen .primary,.screen .secondary,.screen .text-btn,.menu-tabs button{min-height:44px}
- .lab-grid button{min-height:66px}
- .screen .lab-footnote{font-size:14px!important}
  dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
 }
+
+.run-reflection{font-size:14px;line-height:1.7;color:#b7dbd2;margin:0 0 12px}
+.replay-target{font-size:13px;line-height:1.5;color:#a6efe5;margin:0 0 8px;padding:6px 8px;border:1px solid #385965;border-radius:7px}
+.replay-stats{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0;text-align:right;font-variant-numeric:tabular-nums}
+.replay-stats caption{text-align:left;color:#a6efe5;font-size:14px;margin-bottom:6px}
+.replay-stats th,.replay-stats td{padding:8px 3px;border-bottom:1px solid #294450;font-weight:400}
+.replay-stats th:first-child{text-align:left}
+.replay-stats thead{color:#95b4c3}
+.replay-stats td:last-child{color:#b7dbd2}
+.screen .replay-note{font-size:12px;line-height:1.7;color:#95b4c3}
