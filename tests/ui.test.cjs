@@ -15,7 +15,7 @@ function harness(realCanvas=false){
   setPointerCapture(){} showModal(){this.open=true;}close(){this.open=false;this.emit('close');}
  }
  const html=fs.readFileSync(require.resolve('../dist/index.html'),'utf8');for(const match of html.matchAll(/<([\w-]+)\b[^>]*\bid="([^"]+)"[^>]*>/g)){const el=new El(match[2],match[1].toUpperCase());for(const attr of ['width','height']){const m=match[0].match(new RegExp(attr+'="(\\d+)"'));if(m)el[attr]=+m[1];}}
- const controls=['left','right','rotate','drop'].map(a=>new El('', 'BUTTON',a));byId.hold.dataset.action='hold';
+ const controls=[...html.matchAll(/<button\b[^>]*data-action="([^"]+)"/g)].map(m=>m[1]).filter(a=>a!=='hold').map(a=>new El('', 'BUTTON',a));byId.hold.dataset.action='hold';
  const doc=new El();doc.getElementById=id=>byId[id];doc.querySelectorAll=s=>s==='[data-action]'?[...controls,byId.hold]:s==='.controls button'?controls:[];
  const win=new El();Object.assign(win,{devicePixelRatio:1,crypto:{getRandomValues:v=>{v[0]=123456;return v;}}});
  const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
@@ -75,13 +75,33 @@ test('horizontal intent cannot become rotation or hard drop during the same cont
   assert.equal(JSON.stringify(h.game.active.cells),shape);assert.equal(h.game.pieces,0);
  }
 });
-test('taps do nothing and upward swipe rotates only once until release',()=>{
+test('short taps rotate once per release on both surfaces, including slight finger wobble',()=>{
+ for(const surface of ['touchpad','board']){
+  const h=harness(),s=begin(h,surface);let rotations=0;const rotate=h.game.rotate.bind(h.game);h.game.rotate=()=>{rotations++;return rotate();};
+  assert.equal(rotations,0);h.advance(80);touch(s,'pointermove',106,104);assert.equal(rotations,0);
+  touch(s,'pointerup',106,104);assert.equal(rotations,1);s.emit('click');touch(s,'pointerup',106,104);assert.equal(rotations,1);
+  for(let id=2;id<=4;id++){touch(s,'pointerdown',100,100,id);h.advance(60);touch(s,'pointerup',100,100,id);assert.equal(rotations,id);}
+  assert.equal(h.game.pieces,0);assert.equal(h.game.active.y,0);
+ }
+});
+test('long holds, upward strokes and out-and-back diagonal drags never rotate',()=>{
  const h=harness(),s=begin(h);let rotations=0;const rotate=h.game.rotate.bind(h.game);h.game.rotate=()=>{rotations++;return rotate();};
- touch(s,'pointerup',105,102);assert.equal(rotations,0);
- touch(s,'pointerdown',100,100,2);
- for(const y of [76,50,70,100,20,180])touch(s,'pointermove',100,y,2);
- touch(s,'pointerup',100,180,2);assert.equal(rotations,1);assert.equal(h.game.pieces,0);
- touch(s,'pointerdown',100,100,3);touch(s,'pointerup',100,60,3);assert.equal(rotations,2);
+ h.advance(400);touch(s,'pointerup',100,100);assert.equal(rotations,0);
+ touch(s,'pointerdown',100,100,2);h.advance(60);touch(s,'pointermove',100,60,2);touch(s,'pointerup',100,100,2);assert.equal(rotations,0);
+ touch(s,'pointerdown',100,100,3);touch(s,'pointermove',140,140,3);touch(s,'pointerup',100,100,3);assert.equal(rotations,0);
+ touch(s,'pointerdown',100,100,4);touch(s,'pointermove',130,100,4);touch(s,'pointerup',100,100,4);assert.equal(rotations,0);
+ touch(s,'pointerdown',100,100,5);h.advance(60);touch(s,'pointerup',100,100,5);assert.equal(rotations,1);
+});
+test('cancelled or replaced-piece taps cannot rotate; a new contact recovers immediately',()=>{
+ for(const change of ['pointercancel','lostpointercapture','hold','drop','blur']){
+  const h=harness(),s=begin(h);
+  if(change==='blur'){h.win.emit('blur');h.screen('resume');}
+  else if(change==='hold'||change==='drop')h.press(change,2);
+  else s.emit(change,{pointerId:1});
+  let rotations=0;const rotate=h.game.rotate.bind(h.game);h.game.rotate=()=>{rotations++;return rotate();};
+  touch(s,'pointerup',100,100);assert.equal(rotations,0);
+  touch(s,'pointerdown',100,100,3);h.advance(60);touch(s,'pointerup',100,100,3);assert.equal(rotations,1);
+ }
 });
 test('fast downward swipe commits only on release, once per contact, on both surfaces',()=>{
  for(const surface of ['touchpad','board']){

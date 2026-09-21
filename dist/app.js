@@ -39,7 +39,7 @@ function badgeUI(){const badges=[['fracture','첫 번째 공명','균열 유리 
 function updateHUD(){const n=Math.max(0,Math.ceil((mode==='endless'||mode==='tutorial'?elapsed:remaining)/1000));$('score').textContent=game.score.toLocaleString();$('time').textContent=mode==='tutorial'?'연습':`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;$('time').classList.toggle('urgent',remaining<20000&&mode!=='endless'&&mode!=='tutorial');$('time-label').textContent=mode==='endless'?'플레이 시간':mode==='tutorial'?'시간 제한 없음':'남은 시간';$('level').textContent=String(game.level).padStart(2,'0');$('chain').textContent=game.maxChain?game.maxChain+'×':'—';$('lines').textContent=game.lines;$('extra').textContent=game.extra;$('mode-label').textContent=modes[mode];$('seed-label').textContent=mode==='tutorial'?'LEARN':state==='menu'?'READY':game.seed.slice(-9);$('side-best').textContent=best().toLocaleString();$('side-best-label').textContent=modes[mode];$('best-mini').textContent='BEST '+best().toLocaleString();$('hold').disabled=state!=='playing'||game.holdUsed||mode==='tutorial';$('touchpad').setAttribute('aria-disabled',String(state!=='playing'));$('pause').disabled=['menu','end'].includes(state);$('pause').setAttribute('aria-label',state==='paused'?'계속하기':'일시정지');for(const b of document.querySelectorAll('.controls button'))b.disabled=state!=='playing';}
 function menu(){resetInput();state='menu';mode=mode==='tutorial'?'sprint':mode;game=new E.Game('preview');game.active=null;remaining=180000;elapsed=0;particles=[];phase=null;plan=null;falls=[];for(let x=0;x<10;x++)for(let j=0;j<(x<4?4-x:1+(x%3));j++)game.board[19-j][x]={type:Object.keys(colors)[(x+j)%7],mask:[3,5,10,12][(x+j)%4],id:100+x*5+j};showMenu();updateHUD();renderPreviews();setStatus('한 줄을 완성하면, 이어진 균열이 함께 깨집니다.');}
 function showMenu(){screen.hidden=false;screen.className='screen';content.innerHTML=`<div class="screen-kicker">THE ART OF BREAKING</div><h2>GLASSFALL<span class="glass-word">유리의 공명</span></h2><p>유리를 쌓고 균열을 이어<br>나만의 연쇄를 완성하세요.</p><div class="menu-tabs" role="group" aria-label="게임 모드">${['sprint','endless','daily'].map(m=>`<button data-mode="${m}" class="${mode===m?'selected':''}" aria-pressed="${mode===m}">${m==='sprint'?'3분':m==='endless'?'무한':'오늘'}</button>`).join('')}</div><button class="primary" data-screen="start">${modes[mode]} 시작</button><button class="secondary" data-screen="tutorial">균열 배워보기</button><div class="menu-best">${mode==='daily'?day()+' · 같은 조각으로 도전':'최고 기록 '+best().toLocaleString()}</div>`;}
-function start(selected=mode,seed){resetInput();mode=selected;game=selected==='tutorial'?E.tutorial():new E.Game(seed||(selected==='daily'?'DAILY-'+day():newSeed()),selected);state='playing';remaining=180000;elapsed=0;fallTime=0;lockTime=0;lockResets=0;chain=0;phase=null;plan=null;falls=[];particles=[];dropTrail=null;calloutTime=0;gameResultSaved=false;endingReason='';last=performance.now();screen.hidden=true;$('callout').classList.remove('show');audioInit();setStatus(selected==='tutorial'?'오른쪽에 맞춰져 있어요. 아래로 빠르게 쓸고 떼어보세요.':'좌우 이동 · 위로 회전 · 아래로 빠르게 쓸고 떼면 낙하');updateHUD();renderPreviews();}
+function start(selected=mode,seed){resetInput();mode=selected;game=selected==='tutorial'?E.tutorial():new E.Game(seed||(selected==='daily'?'DAILY-'+day():newSeed()),selected);state='playing';remaining=180000;elapsed=0;fallTime=0;lockTime=0;lockResets=0;chain=0;phase=null;plan=null;falls=[];particles=[];dropTrail=null;calloutTime=0;gameResultSaved=false;endingReason='';last=performance.now();screen.hidden=true;$('callout').classList.remove('show');audioInit();setStatus(selected==='tutorial'?'오른쪽에 맞춰져 있어요. 아래로 빠르게 쓸고 떼어보세요.':'톡 터치하면 회전 · 좌우 이동 · 아래로 쓸고 떼면 낙하');updateHUD();renderPreviews();}
 function pause(){if(state!=='playing'&&state!=='resolving')return;pausedFrom=state;state='paused';resetInput();screen.hidden=false;screen.className='screen small';content.innerHTML='<div class="screen-kicker">TAKE A BREATH</div><h2>잠시 쉬어가세요.</h2><p>유리도, 시간도 멈춰 있어요.</p><button class="primary" data-screen="resume">계속하기</button><button class="secondary" data-screen="retry">같은 판 다시 시작</button><button class="text-btn" data-screen="menu">모드 선택으로</button>';updateHUD();}
 function resume(){if(state!=='paused')return;state=pausedFrom;screen.hidden=true;last=performance.now();resetInput();updateHUD();}
 function finish(reason){if(state==='end')return;state='end';endingReason=reason;resetInput();game.active=null;phase=null;screen.hidden=false;screen.className='screen small';if(mode==='tutorial'){saved.learned=true;save();content.innerHTML='<div class="screen-kicker">FIRST RESONANCE</div><h2>균열이 이어졌어요.</h2><p>완성한 줄에서 충격이 퍼져<br>연결된 유리까지 함께 깨집니다.<br>다음에는 직접 길을 만들어보세요.</p><button class="primary" data-screen="start-sprint">3분 도전 시작</button><button class="secondary" data-screen="tutorial">한 번 더 연습</button>';setStatus('균열이 닿지 않은 조각은 남고, 아래로 내려옵니다.');}
@@ -88,16 +88,17 @@ for(const b of document.querySelectorAll('[data-action]')){
  });
  b.addEventListener('click',e=>{if(e.detail===0)action(b.dataset.action);});
 }
-// One contact owns one piece and one direction. A downward flick commits on release.
+// One contact owns one piece. Only a short, unmoved release rotates; swipes never do.
 function isFastDown(d,x,y,now){
  const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);
- return d.axis==='y'&&d.vertical===1&&!d.rotated&&!d.soft&&dy>=Math.max(44,d.unit*1.5)&&age<=300&&dy/age>=.5&&dy>Math.abs(dx)*1.6&&d.peakX<=Math.max(20,dy*.55)&&d.peakDown-dy<d.unit*.6;
+ return d.axis==='y'&&d.vertical===1&&!d.soft&&dy>=Math.max(44,d.unit*1.5)&&age<=300&&dy/age>=.5&&dy>Math.abs(dx)*1.6&&d.peakX<=Math.max(20,dy*.55)&&d.peakDown-dy<d.unit*.6;
 }
 function processSwipe(d,x,y,now){
  if(drag!==d||state!=='playing'||game.active?.cells[0].id!==d.pieceId)return;
  d.lastX=x;d.lastY=y;
  const dx=x-d.startX,dy=y-d.startY,age=now-d.started;
  d.peakX=Math.max(d.peakX,Math.abs(dx));d.peakDown=Math.max(d.peakDown,dy);
+ d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
  if(!d.axis){
   if(Math.abs(dx)>=12&&Math.abs(dx)>Math.abs(dy)*1.25)d.axis='x';
   else if(Math.abs(dy)>=14&&Math.abs(dy)>Math.abs(dx)*1.4){d.axis='y';d.vertical=Math.sign(dy);}
@@ -110,9 +111,7 @@ function processSwipe(d,x,y,now){
   if(game.active.x!==before)d.translated=true;
   gestureFeedback('좌우로 밀어 위치를 맞추세요');
  }else if(d.axis==='y'){
-  if(d.vertical===-1&&dy<=-24&&!d.rotated&&!d.soft){
-   d.rotated=true;d.dropReady=false;action('rotate');gestureFeedback('회전 · 손을 떼고 다시 밀면 한 번 더');
-  }else if(d.vertical===1&&!d.rotated&&dy>0){
+  if(d.vertical===1&&dy>0){
    if(age>300||(age>=120&&dy>=24&&dy/age<.28))d.soft=true;
    if(d.soft){
     let steps=Math.min(20,Math.floor((y-d.downAnchor)/d.unit));
@@ -122,16 +121,16 @@ function processSwipe(d,x,y,now){
     d.dropReady=isFastDown(d,x,y,now);
     gestureFeedback(d.dropReady?'손을 떼면 즉시 낙하':'아래로 빠르게 쓸고 떼면 낙하',d.dropReady);
    }
-  }else{d.dropReady=false;gestureFeedback(d.rotated?'회전 · 손을 떼고 다시 밀면 한 번 더':'손을 떼고 다시 스와이프하세요');}
+  }else{d.dropReady=false;gestureFeedback('회전은 짧게 톡 터치하세요');}
  }
- if(d.axis!=='y'||d.soft||d.rotated)d.dropReady=false;
+ if(d.axis!=='y'||d.soft)d.dropReady=false;
 }
 for(const surface of [canvas,$('touchpad')]){
  surface.addEventListener('pointerdown',e=>{
   if(state!=='playing'||!game.active||drag||e.button!==0||e.isPrimary===false)return;
   e.preventDefault();surface.setPointerCapture?.(e.pointerId);repeat=null;audioInit();
-  drag={id:e.pointerId,surface,pieceId:game.active.cells[0].id,startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:game.active.x,shift:0,axis:null,rotated:false,soft:false,translated:false,dropReady:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(16,Math.min(34,canvas.getBoundingClientRect().width/10))};
-  $('touchpad').classList.add('engaged');gestureFeedback('좌우 이동 · 위로 회전 · 아래로 낙하');
+  drag={id:e.pointerId,surface,pieceId:game.active.cells[0].id,startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:game.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,dropReady:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(16,Math.min(34,canvas.getBoundingClientRect().width/10))};
+  $('touchpad').classList.add('engaged');gestureFeedback('톡 터치: 회전 · 좌우: 이동 · 아래: 낙하');
  });
  surface.addEventListener('pointermove',e=>{
   const d=drag;if(!d||d.id!==e.pointerId||d.surface!==surface)return;
@@ -143,9 +142,11 @@ for(const surface of [canvas,$('touchpad')]){
   if(drag!==d||state!=='playing'||game.active?.cells[0].id!==d.pieceId)return;
   const dx=e.clientX-d.startX,dy=e.clientY-d.startY,fast=isFastDown(d,e.clientX,e.clientY,now);
   drag=null;$('touchpad').classList.remove('engaged','drop-ready');
-  if(fast){action('drop');gestureFeedback('즉시 낙하');}
+  if(!d.axis&&d.peakDistance<=10&&now-d.started<=300){
+   const rotated=action('rotate');gestureFeedback(rotated?'회전 · 다시 톡 터치하면 한 번 더':'회전할 공간이 없어요');
+  }else if(fast){action('drop');gestureFeedback('즉시 낙하');}
   else if(d.axis==='x'&&!d.translated&&Math.abs(dx)>=12){action(dx>0?'right':'left');gestureFeedback('한 칸 이동');}
-  else if(d.axis==='y'&&d.vertical===1&&!d.rotated&&!d.soft&&dy>=Math.max(18,d.unit*.6)){
+  else if(d.axis==='y'&&d.vertical===1&&!d.soft&&dy>=Math.max(18,d.unit*.6)){
    const steps=Math.min(20,Math.max(1,Math.floor(dy/d.unit)));for(let i=0;i<steps;i++)if(!action('down'))break;
    gestureFeedback('천천히 내렸어요');
   }
