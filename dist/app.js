@@ -188,7 +188,7 @@ function softCell(c,x,y,size,options){
   const grainTop=settled?(U?y:py+side*.18):py+side*.14;
   for(let n=0;n<(settled?64:38);n++){const q=(seed+n*43)%127,gx=(settled?(L?x:px):px)+(settled?(R?size:side):side)*(((q*19)%91)/100+.045),gy=grainTop+(py+side-grainTop)*(((q*31+n*7)%94)/100);g.globalAlpha=.25+((q%7)*.075);g.fillStyle=n%13===0?'#fff7d7':n%4===0?dark:light;const rr=Math.max(.45,size*(.008+(q%4)*.004));g.beginPath();g.arc(gx,gy,rr,0,Math.PI*2);g.fill();}
   g.globalAlpha=options.alpha===undefined?1:options.alpha;
- } }else if(kind==='water'){
+ }else if(kind==='water'){
   const connected=(dx,dy)=>(options.links||[]).some(d=>d[0]===dx&&d[1]===dy),left=connected(-1,0),right=connected(1,0),up=connected(0,-1),down=connected(0,1);
   const wx=left?x:px,wy=up?y:py,ww=(right?x+size:px+side)-wx,wh=(down?y+size:py+side)-wy,r=size*.24;
   const fill=g.createLinearGradient(0,0,0,720);fill.addColorStop(0,light);fill.addColorStop(1,dark);g.fillStyle=fill;
