@@ -98,3 +98,7 @@
 - A dark crystal cavern theme surrounds the board, with a dimmed center for readability.
 - `dist/art.js` caches tile/particle samples and the board backdrop once after loading. Artwork is WebP; original fallback drawing remains available while loading or on failure.
 - Physics, clear rules, input timing, reduced-effects limits, and stored progress are unchanged.
+
+### Two-thumb layout and easier sand
+- The piece rail is now left of the board; hold stays immediately above instant drop.
+- Sand uses two distinguishable colors (gold and purple); orange was removed. Water and jelly retain four colors.

@@ -79,7 +79,7 @@ class Game{
  hold(){if(this.holdUsed||!this.active)return false;const p=this.active;p.x=3;p.y=0;if(this.held){this.active=this.held;this.held=p;this.active.x=this.active.type==='O'?4:3;this.active.y=0;if(!this.fits(this.active))this.over=true;}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
  lock(){if(!this.active)return;for(const c of this.active.cells)this.board[this.active.y+c.y][this.active.x+c.x]={...c};this.pieces++;this.active=null;}
  resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chain;this.score+=gain;return{falls,gain};}
- get colorCount(){return this.material==='sand'?3:4;}
+ get colorCount(){return this.material==='sand'?2:4;}
  get level(){return 1+Math.floor(this.lines/8);}
  get gravity(){return Math.max(this.difficulty==='calm'?180:this.difficulty==='challenge'?110:130,920*Math.pow(.83,this.level-1)*(this.difficulty==='calm'?1.4:this.difficulty==='challenge'?.76:1));}
  get lockDelay(){return this.difficulty==='calm'?850:650;}

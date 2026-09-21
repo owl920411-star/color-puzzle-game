@@ -142,3 +142,6 @@ body{background:#070f20 url("assets/crystal-background.webp") center center / co
 .screen{background:linear-gradient(#071225bb,#07101aed)}
 @media(min-width:651px){.editorial,.right-panel{text-shadow:0 2px 12px #000}.topbar,footer{background:#07101a66}}
 @media(prefers-reduced-motion:reduce){body{background-attachment:scroll}}
+
+/* Left thumb: previews, hold and drop. Right thumb: the board. */
+.play-space{flex-direction:row-reverse}
