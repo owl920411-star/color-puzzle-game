@@ -215,3 +215,35 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){resetInput
 if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
 resize();updateSound();badgeUI();menu();requestAnimationFrame(frame);
 })();
+
+// Fit the mobile board around the actual controls, including wrapped goals.
+// Keep a readable minimum on very short screens; the page can still scroll.
+(() => {
+ 'use strict';
+ if (!window.ResizeObserver) return;
+ const section=document.getElementById('play-section');
+ const shell=document.querySelector('.app-shell');
+ const space=document.querySelector('.play-space');
+ const rail=document.querySelector('.piece-rail');
+ let pending=false;
+ function fit(){
+  pending=false;
+  if(window.innerWidth>650){section.style.removeProperty('--board-h');return;}
+  const viewport=window.visualViewport;
+  // Pinch zoom should magnify the board instead of shrinking it again.
+  if(viewport&&viewport.scale!==1)return;
+  const height=viewport?.height||window.innerHeight;
+  const chrome=shell.getBoundingClientRect().height-space.getBoundingClientRect().height;
+  const gap=parseFloat(getComputedStyle(space).columnGap)||0;
+  const widthLimit=(space.clientWidth-rail.getBoundingClientRect().width-gap)*2;
+  const floor=Math.min(240,widthLimit);
+  const target=Math.floor(Math.max(floor,Math.min(640,widthLimit,height-chrome-8)));
+  if(target>0&&section.style.getPropertyValue('--board-h')!==target+'px')section.style.setProperty('--board-h',target+'px');
+ }
+ function schedule(){if(!pending){pending=true;requestAnimationFrame(fit);}}
+ const observer=new ResizeObserver(schedule);
+ for(const el of [shell,space,...section.children])observer.observe(el);
+ window.addEventListener('resize',schedule);
+ window.visualViewport?.addEventListener('resize',schedule);
+ schedule();
+})();
