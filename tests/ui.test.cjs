@@ -16,13 +16,14 @@ function harness(realCanvas=false,initialSaved=null){
  }
  const html=fs.readFileSync(require.resolve('../dist/index.html'),'utf8');for(const match of html.matchAll(/<([\w-]+)\b[^>]*\bid="([^"]+)"[^>]*>/g)){const el=new El(match[2],match[1].toUpperCase());for(const attr of ['width','height']){const m=match[0].match(new RegExp(attr+'="(\\d+)"'));if(m)el[attr]=+m[1];}}
  const controls=[...html.matchAll(/<button\b[^>]*data-action="([^"]+)"/g)].map(m=>m[1]).filter(a=>a!=='hold').map(a=>new El('', 'BUTTON',a));byId.hold.dataset.action='hold';
- const doc=new El();doc.getElementById=id=>byId[id];doc.querySelectorAll=s=>s==='[data-action]'?[...controls,byId.hold]:s==='.controls button'?controls:[];
+ const previews=[0,1].map(i=>{const b=new El('','BUTTON');b.dataset.preview=String(i);return b;});
+ const doc=new El();doc.getElementById=id=>byId[id];doc.querySelectorAll=s=>s==='[data-action]'?[...controls,byId.hold]:s==='.controls button'?controls:s==='[data-preview]'?previews:[];
  const win=new El();Object.assign(win,{devicePixelRatio:1,crypto:{getRandomValues:v=>{v[0]=123456;return v;}}});
  const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};context.GlassEngine=win.GlassEngine;vm.runInContext(fs.readFileSync(require.resolve('../dist/progression.js'),'utf8'),context);win.GlassProgress=context.GlassProgress;vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
  function step(ms=16){now+=ms;const f=raf.shift();assert.ok(f,'animation frame remains scheduled');f(now);}
  function screen(a,mode,extra={}){const b=new El('','BUTTON');b.dataset=mode?{mode}:{screen:a,...extra};byId.screen.child.emit('click',{target:b});}
  function press(a,id=1){const b=a==='hold'?byId.hold:controls.find(b=>b.dataset.action===a);b.emit('pointerdown',{pointerId:id});b.emit('pointerup',{pointerId:id});}
- return{byId,doc,win,step,advance:ms=>now+=ms,screen,press,controls,stored,get game(){return instances[instances.length-1];},render:()=>byId.board.raw?.toBuffer('image/png')};
+ return{byId,doc,win,previews,step,advance:ms=>now+=ms,screen,press,controls,stored,get game(){return instances[instances.length-1];},render:()=>byId.board.raw?.toBuffer('image/png')};
 }
 test('menu, tutorial, exact clear score and same-seed retry work through real UI handlers',()=>{
  const h=harness();h.step();assert.match(h.byId.screen.child.innerHTML,/GLASSFALL/);h.screen('tutorial');assert.equal(h.byId.screen.hidden,true);h.press('drop');for(let i=0;i<15;i++)h.step(60);assert.match(h.byId.screen.child.innerHTML,/균열이 이어졌어요/);assert.equal(h.byId.lines.textContent,1);assert.equal(h.byId.extra.textContent,3);assert.equal(h.byId.hold.disabled,true);assert.equal(h.byId.pause.disabled,true);h.screen('start-sprint');const seed=h.byId['seed-label'].textContent;h.press('drop');h.byId.pause.emit('click');h.screen('retry');assert.equal(h.byId['seed-label'].textContent,seed);assert.equal(h.byId.score.textContent,'0');
@@ -242,4 +243,14 @@ test('focused play keeps goals accessible while pause settings preserve paused t
  const h=harness();h.screen('start');h.step(1000);h.byId.pause.emit('click');const time=h.byId.time.textContent;assert.match(h.byId.screen.child.innerHTML,/목표와 기록/);assert.match(h.byId.screen.child.innerHTML,/조작 패드 끔/);
  h.screen('pad-toggle');assert.equal(h.byId['play-section'].attrs['data-pad'],'show');assert.match(h.byId.screen.child.innerHTML,/조작 패드 켬/);h.screen('sound-toggle');assert.equal(h.byId.sound.attrs['aria-pressed'],'true');h.screen('help');assert.equal(h.byId['help-dialog'].open,true);h.byId['resume-help'].emit('click');assert.match(h.byId.screen.child.innerHTML,/계속하기/);h.step(60000);assert.equal(h.byId.time.textContent,time);
  h.screen('resume');h.step(1000);assert.notEqual(h.byId.time.textContent,time);h.press('drop');assert.equal(h.game.pieces,1);const restored=harness(false,JSON.parse(h.stored.get('glassfall-v1')));assert.equal(restored.byId['play-section'].attrs['data-pad'],'show');
+});
+
+
+test('both next-block cards open the correct preview, pause time and resume without changing the queue',()=>{
+ const h=harness();h.screen('start');const queue=JSON.stringify(h.game.queue);
+ for(const [i,button]of h.previews.entries()){
+  button.emit('click');assert.equal(h.byId['preview-dialog'].open,true);assert.equal(h.byId['preview-title'].textContent,i===0?'다음 블록':'두 번째 다음 블록');const time=h.byId.time.textContent;
+  h.step(10000);assert.equal(h.byId.time.textContent,time);h.doc.emit('keydown',{key:' '});assert.equal(h.game.pieces,0);h.byId['close-preview'].emit('click');assert.equal(h.byId.screen.hidden,true);assert.equal(JSON.stringify(h.game.queue),queue);
+ }
+ h.byId.pause.emit('click');h.previews[0].emit('click');h.byId['close-preview'].emit('click');assert.equal(h.byId.screen.hidden,false,'a previously paused game stays paused');
 });

@@ -107,3 +107,22 @@ progress::-webkit-progress-bar{background:#29404b;border-radius:5px}progress::-w
  .screen{inset:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));max-width:440px;z-index:10}
  .mobile-settings{display:inline-block;margin-left:10px}
 }
+
+/* Two large upcoming cards; hold stays at the board's lower edge. */
+.play-section{width:calc(var(--board-h)/2 + 92px)}
+.piece-rail{width:78px;height:var(--board-h);gap:10px;flex-shrink:0}
+.piece-rail .next-box{width:100%;height:100px;min-height:100px;padding:6px 4px;justify-content:flex-start;flex:none;overflow:hidden;touch-action:manipulation}
+.piece-rail .next-box>span{font-size:13px;line-height:20px}
+#next,#next-second,#next-third{display:block;width:68px;height:68px;clip-path:none;flex:none}
+.piece-rail .hold-box{margin-top:auto;min-height:94px;height:94px;width:100%;padding:8px 4px;gap:4px;flex:none}
+.piece-rail .hold-box>span{font-size:14px}.piece-rail #held{width:68px;height:54px}
+#preview-dialog{text-align:center}#preview-large{width:192px;height:192px;max-width:100%;display:block;margin:4px auto 16px}
+@media(max-width:650px){
+ .play-section{width:100%}.piece-rail{width:72px;flex:0 0 72px;height:var(--board-h);gap:8px}
+ .piece-rail .next-box,.piece-rail>.rail-box:first-child{width:72px;height:94px;min-height:94px;padding:5px 3px;border-radius:10px}
+ #next,#next-second{width:64px;height:64px;clip-path:none}
+ .piece-rail .next-box>span{font-size:13px;line-height:20px}
+ .piece-rail .desktop-next{display:none}
+ .piece-rail .hold-box{width:72px;height:94px;min-height:94px;padding:7px 3px;margin-top:auto;border-radius:10px}
+ .piece-rail #held{width:64px;height:51px}
+}
