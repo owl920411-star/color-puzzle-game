@@ -166,6 +166,30 @@ function update(rawDt){const dt=Math.min(100,rawDt);if(state==='playing'||state=
  if(state!=='paused'){if(goalToast>0)goalToast-=dt;if(impact){impact.life-=dt;if(impact.life<=0)impact=null;}for(const f of feedback)f.life-=dt;feedback=feedback.filter(f=>f.life>0);if(drag?.axis==='y'&&state==='playing')processSwipe(drag,drag.lastX,drag.lastY,performance.now());if(gestureFeedbackTime>0&&!drag){gestureFeedbackTime-=dt;if(gestureFeedbackTime<=0){$('pad-hint').textContent='게임판에서도 똑같이 조작하세요';$('touchpad').classList.remove('drop-ready');}}for(const p of particles){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=(p.gravity||350)*dt/1000;p.angle+=dt*.002;}particles=particles.filter(p=>p.life>0);if(dropTrail){dropTrail.life-=dt;if(dropTrail.life<=0)dropTrail=null;}if(calloutTime>0){calloutTime-=dt;if(calloutTime<=0)$('callout').classList.remove('show');}}
 }
 function cellColors(c){if(c?.gem)return['#fff6bd','#b98724'];return game.material==='glass'?(colors[c.type]||colors.I):materialColors[game.material][c.paint??0];}
+function renderSandTerrain(){
+ const g=ctx,size=36;
+ for(let paint=0;paint<game.colorCount;paint++){
+  const [light,dark]=materialColors.sand[paint],cells=[];
+  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(c&&!c.gem&&c.paint===paint)cells.push({x,y,c});}
+  if(!cells.length)continue;
+  // Build one continuous silhouette from the occupied sand mass instead of drawing cell boxes.
+  g.save();g.beginPath();
+  for(const {x,y} of cells){
+   const L=game.board[y]?.[x-1]?.paint===paint,R=game.board[y]?.[x+1]?.paint===paint,U=game.board[y-1]?.[x]?.paint===paint,D=game.board[y+1]?.[x]?.paint===paint;
+   const seed=(x*37+y*61+paint*83)%101,left=x*size-(L?1:0),right=(x+1)*size+(R?1:0),bottom=(y+1)*size+(D?1:0);
+   const top=y*size+(U?0:5+((seed%7)-3)*.7);
+   g.moveTo(left,top+(L?0:3));
+   if(U)g.lineTo(right,top);else{g.quadraticCurveTo(x*size+size*.24,top-4-(seed%3),x*size+size*.5,top-1);g.quadraticCurveTo(x*size+size*.76,top+3,right,top+(R?0:3));}
+   g.lineTo(right,bottom);g.lineTo(left,bottom);g.closePath();
+  }
+  const grad=g.createLinearGradient(0,0,0,720);grad.addColorStop(0,light);grad.addColorStop(.7,light+'e8');grad.addColorStop(1,dark);g.fillStyle=grad;g.fill();
+  // Dense deterministic grains erase the remaining grid impression and create mineral texture.
+  for(const {x,y,c} of cells){const seed=(c.id*47+paint*83)%127;for(let i=0;i<(reduced?10:25);i++){const q=(seed+i*43)%127,gx=x*size+2+((q*19+i*11)%94)/100*(size-4),gy=y*size+4+((q*31+i*7)%91)/100*(size-6);g.globalAlpha=.18+(q%6)*.055;g.fillStyle=i%11===0?'#fff3ce':i%4===0?dark:light;g.beginPath();g.arc(gx,gy,.45+(q%3)*.28,0,Math.PI*2);g.fill();}}
+  g.restore();
+ }
+ // Gems stay crisp above the sand terrain.
+ for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(c?.gem)softCell(c,x*size,y*size,size,{});}
+}
 function softCell(c,x,y,size,options){
  const g=options.context||ctx,[light,dark]=cellColors(c),kind=game.material;if(c.gem){g.save();g.translate(x+size/2,y+size/2);g.rotate(Math.PI/4);const q=size*.28;g.fillStyle='#ffe88c';g.shadowColor='#fff1a8';g.shadowBlur=10;g.fillRect(-q,-q,q*2,q*2);g.strokeStyle='#fff8d0';g.lineWidth=1.5;g.strokeRect(-q,-q,q*2,q*2);g.restore();return;}
  g.save();if(options.alpha!==undefined)g.globalAlpha=options.alpha;
@@ -230,7 +254,8 @@ function glass(c,x,y,size=36,options={}){if(game.material!=='glass'){softCell(c,
 function resize(){renderRatio=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(360*renderRatio);canvas.height=Math.round(720*renderRatio);ctx.setTransform(renderRatio,0,0,renderRatio,0,0);}
 function render(){ctx.clearRect(0,0,360,720);const bg=ctx.createLinearGradient(0,0,360,720);bg.addColorStop(0,game.material==='sand'?'#241d19':game.material==='jelly'?'#24192c':'#0e1e2d');bg.addColorStop(1,game.material==='sand'?'#3a2e20':game.material==='jelly'?'#332139':'#102c3b');ctx.fillStyle=bg;ctx.fillRect(0,0,360,720);window.GlassArt?.background(ctx,game.material);ctx.strokeStyle='#8fbed109';ctx.lineWidth=1;ctx.beginPath();for(let x=1;x<10;x++){ctx.moveTo(x*36,0);ctx.lineTo(x*36,720);}for(let y=1;y<20;y++){ctx.moveTo(0,y*36);ctx.lineTo(360,y*36);}ctx.stroke();ctx.fillStyle='#a8d7e91a';for(let x=1;x<10;x++)for(let y=1;y<20;y++)ctx.fillRect(x*36-.7,y*36-.7,1.4,1.4);
  const clearMap=new Map(plan?plan.cells.map(c=>[c.y*10+c.x,c.depth]):[]),fallMap=new Map(falls.map(f=>[f.cell.id,f]));
- for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(!c)continue;let yy=y,xx=x,squash=0;const f=fallMap.get(c.id);if(f&&(phase==='fall'||phase==='settle')){const t=Math.min(1,phaseTime/(phase==='settle'?(game.material==='sand'?92:42):(240))),ease=game.material==='sand'?(1-Math.pow(1-t,2)):1-Math.pow(1-t,3);yy=f.from+(f.to-f.from)*ease;xx=(f.fromX??x)+(x-(f.fromX??x))*ease;squash=Math.sin(t*Math.PI)*(game.material==='sand'?.24:.14);}const hot=clearMap.has(y*10+x)&&phaseTime>=clearMap.get(y*10+x)*24;const links=game.material!=='glass'&&game.material!=='sand'&&!(f&&phase==='settle')?E.DIRS.filter(([dx,dy])=>game.board[y+dy]?.[x+dx]?.paint===c.paint):null;glass(c,xx*36,yy*36,36,{hot,squash,links});}
+ if(game.material==='sand'&&phase!=='settle')renderSandTerrain();
+ for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(!c)continue;if(game.material==='sand'&&phase!=='settle')continue;let yy=y,xx=x,squash=0;const f=fallMap.get(c.id);if(f&&(phase==='fall'||phase==='settle')){const t=Math.min(1,phaseTime/(phase==='settle'?(game.material==='sand'?92:42):(240))),ease=game.material==='sand'?(1-Math.pow(1-t,2)):1-Math.pow(1-t,3);yy=f.from+(f.to-f.from)*ease;xx=(f.fromX??x)+(x-(f.fromX??x))*ease;squash=Math.sin(t*Math.PI)*(game.material==='sand'?.24:.14);}const hot=clearMap.has(y*10+x)&&phaseTime>=clearMap.get(y*10+x)*24;const links=game.material!=='glass'&&game.material!=='sand'&&!(f&&phase==='settle')?E.DIRS.filter(([dx,dy])=>game.board[y+dy]?.[x+dx]?.paint===c.paint):null;glass(c,xx*36,yy*36,36,{hot,squash,links});}
  if(game.active&&['playing','paused'].includes(state)){const p=game.active,dy=game.dropDistance();for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y+dy)*36,36,{ghost:true,ready:!!drag?.dropReady});for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y)*36,36);}
  if(strategy&&state==='playing'){
   ctx.save();
