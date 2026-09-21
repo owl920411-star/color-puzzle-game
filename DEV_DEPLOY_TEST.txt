@@ -1,3 +1,4 @@
 GlassFall dev deployment test
 Branch: dev
 Purpose: verify Cloudflare automatic non-production branch deployment.
+Retry: static assets deployment configuration enabled.
