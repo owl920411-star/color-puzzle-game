@@ -261,8 +261,10 @@ function processSwipe(d,x,y,now){
  }
  if(d.axis==='x'){
   const before=game.active.x,offset=Math.max(-20,Math.min(20,(x-d.anchorX)/d.unit));
-  while(offset>d.shift+.6)d.shift++;
-  while(offset<d.shift-.6)d.shift--;
+  // A deliberate short swipe responds before release; hysteresis absorbs finger jitter.
+  if(d.shift===0&&Math.abs(x-d.anchorX)>=12)d.shift=Math.sign(x-d.anchorX);
+  while(offset>d.shift+.65)d.shift++;
+  while(offset<d.shift-.65)d.shift--;
   if(!moveToColumn(d.originX+d.shift))rebaseBoardDrag();
   if(game.active.x!==before)d.translated=true;
   gestureFeedback('좌우로 밀어 위치를 맞추세요');
@@ -270,8 +272,8 @@ function processSwipe(d,x,y,now){
   if(d.vertical===1&&dy>0){
    if(age>300||(age>=120&&dy>=24&&dy/age<.28))d.soft=true;
    if(d.soft){
-    let steps=Math.min(20,Math.floor((y-d.downAnchor)/d.unit));
-    while(steps-->0){d.downAnchor+=d.unit;if(!action('down')){d.downAnchor=y;break;}}
+    let steps=Math.min(20,Math.floor((y-d.downAnchor)/d.rowUnit));
+    while(steps-->0){d.downAnchor+=d.rowUnit;if(!action('down')){d.downAnchor=y;break;}}
     gestureFeedback('천천히 내리는 중');
    }else{
     d.dropReady=isFastDown(d,x,y,now);
@@ -285,7 +287,8 @@ for(const surface of [canvas,$('touchpad')]){
  surface.addEventListener('pointerdown',e=>{
   if(state!=='playing'||!game.active||drag||e.button!==0||e.isPrimary===false)return;
   e.preventDefault();surface.setPointerCapture?.(e.pointerId);repeat=null;audioInit();
-  drag={id:e.pointerId,surface,pieceId:game.active.cells[0].id,startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:game.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,dropReady:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(16,Math.min(34,canvas.getBoundingClientRect().width/10))};
+  const boardRect=canvas.getBoundingClientRect();
+  drag={id:e.pointerId,surface,pieceId:game.active.cells[0].id,startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:game.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,dropReady:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(16,Math.min(34,boardRect.width/10)),rowUnit:Math.max(12,boardRect.height/20)};
   $('touchpad').classList.add('engaged');gestureFeedback('톡 터치: 회전 · 좌우: 이동 · 아래: 낙하');
  });
  surface.addEventListener('pointermove',e=>{
@@ -303,7 +306,7 @@ for(const surface of [canvas,$('touchpad')]){
   }else if(fast){action('drop');gestureFeedback('즉시 낙하');}
   else if(d.axis==='x'&&!d.translated&&Math.abs(dx)>=12){action(dx>0?'right':'left');gestureFeedback('한 칸 이동');}
   else if(d.axis==='y'&&d.vertical===1&&!d.soft&&dy>=Math.max(18,d.unit*.6)){
-   const steps=Math.min(20,Math.max(1,Math.floor(dy/d.unit)));for(let i=0;i<steps;i++)if(!action('down'))break;
+   const steps=Math.min(20,Math.max(1,Math.floor(dy/d.rowUnit)));for(let i=0;i<steps;i++)if(!action('down'))break;
    gestureFeedback('천천히 내렸어요');
   }
  });

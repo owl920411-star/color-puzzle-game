@@ -254,3 +254,19 @@ test('both next-block cards open the correct preview, pause time and resume with
  }
  h.byId.pause.emit('click');h.previews[0].emit('click');h.byId['close-preview'].emit('click');assert.equal(h.byId.screen.hidden,false,'a previously paused game stays paused');
 });
+
+
+test('short horizontal swipes respond before release without jitter or a second step',()=>{
+ for(const direction of [-1,1]){
+  const h=harness(),s=begin(h,'board'),x=h.game.active.x;
+  touch(s,'pointermove',100+direction*13,101);assert.equal(h.game.active.x,x+direction);
+  for(const delta of [12,14,13]){touch(s,'pointermove',100+direction*delta,101);assert.equal(h.game.active.x,x+direction);}
+  touch(s,'pointerup',100+direction*13,101);assert.equal(h.game.active.x,x+direction);
+ }
+});
+test('soft drop follows visible row height on a vertically expanded board',()=>{
+ const h=harness();h.screen('start');const s=h.byId.board;s.getBoundingClientRect=()=>({width:300,height:800,left:0,top:0});
+ const y=h.game.active.y;touch(s,'pointerdown',100,100);h.advance(400);
+ touch(s,'pointermove',100,180);assert.equal(h.game.active.y,y+2);
+ touch(s,'pointerup',100,180);assert.equal(h.game.pieces,0);
+});
