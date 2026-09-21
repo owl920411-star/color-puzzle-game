@@ -201,3 +201,23 @@ test('a new seed does not inherit comparison metrics and recent run history is b
  h.win.crypto.getRandomValues=v=>{v[0]=987654;return v;};h.screen('new');assert.equal(h.byId['replay-target'].hidden,true);h.step(180000);assert.match(h.byId.screen.child.innerHTML,/첫 기록/);
  h.step(1000);saved=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(saved.runs.length,12);assert.equal(saved.runs.at(-1).attempts,1);
 });
+
+test('all new materials flow after touch drop, suspend during pause and return input to a fresh piece',()=>{
+ for(const material of ['sand','water','jelly']){
+  const h=harness();h.screen('',null,{material});assert.match(h.byId.screen.child.innerHTML,/소재 선택/);h.screen('start');assert.equal(h.game.material,material);
+  const active=h.game.active,initial=JSON.stringify(active);const pad=h.byId.touchpad;
+  touch(pad,'pointerdown',100,100);h.advance(50);touch(pad,'pointerup',100,180);assert.equal(h.game.active,null);assert.equal(h.game.pieces,1);
+  h.byId.pause.emit('click');const frozen=JSON.stringify(h.game.board);h.step(60000);assert.equal(JSON.stringify(h.game.board),frozen);h.screen('resume');
+  for(let i=0;i<100;i++)h.step(50);assert.ok(h.game.active);assert.equal(h.game.pieces,1);assert.equal(h.game.board.flat().filter(Boolean).length,4);
+  h.byId.pause.emit('click');h.screen('retry');assert.equal(JSON.stringify(h.game.active),initial);assert.equal(h.game.material,material);
+ }
+});
+test('a timed material clear finishes its settling and cascade before saving; replay scores are material-specific',()=>{
+ const h=harness();h.screen('',null,{material:'jelly'});h.screen('start');h.game.board=Array.from({length:20},()=>Array(10).fill(null));
+ const paint=h.game.active.cells[0].paint;for(let x=0;x<8;x++)h.game.board[19][x]={id:900+x,paint,mask:0,type:'O'};
+ h.press('drop');h.step(180000);for(let i=0;i<150;i++)h.step(50);
+ assert.match(h.byId.screen.child.innerHTML,/직전 동일 조건과 비교/);assert.ok(h.game.shards>=8);
+ const saved=JSON.parse(h.stored.get('glassfall-v1'));assert.ok(saved.best['jelly:sprint']>0);assert.equal(saved.best.sprint,undefined);assert.equal(saved.runs[0].material,'jelly');
+ const restored=harness(false,saved);restored.screen('last-replay');assert.equal(restored.game.material,'jelly');assert.equal(restored.game.seed,h.game.seed);
+ restored.screen('menu');restored.screen('',null,{material:'water'});assert.doesNotMatch(restored.byId.screen.child.innerHTML,/직전 판 기록에 재도전/);restored.screen('start');assert.equal(restored.byId['replay-target'].hidden,true);
+});

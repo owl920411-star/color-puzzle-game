@@ -11,10 +11,57 @@ function clearPlan(board){const rows=[];for(let y=0;y<H;y++)if(board[y].every(Bo
  for(let i=0;i<cells.length;i++){const a=cells[i];for(const[dx,dy,bit,opposite]of DIRS){const x=a.x+dx,y=a.y+dy;if(x<0||x>=W||y<0||y>=H||seen.has(y*W+x))continue;const b=board[y][x];if(b&&(a.cell.mask&bit)&&(b.mask&opposite)){seen.add(y*W+x);cells.push({x,y,depth:a.depth+1,cell:b});}}}
  return{rows,cells,extra:cells.length-rows.length*W};}
 function applyClear(board,plan){for(const c of plan.cells)board[c.y][c.x]=null;const falls=[];for(let x=0;x<W;x++){let target=H-1;for(let y=H-1;y>=0;y--){if(board[y][x]){const cell=board[y][x];board[y][x]=null;board[target][x]=cell;if(target!==y)falls.push({x,from:y,to:target,cell});target--;}}}return falls;}
+// Each move strictly increases height index, so settling always terminates.
+function groups(board){
+ const seen=new Set(),result=[];
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  if(!board[y][x]||seen.has(y*W+x))continue;
+  const cells=[{x,y,cell:board[y][x],depth:0}];seen.add(y*W+x);
+  for(let i=0;i<cells.length;i++)for(const [dx,dy]of DIRS){const nx=cells[i].x+dx,ny=cells[i].y+dy;
+   if(nx<0||nx>=W||ny<0||ny>=H||seen.has(ny*W+nx)||!board[ny][nx]||board[ny][nx].paint!==board[y][x].paint)continue;
+   seen.add(ny*W+nx);cells.push({x:nx,y:ny,cell:board[ny][nx],depth:0});
+  }
+  result.push(cells);
+ }
+ return result;
+}
+function materialPlan(board,material='glass'){
+ if(material==='glass')return clearPlan(board);
+ const eligible=groups(board).filter(cells=>material==='sand'?cells.some(c=>c.x===0)&&cells.some(c=>c.x===W-1):cells.length>=(material==='water'?10:8));
+ if(!eligible.length)return null;
+ const cells=eligible.flat();return{rows:[],cells,extra:cells.length,groups:eligible.length};
+}
+function settleStep(board,material,step=0){
+ const moves=[];
+ if(material==='glass')return moves;
+ if(material==='jelly'){
+  const clusters=groups(board).sort((a,b)=>Math.max(...b.map(c=>c.y))-Math.max(...a.map(c=>c.y)));
+  for(const cells of clusters){
+   const own=new Set(cells.map(c=>c.y*W+c.x));
+   if(!cells.every(c=>c.y+1<H&&(!board[c.y+1][c.x]||own.has((c.y+1)*W+c.x))))continue;
+   for(const c of cells)board[c.y][c.x]=null;
+   for(const c of cells){board[c.y+1][c.x]=c.cell;moves.push({fromX:c.x,from:c.y,x:c.x,to:c.y+1,cell:c.cell});}
+  }
+  return moves;
+ }
+ for(let y=H-2;y>=0;y--)for(let n=0;n<W;n++){
+  const x=step%2?W-1-n:n,cell=board[y][x];if(!cell)continue;
+  let target=!board[y+1][x]?x:null;
+  const dirs=(cell.id+step)%2?[-1,1]:[1,-1];
+  if(target===null)for(const dir of dirs){const nx=x+dir;if(nx>=0&&nx<W&&!board[y+1][nx]){target=nx;break;}}
+  if(target===null&&material==='water'){
+   const paths=[];
+   for(const dir of dirs)for(let d=1;d<W;d++){const nx=x+dir*d;if(nx<0||nx>=W||board[y][nx])break;if(!board[y+1][nx]){paths.push({x:nx,d});break;}}
+   paths.sort((a,b)=>a.d-b.d);if(paths.length)target=paths[0].x;
+  }
+  if(target!==null){board[y][x]=null;board[y+1][target]=cell;moves.push({fromX:x,from:y,x:target,to:y+1,cell});}
+ }
+ return moves;
+}
 class Game{
- constructor(seed='glass',mode='sprint'){this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;for(let i=0;i<4;i++)this.queue.push(this.makePiece());this.spawn();}
+ constructor(seed='glass',mode='sprint',material='glass'){this.material=['glass','sand','water','jelly'].includes(material)?material:'glass';this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;for(let i=0;i<4;i++)this.queue.push(this.makePiece());this.spawn();}
  makePiece(){if(!this.bag.length){this.bag=Object.keys(SHAPES);for(let i=6;i>0;i--){const j=Math.floor(this.rng()*(i+1));[this.bag[i],this.bag[j]]=[this.bag[j],this.bag[i]];}}
- const type=this.bag.pop(),masks=[3,6,9,12,5,10,15];return{type,size:type==='I'?4:type==='O'?2:3,x:3,y:0,cells:SHAPES[type].map(([x,y])=>({x,y,mask:this.rng()<.66?masks[Math.floor(this.rng()*masks.length)]:0,id:++this.serial,type}))};}
+ const type=this.bag.pop(),masks=[3,6,9,12,5,10,15],paint=this.material==='glass'?undefined:Math.floor(this.rng()*4);return{type,size:type==='I'?4:type==='O'?2:3,x:3,y:0,cells:SHAPES[type].map(([x,y])=>({x,y,mask:this.rng()<.66?masks[Math.floor(this.rng()*masks.length)]:0,id:++this.serial,type,...(paint===undefined?{}:{paint,mask:0})}))};}
  spawn(){this.active=this.queue.shift();this.queue.push(this.makePiece());this.active.x=this.active.type==='O'?4:3;this.active.y=0;this.holdUsed=false;if(!this.fits(this.active))this.over=true;return!this.over;}
  fits(p,dx=0,dy=0){return p.cells.every(c=>{const x=p.x+c.x+dx,y=p.y+c.y+dy;return x>=0&&x<W&&y>=0&&y<H&&!this.board[y][x];});}
  move(dx,dy=0){if(!this.active||!this.fits(this.active,dx,dy))return false;this.active.x+=dx;this.active.y+=dy;return true;}
@@ -22,10 +69,10 @@ class Game{
  dropDistance(){if(!this.active)return 0;let d=0;while(this.fits(this.active,0,d+1))d++;return d;}
  hold(){if(this.holdUsed||!this.active)return false;const p=this.active;p.x=3;p.y=0;if(this.held){this.active=this.held;this.held=p;this.active.x=this.active.type==='O'?4:3;this.active.y=0;if(!this.fits(this.active))this.over=true;}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
  lock(){if(!this.active)return;for(const c of this.active.cells)this.board[this.active.y+c.y][this.active.x+c.x]={...c};this.pieces++;this.active=null;}
- resolve(plan,chain){const falls=applyClear(this.board,plan);this.lines+=plan.rows.length;this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0))*chain;this.score+=gain;return{falls,gain};}
+ resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chain;this.score+=gain;return{falls,gain};}
  get level(){return 1+Math.floor(this.lines/8);}
  get gravity(){return Math.max(130,920*Math.pow(.83,this.level-1));}
 }
 function tutorial(){const g=new Game('learn','tutorial');const cell=(mask=0)=>({mask,id:++g.serial,type:'I'});for(let x=0;x<6;x++)g.board[19][x]=cell();g.board[19][3]=cell(1);g.board[18][3]=cell(5);g.board[17][3]=cell(6);g.board[17][4]=cell(8);g.board[18][4]=cell();g.active={type:'I',size:4,x:6,y:0,cells:SHAPES.I.map(([x,y])=>({...cell(),x,y}))};return g;}
-return{W,H,DIRS,SHAPES,hash,random,maskRotate,blank,clearPlan,applyClear,Game,tutorial};
+return{W,H,DIRS,SHAPES,hash,random,maskRotate,blank,clearPlan,applyClear,groups,materialPlan,settleStep,Game,tutorial};
 });
