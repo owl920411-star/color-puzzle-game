@@ -81,7 +81,7 @@ function updateGoals(){
 }
 function updateHUD(){
  const n=Math.max(0,Math.ceil((mode==='endless'||mode==='tutorial'?elapsed:remaining)/1000));
- updateGoals();$('play-section').setAttribute('data-mastery',String(P.mastery(saved.mastery[material]).level));
+ updateGoals();$('play-section').setAttribute('data-pad',saved.showPad?'show':'hide');$('play-section').setAttribute('data-mastery',String(P.mastery(saved.mastery[material]).level));
  $('score').textContent=game.score.toLocaleString();$('time').textContent=mode==='tutorial'?'연습':`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;
  $('time').classList.toggle('urgent',remaining<20000&&(mode==='sprint'||mode==='daily'));
  $('time-label').textContent=mode==='endless'?'플레이 시간':mode==='tutorial'?'시간 제한 없음':'남은 시간';
@@ -96,9 +96,15 @@ function updateHUD(){
  if(replayBest!==null){const gap=replayBest-game.score;$('replay-target').textContent=gap>=0?'같은 판 최고 '+replayBest.toLocaleString()+'점 · 갱신까지 '+(gap+1).toLocaleString()+'점':'같은 판 최고 기록 돌파 · +'+(-gap).toLocaleString()+'점';}
 }
 function menu(){resetInput();state='menu';mode=mode==='tutorial'?'sprint':mode;game=new E.Game('preview',mode,material);goals=[];strategy=null;feedback=[];impact=null;game.active=null;remaining=180000;elapsed=0;particles=[];phase=null;plan=null;falls=[];for(let x=0;x<10;x++)for(let j=0;j<(x<4?4-x:1+(x%3));j++)game.board[19-j][x]={type:Object.keys(colors)[(x+j)%7],mask:[3,5,10,12][(x+j)%4],id:100+x*5+j,paint:x%4};showMenu();updateHUD();renderPreviews();setStatus(materials[material].rule);}
-function showMenu(){screen.hidden=false;screen.className='screen';content.innerHTML=`<div class="screen-kicker">THE ART OF BREAKING</div><h2>GLASSFALL<span class="glass-word">쌓고 · 흐르고 · 터지다</span></h2><div class="material-options" role="group" aria-label="소재 선택">${Object.entries(materials).map(([key,m])=>`<button data-material="${key}" class="${material===key?'selected':''}" aria-pressed="${material===key}"><span class="material-swatch ${key}" aria-hidden="true"></span>${m.name}</button>`).join('')}</div><p class="material-description"><strong>${materials[material].tag}</strong><br>${materials[material].rule}</p>${masteryMarkup()}<div class="difficulty-options" role="group" aria-label="난이도">${Object.entries(difficulties).map(([key,d])=>`<button data-difficulty="${key}" class="${difficulty===key?'selected':''}" aria-pressed="${difficulty===key}">${d.name}</button>`).join('')}</div><p class="difficulty-note">${difficulties[difficulty].description}</p><div class="menu-tabs" role="group" aria-label="게임 모드">${['sprint','endless','daily'].map(m=>`<button data-mode="${m}" class="${mode===m?'selected':''}" aria-pressed="${mode===m}">${m==='sprint'?'3분':m==='endless'?'무한':'오늘'}</button>`).join('')}</div><button class="primary" data-screen="start">${materials[material].name} · ${modes[mode]} 시작</button>${lastReplay()?'<button class="secondary" data-screen="last-replay">직전 판 기록에 재도전</button>':''}<button class="text-btn" data-screen="tutorial">유리로 조작 연습</button><div class="menu-best">${mode==='daily'?day()+' · 같은 조각으로 도전':'최고 '+best().toLocaleString()+' · 최고 연쇄 '+(Number(saved.records[bestKey()]?.chain)||0)}</div>`;}
+function showMenu(){screen.hidden=false;screen.className='screen';content.innerHTML=`<div class="screen-kicker">THE ART OF BREAKING</div><h2>GLASSFALL<span class="glass-word">쌓고 · 흐르고 · 터지다</span></h2><div class="material-options" role="group" aria-label="소재 선택">${Object.entries(materials).map(([key,m])=>`<button data-material="${key}" class="${material===key?'selected':''}" aria-pressed="${material===key}"><span class="material-swatch ${key}" aria-hidden="true"></span>${m.name}</button>`).join('')}</div><p class="material-description"><strong>${materials[material].tag}</strong><br>${materials[material].rule}</p>${masteryMarkup()}<div class="difficulty-options" role="group" aria-label="난이도">${Object.entries(difficulties).map(([key,d])=>`<button data-difficulty="${key}" class="${difficulty===key?'selected':''}" aria-pressed="${difficulty===key}">${d.name}</button>`).join('')}</div><p class="difficulty-note">${difficulties[difficulty].description}</p><div class="menu-tabs" role="group" aria-label="게임 모드">${['sprint','endless','daily'].map(m=>`<button data-mode="${m}" class="${mode===m?'selected':''}" aria-pressed="${mode===m}">${m==='sprint'?'3분':m==='endless'?'무한':'오늘'}</button>`).join('')}</div><button class="primary" data-screen="start">${materials[material].name} · ${modes[mode]} 시작</button>${lastReplay()?'<button class="secondary" data-screen="last-replay">직전 판 기록에 재도전</button>':''}<button class="text-btn" data-screen="tutorial">유리로 조작 연습</button><button class="text-btn mobile-settings" data-screen="help">설정·도움말</button><div class="menu-best">${mode==='daily'?day()+' · 같은 조각으로 도전':'최고 '+best().toLocaleString()+' · 최고 연쇄 '+(Number(saved.records[bestKey()]?.chain)||0)}</div>`;}
 function start(selected=mode,seed){resetInput();mode=selected;game=selected==='tutorial'?E.tutorial():new E.Game(seed||(selected==='daily'?'DAILY-'+day():newSeed()),selected,material,difficulty);state='playing';goals=mode==='tutorial'?[]:P.missions(material,difficulty);goalDone=[];goalToast=0;feedback=[];impact=null;strategy=P.strategy(game.board,game.material);remaining=180000;elapsed=0;fallTime=0;lockTime=0;lockResets=0;chain=0;phase=null;plan=null;falls=[];particles=[];dropTrail=null;calloutTime=0;gameResultSaved=false;endingReason='';settleCount=0;last=performance.now();screen.hidden=true;replayBest=mode==='tutorial'?null:findRun()?.best??legacyRun()?.score??null;$('callout').classList.remove('show');audioInit();setStatus(selected==='tutorial'?'오른쪽에 맞춰져 있어요. 아래로 빠르게 쓸고 떼어보세요.':'톡 터치하면 회전 · 좌우 이동 · 아래로 쓸고 떼면 낙하');updateHUD();renderPreviews();}
-function pause(){if(state!=='playing'&&state!=='resolving')return;pausedFrom=state;state='paused';resetInput();screen.hidden=false;screen.className='screen small';content.innerHTML='<div class="screen-kicker">TAKE A BREATH</div><h2>잠시 쉬어가세요.</h2><p>유리도, 시간도 멈춰 있어요.</p><button class="primary" data-screen="resume">계속하기</button><button class="secondary" data-screen="retry">같은 판 다시 시작</button><button class="text-btn" data-screen="menu">모드 선택으로</button>';updateHUD();}
+function pause(){
+ if(state!=='playing'&&state!=='resolving')return;pausedFrom=state;state='paused';resetInput();screen.hidden=false;screen.className='screen small';showPause();updateHUD();
+}
+function showPause(){
+ const result=P.evaluate(goals,game);
+ content.innerHTML=`<div class="screen-kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><button class="primary" data-screen="resume">계속하기</button><details class="pause-info"><summary>목표와 기록 · ${result.count}/${goals.length}</summary>${goals.map((g,i)=>`<p>${result.done[i]?'✓':'○'} ${g.label} ${Math.min(game[g.key],g.target)}/${g.target}${g.unit}</p>`).join('')}<p>레벨 ${game.level} · 최고 연쇄 ${game.maxChain}<br>제거 ${game.lines}${game.material==='glass'?'줄':'묶음'} · ${game.shards}칸<br>${replayBest===null?'이 판의 첫 기록에 도전 중':'같은 판 최고 '+replayBest.toLocaleString()+'점'}</p><p>${materials[game.material].rule}</p></details><div class="pause-settings"><button class="secondary" data-screen="sound-toggle">소리 ${soundOn?'켬':'끔'}</button><button class="secondary" data-screen="pad-toggle">조작 패드 ${saved.showPad?'켬':'끔'}</button></div><button class="secondary" data-screen="help">설정·도움말</button><button class="secondary" data-screen="retry">같은 판 다시 시작</button><button class="text-btn" data-screen="menu">모드 선택으로</button>`;
+}
 function resume(){if(state!=='paused')return;state=pausedFrom;screen.hidden=true;last=performance.now();resetInput();updateHUD();}
 function finish(reason){if(state==='end')return;state='end';endingReason=reason;resetInput();game.active=null;phase=null;screen.hidden=false;screen.className='screen small';if(mode==='tutorial'){saved.learned=true;save();content.innerHTML='<div class="screen-kicker">FIRST RESONANCE</div><h2>균열이 이어졌어요.</h2><p>완성한 줄에서 충격이 퍼져<br>연결된 유리까지 함께 깨집니다.<br>다음에는 직접 길을 만들어보세요.</p><button class="primary" data-screen="start-sprint">3분 도전 시작</button><button class="secondary" data-screen="tutorial">한 번 더 연습</button>';setStatus('균열이 닿지 않은 조각은 남고, 아래로 내려옵니다.');}
  else{
@@ -196,6 +202,9 @@ content.addEventListener('click',e=>{
  if(b.dataset.difficulty&&Object.hasOwn(difficulties,b.dataset.difficulty)){difficulty=b.dataset.difficulty;saved.difficulty=difficulty;save();showMenu();updateHUD();return;}
  if(b.dataset.mode){mode=b.dataset.mode;showMenu();updateHUD();return;}
  const a=b.dataset.screen;
+ if(a==='help'){openHelp();return;}
+ if(a==='sound-toggle'){toggleSound();if(state==='paused')showPause();return;}
+ if(a==='pad-toggle'){saved.showPad=!saved.showPad;save();updateHUD();if(state==='paused')showPause();return;}
  if(a==='last-replay'){const previous=lastReplay();if(previous)start(mode,previous.seed);return;}
  if(a==='start')start();if(a==='start-sprint')start('sprint');if(a==='tutorial')start('tutorial');if(a==='retry')start(mode,game.seed);if(a==='new')start(mode);if(a==='resume')resume();if(a==='menu')menu();
 });
@@ -282,8 +291,11 @@ for(const surface of [canvas,$('touchpad')]){
  });
 }
 const keys={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'rotate',x:'rotate',X:'rotate',' ':'drop',c:'hold',C:'hold'};document.addEventListener('keydown',e=>{if($('help-dialog').open)return;if(e.key==='Escape'||e.key==='p'||e.key==='P'){if(e.repeat)return;e.preventDefault();if(state==='paused')resume();else pause();return;}if(e.target.closest?.('input,select,textarea,[contenteditable]')||e.key===' '&&e.target.closest?.('button,a'))return;const a=keys[e.key];if(!a||state!=='playing')return;e.preventDefault();if(e.repeat||keyHeld.has(e.key))return;keyHeld.add(e.key);action(a);if(['left','right','down'].includes(a)&&state==='playing')repeat={id:e.key,action:a,time:200};});document.addEventListener('keyup',e=>{keyHeld.delete(e.key);if(repeat?.id===e.key)repeat=null;});
-$('pause').addEventListener('click',()=>state==='paused'?resume():pause());$('sound').addEventListener('click',()=>{soundOn=!soundOn;saved.sound=soundOn;save();updateSound();audioInit();if(soundOn)tone('rotate');});
-$('help').addEventListener('click',()=>{resumeAfterHelp=state==='playing'||state==='resolving';if(resumeAfterHelp)pause();$('learn').textContent=resumeAfterHelp?'조작 연습 시작 · 현재 판 종료':'조작 연습 시작';$('help-dialog').showModal();});function closeHelp(){$('help-dialog').close();} $('close-help').addEventListener('click',closeHelp);$('resume-help').addEventListener('click',closeHelp);$('help-dialog').addEventListener('close',()=>{if(resumeAfterHelp){resumeAfterHelp=false;resume();}});$('learn').addEventListener('click',()=>{resumeAfterHelp=false;closeHelp();start('tutorial');});
+$('pause').addEventListener('click',()=>state==='paused'?resume():pause());
+function toggleSound(){soundOn=!soundOn;saved.sound=soundOn;save();updateSound();audioInit();if(soundOn)tone('rotate');}
+$('sound').addEventListener('click',toggleSound);
+function openHelp(){resumeAfterHelp=state==='playing'||state==='resolving';if(resumeAfterHelp)pause();$('learn').textContent=(resumeAfterHelp||state==='paused')?'조작 연습 시작 · 현재 판 종료':'조작 연습 시작';$('help-dialog').showModal();}
+$('help').addEventListener('click',openHelp);function closeHelp(){$('help-dialog').close();} $('close-help').addEventListener('click',closeHelp);$('resume-help').addEventListener('click',closeHelp);$('help-dialog').addEventListener('close',()=>{if(resumeAfterHelp){resumeAfterHelp=false;resume();}});$('learn').addEventListener('click',()=>{resumeAfterHelp=false;closeHelp();start('tutorial');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){resetInput();pause();}});window.addEventListener('blur',()=>{resetInput();pause();});window.addEventListener('resize',resize);
 // Old game caches must not serve the replaced entrypoint.
 if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
@@ -304,7 +316,8 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
  let pending=false;
  function fit(){
   pending=false;
-  if(window.innerWidth>650){section.style.removeProperty('--board-h');return;}
+  if(window.innerWidth>650){document.getElementById('next').setAttribute('aria-label','다음 세 조각');section.style.removeProperty('--board-h');return;}
+  document.getElementById('next').setAttribute('aria-label','다음 조각');
   const viewport=window.visualViewport;
   // Pinch zoom should magnify the board instead of shrinking it again.
   if(viewport&&viewport.scale!==1)return;
@@ -313,7 +326,7 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
   const gap=parseFloat(getComputedStyle(space).columnGap)||0;
   const widthLimit=(space.clientWidth-rail.getBoundingClientRect().width-gap)*2;
   const floor=Math.min(240,widthLimit);
-  const target=Math.floor(Math.max(floor,Math.min(640,widthLimit,height-chrome-8)));
+  const target=Math.floor(Math.max(floor,Math.min(widthLimit,height-chrome-8)));
   if(target>0&&section.style.getPropertyValue('--board-h')!==target+'px')section.style.setProperty('--board-h',target+'px');
  }
  function schedule(){if(!pending){pending=true;requestAnimationFrame(fit);}}

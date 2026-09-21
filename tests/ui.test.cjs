@@ -237,3 +237,9 @@ test('light visual effects keep simulation timing and results identical to rich 
  for(const h of [rich,light]){h.screen('',null,{material:'jelly'});h.screen('start');h.press('drop');for(let i=0;i<50;i++)h.step(50);}
  assert.equal(JSON.stringify(rich.game.board),JSON.stringify(light.game.board));assert.equal(rich.game.score,light.game.score);assert.equal(rich.byId.time.textContent,light.byId.time.textContent);assert.equal(JSON.stringify(rich.game.active),JSON.stringify(light.game.active));
 });
+
+test('focused play keeps goals accessible while pause settings preserve paused time and pad preference',()=>{
+ const h=harness();h.screen('start');h.step(1000);h.byId.pause.emit('click');const time=h.byId.time.textContent;assert.match(h.byId.screen.child.innerHTML,/목표와 기록/);assert.match(h.byId.screen.child.innerHTML,/조작 패드 끔/);
+ h.screen('pad-toggle');assert.equal(h.byId['play-section'].attrs['data-pad'],'show');assert.match(h.byId.screen.child.innerHTML,/조작 패드 켬/);h.screen('sound-toggle');assert.equal(h.byId.sound.attrs['aria-pressed'],'true');h.screen('help');assert.equal(h.byId['help-dialog'].open,true);h.byId['resume-help'].emit('click');assert.match(h.byId.screen.child.innerHTML,/계속하기/);h.step(60000);assert.equal(h.byId.time.textContent,time);
+ h.screen('resume');h.step(1000);assert.notEqual(h.byId.time.textContent,time);h.press('drop');assert.equal(h.game.pieces,1);const restored=harness(false,JSON.parse(h.stored.get('glassfall-v1')));assert.equal(restored.byId['play-section'].attrs['data-pad'],'show');
+});
