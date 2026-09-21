@@ -172,3 +172,13 @@ body[data-material="sand"] .board-frame{border-color:#eab86e99}body[data-materia
  .piece-rail.compact-rail .next-box canvas,.piece-rail.compact-rail #held{width:auto;height:calc((var(--board-h) - 72px)/3 - 24px);max-height:64px;max-width:64px}
  .piece-rail.compact-rail .drop-box{height:60px;min-height:60px}
 }
+
+/* Fill tall phones instead of limiting the board height to twice its width. */
+@media(max-width:650px){
+ html,body{min-height:100dvh}
+ :root{--board-h:calc(100dvh - 62px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+ .app-shell{min-height:100dvh;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+ .play-section{max-width:none;width:100%}
+ .board-frame{width:calc(100% - 80px);height:var(--board-h)}
+ .piece-rail{height:var(--board-h)}
+}

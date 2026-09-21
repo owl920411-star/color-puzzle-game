@@ -347,9 +347,8 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
   const visibleBottom=(viewport?.offsetTop||0)+height;
   const top=space.getBoundingClientRect().top;
   const safeBottom=parseFloat(getComputedStyle(shell).paddingBottom)||0;
-  const gap=parseFloat(getComputedStyle(space).columnGap)||0;
-  const widthLimit=(space.clientWidth-rail.getBoundingClientRect().width-gap)*2;
-  const target=Math.floor(Math.max(100,Math.min(widthLimit,visibleBottom-top-safeBottom-16)));
+  // Mobile uses the available height independently of its ten-column width.
+  const target=Math.floor(Math.max(100,visibleBottom-top-safeBottom-4));
   rail.classList.toggle('compact-rail',target<390);
   if(target>0&&section.style.getPropertyValue('--board-h')!==target+'px')section.style.setProperty('--board-h',target+'px');
  }
