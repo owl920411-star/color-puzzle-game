@@ -222,8 +222,25 @@ function render(){ctx.clearRect(0,0,360,720);const bg=ctx.createLinearGradient(0
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(!c)continue;let yy=y,xx=x,squash=0;const f=fallMap.get(c.id);if(f&&(phase==='fall'||phase==='settle')){const t=Math.min(1,phaseTime/(phase==='settle'?(42):(240))),ease=1-Math.pow(1-t,3);yy=f.from+(f.to-f.from)*ease;xx=(f.fromX??x)+(x-(f.fromX??x))*ease;squash=Math.sin(t*Math.PI)*.14;}const hot=clearMap.has(y*10+x)&&phaseTime>=clearMap.get(y*10+x)*24;const links=game.material!=='glass'&&game.material!=='sand'&&!(f&&phase==='settle')?E.DIRS.filter(([dx,dy])=>game.board[y+dy]?.[x+dx]?.paint===c.paint):null;glass(c,xx*36,yy*36,36,{hot,squash,links});}
  if(game.active&&['playing','paused'].includes(state)){const p=game.active,dy=game.dropDistance();for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y+dy)*36,36,{ghost:true,ready:!!drag?.dropReady});for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y)*36,36);}
  if(strategy&&state==='playing'){
-  ctx.save();ctx.strokeStyle='#ffffff80';ctx.lineWidth=1.2;ctx.setLineDash([4,5]);
-  for(const c of strategy.cells){ctx.beginPath();ctx.roundRect(c.x*36+3,c.y*36+3,30,30,7);ctx.stroke();}ctx.restore();
+  ctx.save();
+  if(game.material==='sand'){
+   // Sand hints should feel embedded in the pile, not like square UI markers.
+   const pulse=reduced?.22:.18+.08*(.5+.5*Math.sin(elapsed*.006));
+   ctx.globalCompositeOperation='lighter';
+   for(const c of strategy.cells){
+    const cell=game.board[c.y]?.[c.x];if(!cell)continue;
+    const [light]=cellColors(cell),seed=(cell.id*31+c.x*17+c.y*13)%97;
+    for(let i=0;i<(reduced?3:7);i++){
+     const ox=((seed+i*37)%83)/83*24+6,oy=((seed+i*53)%79)/79*22+7;
+     ctx.globalAlpha=pulse*(.65+(i%3)*.14);ctx.fillStyle=i%4===0?'#fff7dc':light;
+     ctx.beginPath();ctx.arc(c.x*36+ox,c.y*36+oy,reduced?1:1.15+(i%2)*.45,0,Math.PI*2);ctx.fill();
+    }
+   }
+  }else{
+   ctx.strokeStyle='#ffffff80';ctx.lineWidth=1.2;ctx.setLineDash([4,5]);
+   for(const c of strategy.cells){ctx.beginPath();ctx.roundRect(c.x*36+3,c.y*36+3,30,30,7);ctx.stroke();}
+  }
+  ctx.restore();
  }
  if(impact&&!reduced){const t=1-impact.life/impact.total;ctx.save();ctx.globalAlpha=(1-t)*.55;ctx.strokeStyle=game.material==='glass'?'#b7fff0':materialColors[game.material][0][0];ctx.lineWidth=2*(1-t)+.5;ctx.beginPath();ctx.ellipse(impact.x,Math.min(714,impact.y),20+90*t,3+13*t,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(dropTrail&&!reduced){ctx.save();ctx.globalAlpha=dropTrail.life/900;ctx.fillStyle='#c2fff2';for(const c of dropTrail.cells)ctx.fillRect(c.x*36+5,c.y*36,26,(dropTrail.distance+1)*36);ctx.restore();}
