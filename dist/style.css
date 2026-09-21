@@ -134,3 +134,11 @@ progress::-webkit-progress-bar{background:#29404b;border-radius:5px}progress::-w
 .piece-rail .drop-box.pressed{filter:brightness(1.3);border-color:#c9fff3}
 @media(min-width:651px){.piece-rail .next-box{height:84px;min-height:84px;padding:2px}.piece-rail .next-box canvas{width:58px;height:58px}.piece-rail{gap:6px}.piece-rail .rail-best{flex-direction:row;align-items:baseline;justify-content:center;gap:3px}.piece-rail .rail-best strong{font-size:18px}}
 @media(max-width:650px){.piece-rail .drop-box{width:72px;border-radius:10px}}
+
+/* Crystal cavern artwork stays behind the readable play surface. */
+body{background:#070f20 url("assets/crystal-background.webp") center center / cover fixed no-repeat}
+.board-frame{border-color:#80d8ee88;box-shadow:0 0 0 2px #29567255,0 12px 45px #0008,0 0 28px #4bb9d51a}
+.rail-box{background:#0a1729e8;border-color:#77b7de55}
+.screen{background:linear-gradient(#071225bb,#07101aed)}
+@media(min-width:651px){.editorial,.right-panel{text-shadow:0 2px 12px #000}.topbar,footer{background:#07101a66}}
+@media(prefers-reduced-motion:reduce){body{background-attachment:scroll}}

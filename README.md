@@ -91,3 +91,10 @@
 모래 난이도 조정: 밝은 크림색을 제외하여 4색에서 3색으로 줄였습니다. 새 조각, 다음 조각, 보관, 도전 난이도 바닥과 메뉴 미리보기에 동일하게 적용합니다.
 
 다음 블록 카드는 눌러 확대할 수 있으며, 확대 중에는 게임을 일시정지했다가 닫으면 이어갑니다. 모바일 카드는 72×94 CSS px이고 보관은 같은 크기로 게임판 오른쪽 맨 아래에 고정합니다.
+
+### Crystal and jelly artwork (2026-09-21)
+- Generated glass/jelly tile atlases now render on the board and in next/hold previews.
+- Glass particles use transparent cutouts based on the selected crystal-shard reference; jelly particles use matching paint colors and elastic scaling.
+- A dark crystal cavern theme surrounds the board, with a dimmed center for readability.
+- `dist/art.js` caches tile/particle samples and the board backdrop once after loading. Artwork is WebP; original fallback drawing remains available while loading or on failure.
+- Physics, clear rules, input timing, reduced-effects limits, and stored progress are unchanged.
