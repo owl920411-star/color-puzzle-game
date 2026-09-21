@@ -57,3 +57,21 @@
 .play-section[data-material="water"]{--ice:#82dcff}
 .play-section[data-material="jelly"]{--ice:#ffadd5}
 @media(max-width:650px){.material-options{margin-top:10px}.material-options button{min-height:62px}.screen .material-description{min-height:0}.material-guide{font-size:13px}}
+
+/* Goals replace the long rule line during play to preserve board space. */
+.goal-panel{padding:7px 10px;margin:0 0 8px;border:1px solid #3c6069;background:#142d36;border-radius:9px}
+.goal-panel>div{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.goal-panel strong{font-size:13px;font-weight:500;color:#d6f4ec}.goal-panel span{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ice)}
+.goal-panel progress,.mastery-card progress{display:block;width:100%;height:4px;border:0;border-radius:5px;margin:6px 0;background:#29404b;accent-color:var(--ice)}
+progress::-webkit-progress-bar{background:#29404b;border-radius:5px}progress::-webkit-progress-value{background:var(--ice);border-radius:5px}progress::-moz-progress-bar{background:var(--ice);border-radius:5px}
+.goal-panel small{display:block;font-size:12px;color:#a2c6cc;line-height:1.5}.goal-panel.completed{border-color:#c9dfa0;background:#263b36}
+.mastery-card{text-align:left;padding:10px 11px;border:1px solid #355361;background:#122a34;border-radius:9px;margin:12px 0}
+.mastery-card>div{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.mastery-card strong{font-size:14px;font-weight:500;color:#d2ede4}.mastery-card span,.mastery-card small{font-size:12px;color:#9bb7c4}.mastery-card progress{height:5px;margin:8px 0 6px}
+.difficulty-options{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.difficulty-options button{min-height:40px;font-size:14px;border:1px solid #35505c;border-radius:7px;color:#a9c4cf;background:#152832}.difficulty-options button.selected{background:#38515c;border-color:#afdbdf;color:#efffff}
+.screen .difficulty-note{font-size:12px;line-height:1.5;margin:5px 0 12px;color:#a0bdc9}
+.reward-card{display:flex;flex-direction:column;gap:4px;padding:12px;margin:12px 0 8px;background:#243b36;border:1px solid #668773;border-radius:10px}.reward-card strong{font-size:16px;font-weight:500;color:#daf4b9}.reward-card span{font-size:14px;color:#c5dfd0}.reward-card small{font-size:13px;color:#ffe2a7}
+.goal-results{text-align:left;font-size:13px;color:#adc5cb;margin:8px 0 12px}.goal-results summary{cursor:pointer;min-height:36px;padding:7px 0}.goal-results div{padding:3px 0}
+.experience-settings{display:grid;grid-template-columns:1fr 1fr;gap:8px}.experience-settings button{font-size:13px;min-height:44px}
+.play-section[data-mastery="3"] .board-frame,.play-section[data-mastery="4"] .board-frame{border-color:var(--ice);box-shadow:0 0 0 3px #9ce6cf22,0 0 26px #b7eeda25}
+.play-section[data-mastery="5"] .board-frame,.play-section[data-mastery="6"] .board-frame{border-color:#eddbff;box-shadow:-7px 0 25px #57dbdf40,7px 0 25px #dc88f740,0 0 0 3px #bceee822}
+@media(max-width:650px){.goal-panel{padding:6px 8px}.goal-panel strong{font-size:13px}.mastery-card{margin:9px 0}.screen .material-description{margin-bottom:8px}}

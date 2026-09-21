@@ -18,7 +18,7 @@ function harness(realCanvas=false,initialSaved=null){
  const controls=[...html.matchAll(/<button\b[^>]*data-action="([^"]+)"/g)].map(m=>m[1]).filter(a=>a!=='hold').map(a=>new El('', 'BUTTON',a));byId.hold.dataset.action='hold';
  const doc=new El();doc.getElementById=id=>byId[id];doc.querySelectorAll=s=>s==='[data-action]'?[...controls,byId.hold]:s==='.controls button'?controls:[];
  const win=new El();Object.assign(win,{devicePixelRatio:1,crypto:{getRandomValues:v=>{v[0]=123456;return v;}}});
- const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};context.GlassEngine=win.GlassEngine;vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
+ const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};context.GlassEngine=win.GlassEngine;vm.runInContext(fs.readFileSync(require.resolve('../dist/progression.js'),'utf8'),context);win.GlassProgress=context.GlassProgress;vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
  function step(ms=16){now+=ms;const f=raf.shift();assert.ok(f,'animation frame remains scheduled');f(now);}
  function screen(a,mode,extra={}){const b=new El('','BUTTON');b.dataset=mode?{mode}:{screen:a,...extra};byId.screen.child.emit('click',{target:b});}
  function press(a,id=1){const b=a==='hold'?byId.hold:controls.find(b=>b.dataset.action===a);b.emit('pointerdown',{pointerId:id});b.emit('pointerup',{pointerId:id});}
@@ -220,4 +220,20 @@ test('a timed material clear finishes its settling and cascade before saving; re
  const saved=JSON.parse(h.stored.get('glassfall-v1'));assert.ok(saved.best['jelly:sprint']>0);assert.equal(saved.best.sprint,undefined);assert.equal(saved.runs[0].material,'jelly');
  const restored=harness(false,saved);restored.screen('last-replay');assert.equal(restored.game.material,'jelly');assert.equal(restored.game.seed,h.game.seed);
  restored.screen('menu');restored.screen('',null,{material:'water'});assert.doesNotMatch(restored.byId.screen.child.innerHTML,/직전 판 기록에 재도전/);restored.screen('start');assert.equal(restored.byId['replay-target'].hidden,true);
+});
+
+test('goals grant mastery once at finish, unlock a frame and preserve progress on reload',()=>{
+ const h=harness(false,{mastery:{glass:200}});h.screen('start');assert.equal(h.byId['goal-panel'].hidden,false);Object.assign(h.game,{pieces:6,shards:16,score:600});h.step(250);assert.match(h.byId['goal-title'].textContent,/달성/);assert.equal(h.stored.get('glassfall-v1'),JSON.stringify({mastery:{glass:200}}),'uncompleted run does not bank XP');h.step(180000);
+ let saved=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(saved.mastery.glass,315);assert.match(h.byId.screen.child.innerHTML,/공명 테두리 해금/);h.step(1000);assert.equal(JSON.parse(h.stored.get('glassfall-v1')).mastery.glass,315);
+ const restored=harness(false,saved);assert.match(restored.byId.screen.child.innerHTML,/Lv.3/);restored.screen('tutorial');restored.press('drop');for(let i=0;i<20;i++)restored.step(60);assert.equal(JSON.parse(restored.stored.get('glassfall-v1')).mastery.glass,315);
+});
+test('difficulty-specific replay records cannot overwrite standard scores and retries keep the terrain',()=>{
+ const h=harness(false,{best:{sprint:1234}});h.screen('',null,{difficulty:'challenge'});h.screen('start');const initial=JSON.stringify(h.game.board);assert.ok(h.game.board.flat().filter(Boolean).length>0);h.game.score=500;h.step(180000);
+ const saved=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(saved.best.sprint,1234);assert.equal(saved.best['challenge:sprint'],500);assert.equal(saved.runs[0].difficulty,'challenge');h.screen('retry');assert.equal(JSON.stringify(h.game.board),initial);assert.match(h.byId['replay-target'].textContent,/500점/);
+ h.screen('menu');h.screen('',null,{difficulty:'standard'});assert.doesNotMatch(h.byId.screen.child.innerHTML,/직전 판 기록에 재도전/);h.screen('start');assert.equal(h.game.board.flat().filter(Boolean).length,0);
+});
+test('light visual effects keep simulation timing and results identical to rich effects',()=>{
+ const rich=harness(),light=harness();light.byId['effects-setting'].emit('click');assert.equal(JSON.parse(light.stored.get('glassfall-v1')).effects,'light');
+ for(const h of [rich,light]){h.screen('',null,{material:'jelly'});h.screen('start');h.press('drop');for(let i=0;i<50;i++)h.step(50);}
+ assert.equal(JSON.stringify(rich.game.board),JSON.stringify(light.game.board));assert.equal(rich.game.score,light.game.score);assert.equal(rich.byId.time.textContent,light.byId.time.textContent);assert.equal(JSON.stringify(rich.game.active),JSON.stringify(light.game.active));
 });
