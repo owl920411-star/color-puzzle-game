@@ -159,15 +159,36 @@ function softCell(c,x,y,size,options){
  const g=options.context||ctx,[light,dark]=cellColors(c),kind=game.material;if(c.gem){g.save();g.translate(x+size/2,y+size/2);g.rotate(Math.PI/4);const q=size*.28;g.fillStyle='#ffe88c';g.shadowColor='#fff1a8';g.shadowBlur=10;g.fillRect(-q,-q,q*2,q*2);g.strokeStyle='#fff8d0';g.lineWidth=1.5;g.strokeRect(-q,-q,q*2,q*2);g.restore();return;}
  g.save();if(options.alpha!==undefined)g.globalAlpha=options.alpha;
  const margin=size*.06,side=size-margin*2,px=x+margin,py=y+margin;
- if(options.ghost){g.fillStyle=light+'18';g.strokeStyle=options.ready?'#ffffff':light;g.lineWidth=options.ready?2.5:1.2;g.setLineDash(kind==='sand'?[3,3]:[]);g.beginPath();g.roundRect(px,py,side,side,kind==='sand'?2:side*.3);g.fill();g.stroke();g.restore();return;}
+ if(options.ghost){if(kind==='sand'){g.globalAlpha=options.ready?.34:.2;const gg=g.createLinearGradient(px,py,px,py+side);gg.addColorStop(0,light+'55');gg.addColorStop(1,dark+'88');g.fillStyle=gg;g.beginPath();g.moveTo(px,py+side*.42);g.quadraticCurveTo(px+side*.28,py+side*.18,px+side*.5,py+side*.28);g.quadraticCurveTo(px+side*.76,py+side*.18,px+side,py+side*.42);g.lineTo(px+side,py+side);g.lineTo(px,py+side);g.closePath();g.fill();}else{g.fillStyle=light+'18';g.strokeStyle=options.ready?'#ffffff':light;g.lineWidth=options.ready?2.5:1.2;g.beginPath();g.roundRect(px,py,side,side,side*.3);g.fill();g.stroke();}g.restore();return;}
  if(kind==='sand'){
-  const seed=(c.id*47+(c.paint||0)*83)%101,top=py+side*(.10+(seed%5)*.018);const same=(dx,dy)=>{const bx=Math.floor(x/size)+dx,by=Math.floor(y/size)+dy;return bx>=0&&bx<10&&by>=0&&by<20&&game.board?.[by]?.[bx]?.paint===c.paint;};const joinL=same(-1,0),joinR=same(1,0),joinD=same(0,1);
-  g.fillStyle=light+'88';if(joinL)g.fillRect(x,py+side*.28,margin+2,side*.64);if(joinR)g.fillRect(px+side-2,py+side*.28,margin+2,side*.64);if(joinD)g.fillRect(px+side*.08,py+side*.82,side*.84,margin+4);g.beginPath();g.moveTo(px,py+side*.28);g.quadraticCurveTo(px+side*.24,top-side*.07,px+side*.48,top);g.quadraticCurveTo(px+side*.74,top+side*.08,px+side,py+side*.23);g.lineTo(px+side,py+side*.93);g.quadraticCurveTo(px+side*.72,py+side,px+side*.48,py+side*.95);g.quadraticCurveTo(px+side*.22,py+side*.99,px,py+side*.9);g.closePath();g.fill();
-  const grad=g.createLinearGradient(px,top,px,py+side);grad.addColorStop(0,light+'e8');grad.addColorStop(.55,light+'b8');grad.addColorStop(1,dark+'e8');g.fillStyle=grad;g.beginPath();g.moveTo(px+side*.03,py+side*.31);g.quadraticCurveTo(px+side*.26,top,px+side*.49,top+side*.025);g.quadraticCurveTo(px+side*.74,top+side*.1,px+side*.97,py+side*.27);g.lineTo(px+side*.94,py+side*.9);g.quadraticCurveTo(px+side*.7,py+side*.96,px+side*.5,py+side*.92);g.quadraticCurveTo(px+side*.26,py+side*.98,px+side*.06,py+side*.88);g.closePath();g.fill();
-  for(let i=0;i<52;i++){const n=(seed+i*37)%113,gx=px+side*(.08+((n*17)%83)/100),gy=top+side*(.08+((n*29+i*11)%72)/100);g.fillStyle=i%9===0?'#fff4d0':i%4===0?dark+'aa':light;const dot=Math.max(.65,size*(.012+((n+i)%4)*.005));g.globalAlpha=.55+((n%5)*.08);g.beginPath();g.arc(gx,gy,dot,0,Math.PI*2);g.fill();}
+  const boardX=Math.round(x/size),boardY=Math.round(y/size);
+  const settled=options.context===undefined&&game.board?.[boardY]?.[boardX]===c;
+  const at=(dx,dy)=>settled?game.board?.[boardY+dy]?.[boardX+dx]:null;
+  const same=(dx,dy)=>at(dx,dy)&&!at(dx,dy).gem&&at(dx,dy).paint===c.paint;
+  const L=same(-1,0),R=same(1,0),U=same(0,-1),D=same(0,1);
+  const seed=(c.id*47+(c.paint||0)*83)%101;
+  if(!settled){
+   // Airborne sand stays a readable tetromino, but looks compressed rather than boxed.
+   const top=py+side*(.08+(seed%4)*.015),grad=g.createLinearGradient(px,top,px,py+side);
+   grad.addColorStop(0,light);grad.addColorStop(.72,light+'d8');grad.addColorStop(1,dark+'cc');g.fillStyle=grad;
+   g.beginPath();g.moveTo(px+side*.04,py+side*.2);g.quadraticCurveTo(px+side*.3,top,px+side*.52,top+side*.025);g.quadraticCurveTo(px+side*.78,top+side*.08,px+side*.96,py+side*.2);g.lineTo(px+side*.94,py+side*.92);g.lineTo(px+side*.06,py+side*.92);g.closePath();g.fill();
+  }else{
+   // Settled cells visually fuse into one continuous granular terrain.
+   const left=L?x:px,right=R?x+size:px+side,bottom=D?y+size:py+side;
+   const top=U?y:py+side*(.18+((seed%7)-3)*.012);
+   const grad=g.createLinearGradient(0,top,0,bottom);grad.addColorStop(0,light);grad.addColorStop(.7,light+'e0');grad.addColorStop(1,dark+'b8');g.fillStyle=grad;
+   g.beginPath();g.moveTo(left,top+(L?0:side*.06));
+   if(!U){g.quadraticCurveTo(x+size*.22,top-side*.08,x+size*.48,top);g.quadraticCurveTo(x+size*.75,top+side*.07,right,top+(R?0:side*.05));}
+   else g.lineTo(right,top);
+   g.lineTo(right,bottom);g.lineTo(left,bottom);g.closePath();g.fill();
+   // Cover seams between equal-color cells; no dark cell outline.
+   g.fillStyle=light+'d8';if(L)g.fillRect(x-1,top+2,margin+3,Math.max(2,bottom-top-4));if(R)g.fillRect(px+side-2,top+2,margin+4,Math.max(2,bottom-top-4));if(D)g.fillRect(left+2,py+side-3,Math.max(2,right-left-4),margin+5);
+  }
+  // Fine grains, concentrated lower in the pile.
+  const grainTop=settled?(U?y:py+side*.18):py+side*.14;
+  for(let n=0;n<(settled?64:38);n++){const q=(seed+n*43)%127,gx=(settled?(L?x:px):px)+(settled?(R?size:side):side)*(((q*19)%91)/100+.045),gy=grainTop+(py+side-grainTop)*(((q*31+n*7)%94)/100);g.globalAlpha=.25+((q%7)*.075);g.fillStyle=n%13===0?'#fff7d7':n%4===0?dark:light;const rr=Math.max(.45,size*(.008+(q%4)*.004));g.beginPath();g.arc(gx,gy,rr,0,Math.PI*2);g.fill();}
   g.globalAlpha=options.alpha===undefined?1:options.alpha;
-  if(!options.ghost&&((c.id+Math.floor(elapsed/240))%5===0)){g.fillStyle=light+'aa';for(let i=0;i<3;i++){const sx=px+side*(.16+i*.29),sy=py+side*(.88+((seed+i)%3)*.025);g.beginPath();g.arc(sx,sy,Math.max(.7,size*.018),0,Math.PI*2);g.fill();}}
- }else if(kind==='water'){
+ } }else if(kind==='water'){
   const connected=(dx,dy)=>(options.links||[]).some(d=>d[0]===dx&&d[1]===dy),left=connected(-1,0),right=connected(1,0),up=connected(0,-1),down=connected(0,1);
   const wx=left?x:px,wy=up?y:py,ww=(right?x+size:px+side)-wx,wh=(down?y+size:py+side)-wy,r=size*.24;
   const fill=g.createLinearGradient(0,0,0,720);fill.addColorStop(0,light);fill.addColorStop(1,dark);g.fillStyle=fill;
