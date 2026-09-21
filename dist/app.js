@@ -328,7 +328,7 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
 })();
 
 // Fit the mobile board around the actual controls, including wrapped goals.
-// Keep a readable minimum on very short screens; the page can still scroll.
+// Respect the visible bottom edge; never force the board beyond a short viewport.
 (() => {
  'use strict';
  if (!window.ResizeObserver) return;
@@ -344,11 +344,13 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
   // Pinch zoom should magnify the board instead of shrinking it again.
   if(viewport&&viewport.scale!==1)return;
   const height=viewport?.height||window.innerHeight;
-  const chrome=shell.getBoundingClientRect().height-space.getBoundingClientRect().height;
+  const visibleBottom=(viewport?.offsetTop||0)+height;
+  const top=space.getBoundingClientRect().top;
+  const safeBottom=parseFloat(getComputedStyle(shell).paddingBottom)||0;
   const gap=parseFloat(getComputedStyle(space).columnGap)||0;
   const widthLimit=(space.clientWidth-rail.getBoundingClientRect().width-gap)*2;
-  const floor=Math.min(380,widthLimit);
-  const target=Math.floor(Math.max(floor,Math.min(widthLimit,height-chrome-8)));
+  const target=Math.floor(Math.max(100,Math.min(widthLimit,visibleBottom-top-safeBottom-16)));
+  rail.classList.toggle('compact-rail',target<390);
   if(target>0&&section.style.getPropertyValue('--board-h')!==target+'px')section.style.setProperty('--board-h',target+'px');
  }
  function schedule(){if(!pending){pending=true;requestAnimationFrame(fit);}}
@@ -356,5 +358,6 @@ resize();updateSound();updateExperience();badgeUI();menu();requestAnimationFrame
  for(const el of [shell,space,...section.children])observer.observe(el);
  window.addEventListener('resize',schedule);
  window.visualViewport?.addEventListener('resize',schedule);
+ window.visualViewport?.addEventListener('scroll',schedule);
  schedule();
 })();

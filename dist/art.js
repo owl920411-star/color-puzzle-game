@@ -3,7 +3,7 @@
  'use strict';
  const tiles={glass:{},jelly:{},water:{},sand:{}},shards={glass:[],jelly:[]};
  let backdrop=null;const backdrops={},menuCards={};
- const glassRects={I:[168,126,127,127],O:[779,44,128,128],T:[42,384,124,124],S:[566,384,126,126],Z:[880,387,122,122],J:[169,699,123,123],L:[953,705,122,122]};
+ const glassRects={I:[168,126,127,127],O:[779,44,128,128],T:[42,384,124,124],S:[573,385,121,121],Z:[880,387,122,122],J:[169,699,123,123],L:[929,698,119,120]};
  const jellyRects={I:[186,128,126,126],O:[795,58,119,119],T:[49,384,121,121],S:[574,384,116,116],Z:[857,383,115,115],J:[178,704,124,124],L:[953,703,124,124]};
  // Jelly's four paint identities stay coral, green, gold, purple.
  const paintTypes=['Z','S','O','T'];

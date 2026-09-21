@@ -161,3 +161,14 @@ body[data-material="sand"] .board-frame{border-color:#eab86e99}body[data-materia
 @media(max-width:650px){.screen.lobby{padding:max(18px,env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom))}.lobby .screen-content{max-width:440px}.lobby-heading{margin-bottom:18px}.lobby h2{font-size:54px}.lobby .screen-kicker{font-size:10px;letter-spacing:4px}.lobby-heading p{font-size:14px}.lobby .material-options{gap:7px;margin-bottom:14px}.lobby .material-options button{border-radius:12px;padding-bottom:9px}.lobby .mode-name{font-size:14px;white-space:nowrap}.lobby .material-options small{font-size:10px;letter-spacing:.5px}.lobby .material-description{font-size:14px;margin-bottom:12px}.lobby .material-description strong{font-size:18px}.lobby .mastery-card{padding:12px 14px;margin-bottom:12px}.lobby .mastery-card strong{font-size:15px}.lobby .mastery-card span,.lobby .mastery-card small{font-size:12px}.lobby .difficulty-options button{min-height:48px;font-size:15px}.duration-panel{padding:10px 12px;margin-bottom:16px}.lobby .menu-tabs button{font-size:15px;min-height:48px}.lobby .start-button{min-height:60px;font-size:18px;gap:14px}.lobby-tools{margin-top:12px;gap:36px}.lobby .menu-best{margin-top:8px}}
 @media(max-width:360px){.screen.lobby{padding-left:12px;padding-right:12px}.lobby .material-options{gap:5px}.lobby .mode-name{font-size:13px}.lobby .material-options small{font-size:9px}.lobby .start-button{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.lobby .material-options button{transition:none}}
+
+/* Fit all twenty rows and leave space below the frame on mobile. */
+@media(max-width:650px){
+ :root{--board-h:min(calc(100dvh - 76px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),calc((100vw - 96px)*2))}
+ .app-shell{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+ .board-frame{border-radius:4px}
+ .piece-rail.compact-rail{gap:4px}
+ .piece-rail.compact-rail .next-box,.piece-rail.compact-rail>.rail-box:first-child,.piece-rail.compact-rail .hold-box{height:calc((var(--board-h) - 72px)/3);min-height:44px;padding:2px}
+ .piece-rail.compact-rail .next-box canvas,.piece-rail.compact-rail #held{width:auto;height:calc((var(--board-h) - 72px)/3 - 24px);max-height:64px;max-width:64px}
+ .piece-rail.compact-rail .drop-box{height:60px;min-height:60px}
+}
