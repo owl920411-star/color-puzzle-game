@@ -27,7 +27,7 @@ function groups(board){
 }
 function materialPlan(board,material='glass'){
  if(material==='glass')return clearPlan(board);
- const eligible=groups(board).filter(cells=>material==='sand'?cells.some(c=>c.x===0)&&cells.some(c=>c.x===W-1):cells.length>=(material==='water'?10:8));
+ const eligible=groups(board).filter(cells=>cells.length>=(material==='sand'?10:material==='water'?10:8));
  if(!eligible.length)return null;
  const cells=eligible.flat();return{rows:[],cells,extra:cells.length,groups:eligible.length};
 }
@@ -78,7 +78,7 @@ class Game{
  dropDistance(){if(!this.active)return 0;let d=0;while(this.fits(this.active,0,d+1))d++;return d;}
  hold(){if(this.holdUsed||!this.active)return false;const p=this.active;p.x=3;p.y=0;if(this.held){this.active=this.held;this.held=p;this.active.x=this.active.type==='O'?4:3;this.active.y=0;if(!this.fits(this.active))this.over=true;}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
  lock(){if(!this.active)return;for(const c of this.active.cells)this.board[this.active.y+c.y][this.active.x+c.x]={...c};this.pieces++;this.active=null;}
- resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chain;this.score+=gain;return{falls,gain};}
+ resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const chainMultiplier=this.material==='sand'?Math.pow(2,Math.max(0,chain-1)):chain;const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chainMultiplier;this.score+=gain;return{falls,gain};}
  get colorCount(){return this.material==='sand'?2:4;}
  get level(){return 1+Math.floor(this.lines/8);}
  get gravity(){if(this.stageSpeed)return Math.max(200,920*this.stageSpeed*Math.pow(.96,Math.floor(this.lines/8)));return Math.max(this.difficulty==='calm'?180:this.difficulty==='challenge'?110:130,920*Math.pow(.83,this.level-1)*(this.difficulty==='calm'?1.4:this.difficulty==='challenge'?.76:1));}
