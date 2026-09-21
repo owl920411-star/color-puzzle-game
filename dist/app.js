@@ -16,7 +16,7 @@ let storageWorks=true;function save(){try{localStorage.setItem(storageKey,JSON.s
 saved.campaign=saved.campaign&&typeof saved.campaign==='object'&&!Array.isArray(saved.campaign)?saved.campaign:{};saved.devMode=!!saved.devMode;
 let stageNumber=1,stageConfig=null;
 let mode='stage',state='menu',game=new E.Game('preview'),remaining=180000,elapsed=0,fallTime=0,lockTime=0,lockResets=0,last=0,chain=0,phase=null,phaseTime=0,plan=null,falls=[],particles=[],dropTrail=null,calloutTime=0,pausedFrom='playing',resumeAfterHelp=false,gameResultSaved=false,endingReason='';
-let repeat=null,drag=null,gestureFeedbackTime=0,keyHeld=new Set(),soundOn=!!saved.sound,audio=null,renderRatio=1;
+let repeat=null,drag=null,gestureFeedbackTime=0,keyHeld=new Set(),soundOn=!!saved.sound,audio=null,renderRatio=1,sandVisuals=[];
 const modes={stage:'스테이지',sprint:'기존 시간 도전',daily:'오늘의 도전',endless:'무한 모드',tutorial:'조작 연습'};
 const screen=$('screen'),content=screen.querySelector('.screen-content');
 function bestKey(){if(mode==='stage')return material+':stage:'+stageNumber;return(difficulty==='standard'?'':difficulty+':')+(material==='glass'?'':material+':')+(mode==='daily'?'daily-'+(state!=='menu'&&game.seed.startsWith('DAILY-')?game.seed.slice(6):day()):mode);}
@@ -136,6 +136,25 @@ function finish(reason){if(state==='end')return;if(mode==='stage'&&reason==='sta
  }
 
  badgeUI();updateHUD();renderPreviews();}
+function spawnSandVisual(fromX,fromY,toX,toY,cell){
+ if(reduced)return;
+ const paint=cell?.paint??0,[light,dark]=materialColors.sand[paint]||materialColors.sand[0],count=18;
+ for(let i=0;i<count&&sandVisuals.length<700;i++){
+  const sx=(fromX+.08+Math.random()*.84)*36,sy=(fromY+.18+Math.random()*.7)*36;
+  const tx=(toX+.08+Math.random()*.84)*36,ty=(toY+.25+Math.random()*.65)*36;
+  sandVisuals.push({x:sx,y:sy,sx,sy,tx,ty,life:150+Math.random()*90,total:150+Math.random()*90,size:.65+Math.random()*1.15,color:Math.random()<.28?dark:light});
+ }
+}
+function renderSandVisuals(){
+ if(!sandVisuals.length)return;
+ ctx.save();
+ for(const p of sandVisuals){
+  const t=1-Math.max(0,p.life)/p.total,e=1-Math.pow(1-Math.min(1,t),2);
+  const x=p.sx+(p.tx-p.sx)*e,y=p.sy+(p.ty-p.sy)*e+Math.sin(Math.min(1,t)*Math.PI)*-4;
+  ctx.globalAlpha=Math.min(1,p.life/70);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(x,y,p.size,0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();
+}
 function emitSandLanding(cells){
  if(reduced)return;
  const paints=game.active?.cells||[];
@@ -162,8 +181,8 @@ function lock(){if(!game.active)return;const cells=game.active.cells.map(c=>({x:
 function action(a){if(state!=='playing'||!game.active)return false;audioInit();let moved=false;const grounded=!game.fits(game.active,0,1);if(a==='left'||a==='right')moved=game.move(a==='left'?-1:1);else if(a==='rotate'){moved=game.rotate();if(moved){tone('rotate');rebaseBoardDrag();}}else if(a==='down'){moved=game.move(0,1);if(moved){game.score++;fallTime=0;}}else if(a==='drop'){const d=game.dropDistance();dropTrail={cells:game.active.cells.map(c=>({...c,x:c.x+game.active.x,y:c.y+game.active.y})),distance:d,life:170};game.move(0,d);game.score+=d*2;tone('drop');lock();updateHUD();return true;}else if(a==='hold'&&mode!=='tutorial'){moved=game.hold();if(game.over){finish('top');return false;}if(moved){resetInput();lockTime=0;lockResets=0;fallTime=0;renderPreviews();}}
  if(moved&&grounded&&lockResets<12&&(a==='left'||a==='right'||a==='rotate')){lockTime=0;lockResets++;}if(a!=='left'&&a!=='right'&&a!=='rotate')updateHUD();return moved;}
 function update(rawDt){const dt=Math.min(100,rawDt);if(state==='playing'||state==='resolving'){elapsed+=rawDt;if(mode==='sprint'||mode==='daily')remaining=Math.max(0,remaining-rawDt);if(state==='playing'&&remaining<=0&&(mode==='sprint'||mode==='daily')){finish('time');return;}if(repeat&&state==='playing'){repeat.time-=dt;let count=0;while(repeat&&repeat.time<=0&&count++<4){const r=repeat;action(r.action);if(repeat===r)r.time+=70;}}if(state==='playing'&&mode!=='tutorial'){if(game.active&&!game.fits(game.active,0,1)){fallTime=0;lockTime+=dt;if(lockTime>=game.lockDelay)lock();}else{fallTime+=dt;lockTime=0;while(state==='playing'&&fallTime>=game.gravity){fallTime-=game.gravity;game.move(0,1);}}}
- if(state==='resolving'){phaseTime+=dt;if(phase==='settle'&&phaseTime>=(game.material==='sand'?48:42)){phaseTime=0;falls=E.settleStep(game.board,game.material,game.pieces+settleCount++);if(!falls.length){const next=E.materialPlan(game.board,game.material,stageConfig?.sandBurst||10);if(next)beginClear(next);else afterPiece();}}else if(phase==='crack'&&phaseTime>=(260+Math.min(180,Math.max(...plan.cells.map(c=>c.depth))*24))){emit(plan.cells);const result=game.resolve(plan,chain);addFeedback(plan,result.gain);falls=result.falls;plan=null;if(game.material==='glass'){phase='fall';phaseTime=0;}else beginSettle();updateHUD();}else if(phase==='fall'&&phaseTime>=(240)){falls=[];const p=E.clearPlan(game.board);if(p)beginClear(p);else afterPiece();}}}
- if(state!=='paused'){if(goalToast>0)goalToast-=dt;if(impact){impact.life-=dt;if(impact.life<=0)impact=null;}for(const f of feedback)f.life-=dt;feedback=feedback.filter(f=>f.life>0);if(drag?.axis==='y'&&state==='playing')processSwipe(drag,drag.lastX,drag.lastY,performance.now());if(gestureFeedbackTime>0&&!drag){gestureFeedbackTime-=dt;if(gestureFeedbackTime<=0){$('pad-hint').textContent='게임판에서도 똑같이 조작하세요';$('touchpad').classList.remove('drop-ready');}}for(const p of particles){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=(p.gravity||350)*dt/1000;p.angle+=dt*.002;}particles=particles.filter(p=>p.life>0);if(dropTrail){dropTrail.life-=dt;if(dropTrail.life<=0)dropTrail=null;}if(calloutTime>0){calloutTime-=dt;if(calloutTime<=0)$('callout').classList.remove('show');}}
+ if(state==='resolving'){phaseTime+=dt;if(phase==='settle'&&phaseTime>=(game.material==='sand'?48:42)){phaseTime=0;falls=E.settleStep(game.board,game.material,game.pieces+settleCount++);if(game.material==='sand'&&falls.length)for(const f of falls)spawnSandVisual(f.fromX??f.x,f.from,f.x,f.to,f.cell);if(!falls.length){const next=E.materialPlan(game.board,game.material,stageConfig?.sandBurst||10);if(next)beginClear(next);else afterPiece();}}else if(phase==='crack'&&phaseTime>=(260+Math.min(180,Math.max(...plan.cells.map(c=>c.depth))*24))){emit(plan.cells);const result=game.resolve(plan,chain);addFeedback(plan,result.gain);falls=result.falls;plan=null;if(game.material==='glass'){phase='fall';phaseTime=0;}else beginSettle();updateHUD();}else if(phase==='fall'&&phaseTime>=(240)){falls=[];const p=E.clearPlan(game.board);if(p)beginClear(p);else afterPiece();}}}
+ if(state!=='paused'){if(goalToast>0)goalToast-=dt;if(impact){impact.life-=dt;if(impact.life<=0)impact=null;}for(const f of feedback)f.life-=dt;feedback=feedback.filter(f=>f.life>0);if(drag?.axis==='y'&&state==='playing')processSwipe(drag,drag.lastX,drag.lastY,performance.now());if(gestureFeedbackTime>0&&!drag){gestureFeedbackTime-=dt;if(gestureFeedbackTime<=0){$('pad-hint').textContent='게임판에서도 똑같이 조작하세요';$('touchpad').classList.remove('drop-ready');}}for(const p of particles){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=(p.gravity||350)*dt/1000;p.angle+=dt*.002;}particles=particles.filter(p=>p.life>0);if(dropTrail){dropTrail.life-=dt;if(dropTrail.life<=0)dropTrail=null;}for(const p of sandVisuals)p.life-=dt;sandVisuals=sandVisuals.filter(p=>p.life>0);if(calloutTime>0){calloutTime-=dt;if(calloutTime<=0)$('callout').classList.remove('show');}}
 }
 function cellColors(c){if(c?.gem)return['#fff6bd','#b98724'];return game.material==='glass'?(colors[c.type]||colors.I):materialColors[game.material][c.paint??0];}
 function renderSandTerrain(){
@@ -256,6 +275,7 @@ function render(){ctx.clearRect(0,0,360,720);const bg=ctx.createLinearGradient(0
  const clearMap=new Map(plan?plan.cells.map(c=>[c.y*10+c.x,c.depth]):[]),fallMap=new Map(falls.map(f=>[f.cell.id,f]));
  if(game.material==='sand'){ctx.save();if(phase==='settle')ctx.translate(0,Math.sin(Math.min(1,phaseTime/48)*Math.PI)*1.4);renderSandTerrain();ctx.restore();}
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(!c)continue;if(game.material==='sand')continue;let yy=y,xx=x,squash=0;const f=fallMap.get(c.id);if(f&&(phase==='fall'||phase==='settle')){const t=Math.min(1,phaseTime/(phase==='settle'?(game.material==='sand'?48:42):(240))),ease=game.material==='sand'?(1-Math.pow(1-t,2)):1-Math.pow(1-t,3);yy=f.from+(f.to-f.from)*ease;xx=(f.fromX??x)+(x-(f.fromX??x))*ease;squash=Math.sin(t*Math.PI)*(game.material==='sand'?.24:.14);}const hot=clearMap.has(y*10+x)&&phaseTime>=clearMap.get(y*10+x)*24;const links=game.material!=='glass'&&game.material!=='sand'&&!(f&&phase==='settle')?E.DIRS.filter(([dx,dy])=>game.board[y+dy]?.[x+dx]?.paint===c.paint):null;glass(c,xx*36,yy*36,36,{hot,squash,links});}
+ renderSandVisuals();
  if(game.active&&['playing','paused'].includes(state)){const p=game.active,dy=game.dropDistance();for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y+dy)*36,36,{ghost:true,ready:!!drag?.dropReady});for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y)*36,36);}
  if(strategy&&state==='playing'){
   ctx.save();
