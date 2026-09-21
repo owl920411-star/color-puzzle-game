@@ -81,7 +81,7 @@ class Game{
  resolve(plan,chain){let falls=[];if(this.material==='glass')falls=applyClear(this.board,plan);else for(const c of plan.cells)this.board[c.y][c.x]=null;this.lines+=plan.rows.length||(plan.groups||0);this.shards+=plan.cells.length;this.extra+=plan.extra;this.maxChain=Math.max(this.maxChain,chain);const gain=(this.material==='glass'?plan.rows.length*100+plan.extra*30+(plan.rows.length===4?400:0):plan.cells.length*20+(plan.groups||0)*100)*chain;this.score+=gain;return{falls,gain};}
  get colorCount(){return this.material==='sand'?2:4;}
  get level(){return 1+Math.floor(this.lines/8);}
- get gravity(){return Math.max(this.difficulty==='calm'?180:this.difficulty==='challenge'?110:130,920*Math.pow(.83,this.level-1)*(this.difficulty==='calm'?1.4:this.difficulty==='challenge'?.76:1));}
+ get gravity(){if(this.stageSpeed)return Math.max(200,920*this.stageSpeed*Math.pow(.96,Math.floor(this.lines/8)));return Math.max(this.difficulty==='calm'?180:this.difficulty==='challenge'?110:130,920*Math.pow(.83,this.level-1)*(this.difficulty==='calm'?1.4:this.difficulty==='challenge'?.76:1));}
  get lockDelay(){return this.difficulty==='calm'?850:650;}
 }
 function tutorial(){const g=new Game('learn','tutorial');const cell=(mask=0)=>({mask,id:++g.serial,type:'I'});for(let x=0;x<6;x++)g.board[19][x]=cell();g.board[19][3]=cell(1);g.board[18][3]=cell(5);g.board[17][3]=cell(6);g.board[17][4]=cell(8);g.board[18][4]=cell();g.active={type:'I',size:4,x:6,y:0,cells:SHAPES.I.map(([x,y])=>({...cell(),x,y}))};return g;}

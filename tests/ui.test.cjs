@@ -1,9 +1,9 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 // Minimal DOM adapter exercises actual app input/state handlers without claiming browser layout QA.
-function harness(realCanvas=false,initialSaved=null){
+function harness(realCanvas=false,initialSaved=null,initialMode='sprint'){
  const all=[],byId={},raf=[],stored=new Map();let now=1000;let napi;if(initialSaved)stored.set('glassfall-v1',JSON.stringify(initialSaved));
  if(realCanvas)napi=require(require.resolve('@napi-rs/canvas',{paths:[process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES]}));
- const noop=()=>{},gradient={addColorStop:noop};const fallback=new Proxy({createLinearGradient:()=>gradient},{get:(o,k)=>o[k]||noop,set:(o,k,v)=>(o[k]=v,true)});
+ const noop=()=>{},gradient={addColorStop:noop};const fallback=new Proxy({createLinearGradient:()=>gradient,createRadialGradient:()=>gradient},{get:(o,k)=>o[k]||noop,set:(o,k,v)=>(o[k]=v,true)});
  class El{
   constructor(id='',tag='DIV',action){this.id=id;this.tagName=tag;this.dataset=action?{action}:{};this.listeners={};this.hidden=false;this.disabled=false;this.style={};this.textContent='';this.innerHTML='';this.attrs={};this.classList={add:noop,remove:noop,toggle:noop};this.width=360;this.height=720;this.open=false;all.push(this);if(id)byId[id]=this;}
   addEventListener(n,f){(this.listeners[n]||=[]).push(f)}
@@ -19,10 +19,11 @@ function harness(realCanvas=false,initialSaved=null){
  const previews=[0,1].map(i=>{const b=new El('','BUTTON');b.dataset.preview=String(i);return b;});
  const doc=new El();doc.body=new El();doc.getElementById=id=>byId[id];doc.querySelectorAll=s=>s==='[data-action]'?[...controls,byId.hold]:s==='.controls button'?controls:s==='[data-preview]'?previews:[];
  const win=new El();Object.assign(win,{devicePixelRatio:1,crypto:{getRandomValues:v=>{v[0]=123456;return v;}}});
- const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};context.GlassEngine=win.GlassEngine;vm.runInContext(fs.readFileSync(require.resolve('../dist/progression.js'),'utf8'),context);win.GlassProgress=context.GlassProgress;vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
+ const context={window:win,document:doc,navigator:{},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},matchMedia:()=>({matches:false}),performance:{now:()=>now},requestAnimationFrame:f=>raf.push(f),crypto:win.crypto,Intl,Date,Math,Uint32Array,console};win.window=win;vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../dist/engine.js'),'utf8'),context);const instances=[];const OriginalGame=context.GlassEngine.Game;win.GlassEngine={...context.GlassEngine,Game:class extends OriginalGame{constructor(...args){super(...args);instances.push(this);}}};context.GlassEngine=win.GlassEngine;vm.runInContext(fs.readFileSync(require.resolve('../dist/progression.js'),'utf8'),context);win.GlassProgress=context.GlassProgress;vm.runInContext(fs.readFileSync(require.resolve('../dist/stages.js'),'utf8'),context);win.GlassStages=context.GlassStages;vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),context);
  function step(ms=16){now+=ms;const f=raf.shift();assert.ok(f,'animation frame remains scheduled');f(now);}
  function screen(a,mode,extra={}){const b=new El('','BUTTON');b.dataset=mode?{mode}:{screen:a,...extra};byId.screen.child.emit('click',{target:b});}
  function press(a,id=1){const b=a==='hold'?byId.hold:controls.find(b=>b.dataset.action===a);b.emit('pointerdown',{pointerId:id});b.emit('pointerup',{pointerId:id});}
+ if(initialMode!=='stage')screen('',initialMode);
  return{byId,doc,win,previews,step,advance:ms=>now+=ms,screen,press,controls,stored,get game(){return instances[instances.length-1];},render:()=>byId.board.raw?.toBuffer('image/png')};
 }
 test('menu, tutorial, exact clear score and same-seed retry work through real UI handlers',()=>{
@@ -32,7 +33,7 @@ test('pointer click does not duplicate hard drop and OS key repeat cannot drop a
  const h=harness();h.screen('start');const drop=h.controls.find(b=>b.dataset.action==='drop');h.press('drop');const score=h.byId.score.textContent;drop.emit('click',{detail:1});assert.equal(h.byId.score.textContent,score);h.doc.emit('keydown',{key:' ',repeat:false});const score2=h.byId.score.textContent;h.doc.emit('keydown',{key:' ',repeat:true});assert.equal(h.byId.score.textContent,score2);
 });
 test('pause and background suspend time; a delayed visible frame uses real elapsed time',()=>{
- const h=harness();h.screen('start');h.step(1000);h.step(1000);const before=h.byId.time.textContent;h.byId.pause.emit('click');h.step(60000);assert.equal(h.byId.time.textContent,before);h.screen('resume');h.step(1000);assert.notEqual(h.byId.time.textContent,before);h.doc.hidden=true;h.doc.emit('visibilitychange');assert.match(h.byId.screen.child.innerHTML,/잠시 쉬어가세요/);h.step(99999);h.doc.hidden=false;h.screen('resume');h.step(180000);assert.match(h.byId.screen.child.innerHTML,/빛나는 3분/);
+ const h=harness();h.screen('start');h.step(1000);h.step(1000);const before=h.byId.time.textContent;h.byId.pause.emit('click');h.step(60000);assert.equal(h.byId.time.textContent,before);h.screen('resume');h.step(1000);assert.notEqual(h.byId.time.textContent,before);h.doc.hidden=true;h.doc.emit('visibilitychange');assert.match(h.byId.screen.child.innerHTML,/잠시 쉬어가세요/);h.step(99999);h.doc.hidden=false;h.screen('resume');h.step(180000);assert.match(h.byId.screen.child.innerHTML,/도전 완료/);
 });
 test('cancelled held controls stop repeat, and Space on a focused button is not intercepted',()=>{
  const h=harness();h.screen('start');const left=h.controls.find(b=>b.dataset.action==='left');left.emit('pointerdown',{pointerId:7});left.emit('pointercancel',{pointerId:7});const x=h.game.active.x,score=h.byId.score.textContent;h.step(200);assert.equal(h.game.active.x,x);assert.equal(h.byId.score.textContent,score);h.doc.emit('keydown',{key:' ',repeat:false,target:h.byId.sound});assert.equal(h.byId.score.textContent,score);
@@ -269,4 +270,25 @@ test('soft drop follows visible row height on a vertically expanded board',()=>{
  const y=h.game.active.y;touch(s,'pointerdown',100,100);h.advance(400);
  touch(s,'pointermove',100,180);assert.equal(h.game.active.y,y+2);
  touch(s,'pointerup',100,180);assert.equal(h.game.pieces,0);
+});
+
+test('stage campaign replaces the timer, unlocks next level after a clear and persists on reload',()=>{
+ const h=harness(false,null,'stage');assert.doesNotMatch(h.byId.screen.child.innerHTML,/data-mode="sprint"/);h.screen('start');
+ assert.equal(h.game.mode,'stage');assert.equal(h.byId.time.textContent,'1 / 100');h.step(200000);assert.equal(h.byId.screen.hidden,true);
+ h.game.shards=10;h.press('drop');assert.match(h.byId.screen.child.innerHTML,/1 스테이지 클리어/);assert.match(h.byId.screen.child.innerHTML,/다음 스테이지/);
+ const saved=JSON.parse(h.stored.get('glassfall-v1'));assert.equal(saved.campaign.glass.unlocked,2);
+ h.screen('next-stage');assert.equal(h.game.seed,'STAGE-v1-glass-2');assert.equal(h.byId.time.textContent,'2 / 100');
+ h.byId.pause.emit('click');h.screen('retry');assert.equal(h.game.seed,'STAGE-v1-glass-2');assert.equal(h.game.shards,0);
+ const reloaded=harness(false,saved,'stage');reloaded.screen('start');assert.equal(reloaded.game.seed,'STAGE-v1-glass-2');
+});
+test('final stage ends at 100 without wrapping or exposing a next stage',()=>{
+ const h=harness(false,{campaign:{glass:{cleared:Array.from({length:99},(_,i)=>i+1)}}},'stage');h.screen('start');h.game.shards=999;h.press('drop');
+ assert.match(h.byId.screen.child.innerHTML,/100 스테이지 완주/);assert.doesNotMatch(h.byId.screen.child.innerHTML,/data-screen="next-stage"/);h.screen('next-stage');assert.equal(h.game.seed,'STAGE-v1-glass-100');
+ assert.equal(JSON.parse(h.stored.get('glassfall-v1')).campaign.glass.cleared.length,100);
+});
+test('rotate button cancels an existing board gesture and rotates only once per press',()=>{
+ const h=harness(),s=begin(h,'board');let rotations=0;const original=h.game.rotate.bind(h.game);h.game.rotate=()=>{rotations++;return original();};
+ h.press('rotate',2);assert.equal(rotations,1);touch(s,'pointerup',100,100);assert.equal(rotations,1);
+ h.controls.find(b=>b.dataset.action==='rotate').emit('click',{detail:1});assert.equal(rotations,1);
+ const html=fs.readFileSync(require.resolve('../dist/index.html'),'utf8');assert.ok(html.indexOf('id="hold"')<html.indexOf('id="rail-rotate"'));assert.ok(html.indexOf('id="rail-rotate"')<html.indexOf('id="rail-drop"'));
 });
