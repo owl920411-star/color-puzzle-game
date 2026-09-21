@@ -1,8 +1,8 @@
 /* Original generated artwork; sample each tile once, then reuse small canvases. */
 (() => {
  'use strict';
- const tiles={glass:{},jelly:{}},shards={glass:[],jelly:[]};
- let backdrop=null;
+ const tiles={glass:{},jelly:{},water:{},sand:{}},shards={glass:[],jelly:[]};
+ let backdrop=null;const backdrops={},menuCards={};
  const glassRects={I:[168,126,127,127],O:[779,44,128,128],T:[42,384,124,124],S:[566,384,126,126],Z:[880,387,122,122],J:[169,699,123,123],L:[953,705,122,122]};
  const jellyRects={I:[186,128,126,126],O:[795,58,119,119],T:[49,384,121,121],S:[574,384,116,116],Z:[857,383,115,115],J:[178,704,124,124],L:[953,703,124,124]};
  // Jelly's four paint identities stay coral, green, gold, purple.
@@ -37,6 +37,20 @@
   g.drawImage(image,(360-w)/2,(720-h)/2,w,h);
   g.fillStyle='#071222b8';g.fillRect(0,0,360,720);
  });
+ // Supplied design sheets are sampled once; full reference images never cover live controls.
+ load('design-menu.jpg',image=>{
+  ['glass','sand','water','jelly'].forEach((kind,i)=>{menuCards[kind]=sample(image,[45+i*241,264,212,174],320);});
+ });
+ load('design-materials.jpg',image=>{
+  ['glass','sand','water','jelly'].forEach((kind,i)=>{
+   const c=document.createElement('canvas');c.width=360;c.height=720;const g=c.getContext('2d');
+   g.drawImage(image,154+i*384,650,70,140,0,0,360,720);
+   const shade=g.createLinearGradient(0,0,0,720);shade.addColorStop(0,'#061020b8');shade.addColorStop(.5,'#061020db');shade.addColorStop(1,'#061020b8');g.fillStyle=shade;g.fillRect(0,0,360,720);backdrops[kind]=c;
+  });
+  [[833,356,29,29],[1065,345,28,28],[962,416,28,28],[1067,446,27,27]].forEach((r,i)=>tiles.water[i]=sample(image,r));
+  tiles.sand[0]=sample(image,[452,356,27,27]);
+  const purple=sample(image,[452,356,27,27]);const g=purple.getContext('2d');g.globalCompositeOperation='color';g.fillStyle='#ad75d4';g.fillRect(0,0,96,96);g.globalCompositeOperation='source-over';tiles.sand[1]=purple;
+ });
  window.GlassArt={
   jellyFragmentRects:[
    [[1020,34,214,215],[292,280,192,202],[36,752,216,204],[536,1004,198,196]],
@@ -45,7 +59,7 @@
    [[510,27,229,223],[1023,263,203,224],[286,532,208,176],[36,988,215,219]]
   ],
   tile(g,c,kind,x,y,size){
-   const key=kind==='jelly'?paintTypes[c.paint??0]:c.type;
+   const key=kind==='jelly'?paintTypes[c.paint??0]:['sand','water'].includes(kind)?c.paint??0:c.type;
    const sprite=tiles[kind]?.[key];if(!sprite)return false;
    g.save();g.beginPath();g.roundRect(x,y,size,size,kind==='jelly'?size*.19:size*.025);g.clip();
    g.drawImage(sprite,x,y,size,size);g.restore();return true;
@@ -58,6 +72,7 @@
    if(p.kind==='jelly'){const stretch=Math.sin((1-p.life/p.total)*Math.PI*3)*.18;g.scale(1+stretch,1-stretch);}
    g.drawImage(sprite,-side/2,-side/2,side,side);g.restore();return true;
   },
-  background(g){if(backdrop)g.drawImage(backdrop,0,0);}
+  menu(root){for(const c of root.querySelectorAll('.mode-art')){const art=menuCards[c.dataset.art];if(art)c.getContext('2d').drawImage(art,0,0,c.width,c.height);}},
+  background(g,kind='glass'){const image=backdrops[kind]||backdrop;if(image)g.drawImage(image,0,0);}
  };
 })();
