@@ -14,8 +14,8 @@ function strategy(board,material){
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){
   const first=board[y][x];if(!first||seen.has(y*10+x))continue;const cells=[{x,y}];seen.add(y*10+x);
   for(let i=0;i<cells.length;i++)for(const [dx,dy]of [[0,-1],[1,0],[0,1],[-1,0]]){const nx=cells[i].x+dx,ny=cells[i].y+dy;if(nx<0||nx>=10||ny<0||ny>=20||seen.has(ny*10+nx)||board[ny][nx]?.paint!==first.paint)continue;seen.add(ny*10+nx);cells.push({x:nx,y:ny});}
-  const min=Math.min(...cells.map(c=>c.x)),max=Math.max(...cells.map(c=>c.x)),value=material==='sand'?max-min+1:cells.length,target=material==='water'?10:material==='jelly'?8:10;
-  if(value<target&&value>=(material==='sand'?4:target-4)&&(!best||value>best.value))best={value,cells,text:material==='sand'?`모래길 ${value}/10열 · ${min===0?'오른쪽 벽으로':max===9?'왼쪽 벽으로':'양쪽으로 이어보세요'}`:`${material==='water'?'물':'젤리'} ${value}/${target}칸 · ${target-value}칸 더 연결`};
+  const min=Math.min(...cells.map(c=>c.x)),max=Math.max(...cells.map(c=>c.x)),value=cells.length,target=material==='water'?10:material==='jelly'?8:10;
+  if(value<target&&value>=target-4&&(!best||value>best.value))best={value,cells,text:material==='sand'?`붕괴 준비 ${value}/${target}칸 · ${target-value}칸만 더 연결하면 SAND BURST`:`${material==='water'?'물':'젤리'} ${value}/${target}칸 · ${target-value}칸 더 연결`};
  }
  return best;
 }
