@@ -258,7 +258,7 @@ content.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b||b.disabled)return;
  if(b.dataset.material&&Object.hasOwn(materials,b.dataset.material)){material=b.dataset.material;saved.material=material;save();menu();return;}
  if(b.dataset.difficulty&&Object.hasOwn(difficulties,b.dataset.difficulty)){difficulty=b.dataset.difficulty;saved.difficulty=difficulty;save();showMenu();updateHUD();return;}
- if(b.dataset.stage){const n=Number(b.dataset.stage);if(Number.isInteger(n)&&n>=1&&n<=S.progress(saved.campaign[material]).unlocked){stageNumber=n;stageConfig=S.config(n,material);showMenu();updateHUD();}return;}
+ if(b.dataset.stage){const n=Number(b.dataset.stage),unlocked=S.progress(saved.campaign[material]).unlocked;if(Number.isInteger(n)&&n>=1&&n<=100&&(saved.devMode||n<=unlocked)){stageNumber=n;stageConfig=S.config(n,material);showMenu();updateHUD();}return;}
  if(b.dataset.mode){mode=b.dataset.mode;showMenu();updateHUD();return;}
  const a=b.dataset.screen;
  if(a==='help'){openHelp();return;}
