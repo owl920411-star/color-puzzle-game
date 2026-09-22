@@ -104,7 +104,10 @@ function hud(){
 function rebase(){if(!drag||!run.active)return;drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;drag.piece=pieceID();drag.downAnchor=drag.lastY;}
 function carry(){
  if(!drag||drag.axis==='y')return false;
- drag.lane=run.active.x;drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;drag.axis='x';drag.noRelease=true;drag.piece=null;return true;
+ // Commit the continuously tracked target before drop/hold. This prevents a
+ // pointermove arriving one frame late from dropping in the previous column.
+ if(kind==='normal'&&run.active&&Number.isFinite(drag.virtualX))moveTo(Math.round(drag.virtualX));
+ drag.lane=run.active.x;drag.originX=run.active.x;drag.startPieceX=run.active.x;drag.startX=drag.lastX;drag.anchorX=drag.lastX;drag.virtualX=run.active.x;drag.shift=0;drag.axis='x';drag.noRelease=true;drag.piece=null;return true;
 }
 function moveTo(x){
  if(!run.active)return false;
@@ -243,23 +246,17 @@ function processSwipe(d,x,y,now){
  if(!d.axis&&kind==='normal'){if(Math.abs(dx)>=12&&Math.abs(dx)>Math.abs(dy)*1.25)d.axis='x';else if(Math.abs(dy)>=14&&Math.abs(dy)>Math.abs(dx)*1.4){d.axis='y';d.vertical=Math.sign(dy);}}
  if(d.axis==='x'){
   if(kind==='normal'){
-   // CONTROL 7: CONTROL 5 feel + safety guards.
-   // Movement is incremental and immediate, but consumed distance is retained
-   // as a small remainder so reversals feel attached to the finger.
-   const step=Math.max(21,d.unit*.86),delta=x-d.anchorX;
-   let steps=delta>0?Math.floor(delta/step):Math.ceil(delta/step);
-   steps=Math.max(-6,Math.min(6,steps));
-   if(steps){
-    const desired=run.active?run.active.x+steps:d.lane+steps;
-    if(state==='clearing'){d.lane=Math.max(-2,Math.min(9,desired));d.anchorX+=steps*step;return;}
-    if(!run.active)return;
-    const before=run.active.x;moveTo(desired);const reached=run.active.x,moved=reached-before;
-    // Consume only movement that actually happened. If a wall blocks us,
-    // discard pressure beyond the wall so reversal reacts immediately.
-    if(moved===steps)d.anchorX+=steps*step;else d.anchorX=x;
-    d.originX=reached;d.shift=0;d.lane=reached;
-    if(moved)d.translated=true;
-   }
+   // CONTROL 8: continuous finger tracking with a predictive landing target.
+   // The piece follows the finger freely in virtual space; the integer board
+   // column is chosen only from that continuous target. No distance is consumed.
+   const raw=(x-d.startX)/d.unit;
+   d.virtualX=d.startPieceX+raw;
+   const desired=Math.round(d.virtualX);
+   d.lane=desired;
+   if(state==='clearing')return;
+   if(!run.active)return;
+   const before=run.active.x;moveTo(desired);
+   if(run.active.x!==before)d.translated=true;
   }else if(canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
   if(run.active)d.lane=run.active.x;
  }else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){
@@ -271,7 +268,7 @@ function processSwipe(d,x,y,now){
 }
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect();
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,lane:run.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
