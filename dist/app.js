@@ -16,7 +16,7 @@ let storageWorks=true;function save(){try{localStorage.setItem(storageKey,JSON.s
 saved.campaign=saved.campaign&&typeof saved.campaign==='object'&&!Array.isArray(saved.campaign)?saved.campaign:{};saved.devMode=!!saved.devMode;
 let stageNumber=1,stageConfig=null;
 let mode='stage',state='menu',game=new E.Game('preview'),remaining=180000,elapsed=0,fallTime=0,lockTime=0,lockResets=0,last=0,chain=0,phase=null,phaseTime=0,plan=null,falls=[],particles=[],dropTrail=null,calloutTime=0,pausedFrom='playing',resumeAfterHelp=false,gameResultSaved=false,endingReason='';
-let repeat=null,drag=null,gestureFeedbackTime=0,keyHeld=new Set(),soundOn=!!saved.sound,audio=null,renderRatio=1,sandVisuals=[],sandLandingFade=0,sandGrainCache=new Map();
+let repeat=null,drag=null,swipeCarry=null,gestureFeedbackTime=0,keyHeld=new Set(),soundOn=!!saved.sound,audio=null,renderRatio=1,sandVisuals=[],sandLandingFade=0,sandGrainCache=new Map();
 const modes={stage:'스테이지',sprint:'기존 시간 도전',daily:'오늘의 도전',endless:'무한 모드',tutorial:'조작 연습'};
 const screen=$('screen'),content=screen.querySelector('.screen-content');
 function bestKey(){if(mode==='stage')return material+':stage:'+stageNumber;return(difficulty==='standard'?'':difficulty+':')+(material==='glass'?'':material+':')+(mode==='daily'?'daily-'+(state!=='menu'&&game.seed.startsWith('DAILY-')?game.seed.slice(6):day()):mode);}
@@ -41,6 +41,17 @@ function moveToColumn(target){
 function rebaseBoardDrag(){
  if(!drag||!game.active)return;
  drag.originX=game.active.x;drag.anchorX=drag.lastX;drag.shift=0;
+}
+function armGlassSwipeCarry(){
+ if(game.material!=='glass'||!drag||drag.axis!=='x'||!game.active)return;
+ swipeCarry={id:drag.id,surface:drag.surface,lastX:drag.lastX,lastY:drag.lastY,lane:game.active.x,unit:drag.unit,rowUnit:drag.rowUnit};
+}
+function restoreGlassSwipeCarry(){
+ const c=swipeCarry;if(!c||game.material!=='glass'||state!=='playing'||!game.active)return;
+ moveToColumn(c.lane);
+ drag={id:c.id,surface:c.surface,pieceId:game.active.cells[0].id,startX:c.lastX,startY:c.lastY,anchorX:c.lastX,lastX:c.lastX,lastY:c.lastY,started:performance.now(),originX:game.active.x,shift:0,axis:'x',peakDistance:12,soft:false,translated:false,dropReady:false,peakX:0,peakDown:0,downAnchor:c.lastY,unit:c.unit,rowUnit:c.rowUnit};
+ $('touchpad').classList.add('engaged');gestureFeedback('계속 좌우로 밀어 다음 블록 위치를 잡으세요');
+ swipeCarry=null;
 }
 function audioInit(){if(!soundOn)return;try{audio ||= new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch{}}
 function tone(kind,n=1){
@@ -178,7 +189,7 @@ function emit(cells){
 }
 function callout(title,sub){$('callout').innerHTML=`<strong>${title}</strong><span>${sub}</span>`;$('callout').classList.add('show');calloutTime=950;}
 function beginClear(p){plan=p;chain++;phase='crack';phaseTime=0;state='resolving';resetInput();tone('clear',chain);if(chain>1)callout(game.material==='sand'?(chain>=5?'MEGA AVALANCHE!':chain>=3?'AVALANCHE!':chain+' CHAIN'):chain+' CHAIN',game.material==='sand'?'산사태 배수 ×'+Math.pow(2,chain-1):'연쇄 배수 ×'+chain);else callout(game.material==='glass'?'RESONANCE':materials[game.material].effect,game.material==='glass'?'균열 파쇄':p.cells.length+'칸 붕괴');setStatus(game.material==='glass'?`${p.rows.length}줄 완성${p.extra?' · 이어진 유리 '+p.extra+'개 파쇄':''}${chain>1?' · '+chain+'연쇄':''}`:`${materials[game.material].effect} · ${p.cells.length}칸 · ${chain}연쇄`);updateHUD();}
-function afterPiece(){strategy=P.strategy(game.board,game.material,stageConfig?.sandBurst||10);if(mode==='stage'&&game.shards>=stageConfig.target&&(!stageConfig.gems||game.gems>=stageConfig.gems)){finish('stage');return;}if(mode==='tutorial'&&game.lines>0){finish('tutorial');return;}if((mode==='sprint'||mode==='daily')&&remaining<=0){finish('time');return;}if(!game.spawn()){finish('top');return;}state='playing';chain=0;lockTime=0;lockResets=0;fallTime=0;phase=null;plan=null;falls=[];resetInput();renderPreviews();updateHUD();}
+function afterPiece(){strategy=P.strategy(game.board,game.material,stageConfig?.sandBurst||10);if(mode==='stage'&&game.shards>=stageConfig.target&&(!stageConfig.gems||game.gems>=stageConfig.gems)){finish('stage');return;}if(mode==='tutorial'&&game.lines>0){finish('tutorial');return;}if((mode==='sprint'||mode==='daily')&&remaining<=0){finish('time');return;}if(!game.spawn()){finish('top');return;}state='playing';chain=0;lockTime=0;lockResets=0;fallTime=0;phase=null;plan=null;falls=[];resetInput();restoreGlassSwipeCarry();renderPreviews();updateHUD();}
 function beginSettle(){phase='settle';phaseTime=0;falls=[];state='resolving';resetInput();if(game.material==='sand'&&chain>=3&&!reduced)vibrate(chain>=5?[18,22,28,25,36]:[14,24,20]);}
 function lock(){if(!game.active)return;const cells=game.active.cells.map(c=>({x:c.x+game.active.x,y:c.y+game.active.y,paint:c.paint??0,cell:c}));if(game.material==='sand'){emitSandLanding(cells);sandLandingFade=150;}impact={x:cells.reduce((n,c)=>n+c.x+.5,0)/cells.length*36,y:Math.max(...cells.map(c=>c.y+1))*36,life:360,total:360};vibrate(8);game.lock();resetInput();chain=0;settleCount=0;if(game.material!=='glass'){beginSettle();return;}const p=E.clearPlan(game.board);if(p)beginClear(p);else afterPiece();}
 function action(a){if(state!=='playing'||!game.active)return false;audioInit();let moved=false;const grounded=!game.fits(game.active,0,1);if(a==='left'||a==='right')moved=game.move(a==='left'?-1:1);else if(a==='rotate'){moved=game.rotate();if(moved){tone('rotate');rebaseBoardDrag();}}else if(a==='down'){moved=game.move(0,1);if(moved){game.score++;fallTime=0;}}else if(a==='drop'){const d=game.dropDistance();dropTrail={cells:game.active.cells.map(c=>({...c,x:c.x+game.active.x,y:c.y+game.active.y})),distance:d,life:170};game.move(0,d);game.score+=d*2;tone('drop');lock();updateHUD();return true;}else if(a==='hold'&&mode!=='tutorial'){moved=game.hold();if(game.over){finish('top');return false;}if(moved){resetInput();lockTime=0;lockResets=0;fallTime=0;renderPreviews();}}
@@ -371,7 +382,8 @@ for(const b of document.querySelectorAll('[data-action]')){
   if(e.button!==0||b.disabled)return;
   e.preventDefault();b.setPointerCapture?.(e.pointerId);
   const a=b.dataset.action;
-  if(['left','right','rotate'].includes(a)){drag=null;$('touchpad').classList.remove('engaged');}
+  if(a==='drop')armGlassSwipeCarry();
+  if(['left','right','rotate'].includes(a)){drag=null;swipeCarry=null;$('touchpad').classList.remove('engaged');}
   action(a);b.classList.add('pressed');
   if(['left','right'].includes(a)&&state==='playing')repeat={id:e.pointerId,action:a,time:200};
  });
@@ -428,10 +440,12 @@ for(const surface of [canvas,$('touchpad')]){
   $('touchpad').classList.add('engaged');gestureFeedback('톡 터치: 회전 · 좌우: 이동 · 아래: 낙하');
  });
  surface.addEventListener('pointermove',e=>{
+  if(swipeCarry?.id===e.pointerId&&swipeCarry.surface===surface){swipeCarry.lastX=e.clientX;swipeCarry.lastY=e.clientY;}
   const d=drag;if(!d||d.id!==e.pointerId||d.surface!==surface)return;
   e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());
  });
  surface.addEventListener('pointerup',e=>{
+  if(swipeCarry?.id===e.pointerId&&swipeCarry.surface===surface)swipeCarry=null;
   const d=drag;if(!d||d.id!==e.pointerId||d.surface!==surface)return;
   e.preventDefault();const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);
   if(drag!==d||state!=='playing'||game.active?.cells[0].id!==d.pieceId)return;
@@ -447,6 +461,7 @@ for(const surface of [canvas,$('touchpad')]){
   }
  });
  for(const name of ['pointercancel','lostpointercapture'])surface.addEventListener(name,e=>{
+  if(swipeCarry?.id===e.pointerId&&swipeCarry.surface===surface)swipeCarry=null;
   if(drag?.id===e.pointerId&&drag.surface===surface){drag=null;$('touchpad').classList.remove('engaged','drop-ready');gestureFeedback('취소했어요 · 다시 스와이프하세요');}
  });
 }
