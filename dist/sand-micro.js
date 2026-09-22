@@ -204,11 +204,32 @@ $('overlay-body').addEventListener('click',e=>{
 $('pause').addEventListener('click',()=>{if(finished)return;if(paused){paused=false;last=performance.now();$('overlay').hidden=true;updateHUD();}else settings();});
 function act(name){
  if(paused||finished||!run.active||run.state!=='falling'||(name==='hold'&&run.holdUsed))return;
- // A second finger on the rail commits the currently dragged packet once.
- // Release its capture before spawning; lifting the old finger cannot drop the next packet.
- const previous=drag;drag=null;
- if(previous&&canvas.hasPointerCapture?.(previous.id))canvas.releasePointerCapture(previous.id);
- if(name==='hold')run.hold();if(name==='drop')run.drop();ghost=null;updateHUD();
+ const previous=drag;
+ if(name==='hold'){
+  drag=null;
+  if(previous&&canvas.hasPointerCapture?.(previous.id))canvas.releasePointerCapture(previous.id);
+  run.hold();
+ }else if(name==='drop'){
+  // Keep a horizontal board swipe alive across hard drop. The next sack
+  // inherits the same lane, then continues following the still-held finger.
+  const lane=run.active.x,keep=previous&&previous.axis!=='y';
+  run.drop();
+  if(keep&&run.active&&run.state==='falling'){
+   run.moveTo(lane);
+   previous.packet=run.active.id;
+   previous.origin=run.active.x;
+   previous.x=previous.lastX??previous.x;
+   previous.y=previous.lastY??previous.y;
+   previous.started=performance.now();
+   previous.max=0;
+   previous.axis='x';
+   drag=previous;
+  }else{
+   drag=null;
+   if(previous&&canvas.hasPointerCapture?.(previous.id))canvas.releasePointerCapture(previous.id);
+  }
+ }
+ ghost=null;updateHUD();
 }
 for(const name of ['hold','drop']){
  const button=$(name);
@@ -218,8 +239,8 @@ for(const name of ['hold','drop']){
  button.addEventListener('click',e=>{if(e.detail===0&&!button.disabled)act(name);});
 }
 for(const [id,index]of [['peek1',0],['peek2',1]])$(id).addEventListener('click',()=>{if(finished)return;paused=true;drag=null;$('overlay-title').textContent='다음 모래 '+(index+1);$('overlay-body').innerHTML='<canvas id="large-preview" width="192" height="150"></canvas><button data-menu="resume" class="primary">닫고 계속하기</button>';$('overlay').hidden=false;preview('large-preview',run.queue[index]);updateHUD();});
-canvas.addEventListener('pointerdown',e=>{if(paused||finished||!run.active||drag||!e.isPrimary||e.button!==0)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,packet:run.active.id,x:e.clientX,y:e.clientY,lastY:e.clientY,origin:run.active.x,started:performance.now(),max:0,axis:null};});
-canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId||run.active?.id!==d.packet)return;e.preventDefault();const dx=e.clientX-d.x,dy=e.clientY-d.y;d.max=Math.max(d.max,Math.hypot(dx,dy));if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';if(d.axis==='x'){run.moveTo(d.origin+dx/canvas.getBoundingClientRect().width*M.W);ghost=null;}else if(d.axis==='y'&&dy>0&&performance.now()-d.started>300){const steps=Math.floor((e.clientY-d.lastY)/canvas.getBoundingClientRect().height*M.H);if(steps>0){run.softDrop(Math.min(12,steps));d.lastY=e.clientY;}}});
+canvas.addEventListener('pointerdown',e=>{if(paused||finished||!run.active||drag||!e.isPrimary||e.button!==0)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,packet:run.active.id,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,origin:run.active.x,started:performance.now(),max:0,axis:null};});
+canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId||run.active?.id!==d.packet)return;e.preventDefault();d.lastX=e.clientX;d.lastY=e.clientY;const dx=e.clientX-d.x,dy=e.clientY-d.y;d.max=Math.max(d.max,Math.hypot(dx,dy));if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';if(d.axis==='x'){run.moveTo(d.origin+dx/canvas.getBoundingClientRect().width*M.W);ghost=null;}else if(d.axis==='y'&&dy>0&&performance.now()-d.started>300){const steps=Math.floor((e.clientY-d.lastY)/canvas.getBoundingClientRect().height*M.H);if(steps>0){run.softDrop(Math.min(12,steps));d.lastY=e.clientY;}}});
 canvas.addEventListener('pointerup',e=>{const d=drag;drag=null;if(!d||d.id!==e.pointerId||run.active?.id!==d.packet||paused)return;e.preventDefault();const dy=e.clientY-d.y,dx=e.clientX-d.x,age=performance.now()-d.started;if(dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4)run.drop();ghost=null;updateHUD();});
 for(const event of ['pointercancel','lostpointercapture'])canvas.addEventListener(event,e=>{if(drag?.id===e.pointerId)drag=null;});
 document.addEventListener('keydown',e=>{if(e.target.closest('button,summary,a,input,select'))return;if(['Escape','p','P'].includes(e.key)){e.preventDefault();if(!finished)settings();return;}if(paused||finished||!run.active)return;if(['ArrowLeft','ArrowRight','ArrowDown',' ','c','C'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')run.moveTo(run.active.x-3);if(e.key==='ArrowRight')run.moveTo(run.active.x+3);if(e.key==='ArrowDown')run.softDrop(3);if(!e.repeat&&e.key===' ')run.drop();if(!e.repeat&&['c','C'].includes(e.key))run.hold();ghost=null;updateHUD();});
