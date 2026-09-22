@@ -243,10 +243,16 @@ function processSwipe(d,x,y,now){
  if(!d.axis&&kind==='normal'){if(Math.abs(dx)>=12&&Math.abs(dx)>Math.abs(dy)*1.25)d.axis='x';else if(Math.abs(dy)>=14&&Math.abs(dy)>Math.abs(dx)*1.4){d.axis='y';d.vertical=Math.sign(dy);}}
  if(d.axis==='x'){
   if(kind==='normal'){
-   const offset=Math.max(-20,Math.min(20,(x-d.anchorX)/d.unit));if(d.shift===0&&Math.abs(x-d.anchorX)>=12)d.shift=Math.sign(x-d.anchorX);
-   while(offset>d.shift+.65)d.shift++;while(offset<d.shift-.65)d.shift--;
+   // Stable lane quantization: calculate the desired column directly from the
+   // original touch anchor. A small hysteresis band prevents finger jitter near
+   // a cell boundary from producing the occasional extra/missing column.
+   const raw=Math.max(-20,Math.min(20,(x-d.anchorX)/d.unit)),dead=.18;
+   let targetShift=d.shift;
+   while(raw>targetShift+.5+dead)targetShift++;
+   while(raw<targetShift-.5-dead)targetShift--;
+   d.shift=targetShift;
    if(state==='clearing'){d.lane=Math.max(-2,Math.min(9,d.originX+d.shift));return;}
-   if(!run.active)return;const before=run.active.x;if(!moveTo(d.originX+d.shift))rebase();if(run.active.x!==before)d.translated=true;
+   if(!run.active)return;const before=run.active.x;moveTo(d.originX+d.shift);if(run.active.x!==before)d.translated=true;
   }else if(canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
   if(run.active)d.lane=run.active.x;
  }else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){
