@@ -16,7 +16,7 @@ let storageWorks=true;function save(){try{localStorage.setItem(storageKey,JSON.s
 saved.campaign=saved.campaign&&typeof saved.campaign==='object'&&!Array.isArray(saved.campaign)?saved.campaign:{};saved.devMode=!!saved.devMode;
 let stageNumber=1,stageConfig=null;
 let mode='stage',state='menu',game=new E.Game('preview'),remaining=180000,elapsed=0,fallTime=0,lockTime=0,lockResets=0,last=0,chain=0,phase=null,phaseTime=0,plan=null,falls=[],particles=[],dropTrail=null,calloutTime=0,pausedFrom='playing',resumeAfterHelp=false,gameResultSaved=false,endingReason='';
-let repeat=null,drag=null,gestureFeedbackTime=0,keyHeld=new Set(),soundOn=!!saved.sound,audio=null,renderRatio=1,sandVisuals=[],sandLandingFade=0;
+let repeat=null,drag=null,gestureFeedbackTime=0,keyHeld=new Set(),soundOn=!!saved.sound,audio=null,renderRatio=1,sandVisuals=[],sandLandingFade=0,sandGrainCache=new Map();
 const modes={stage:'스테이지',sprint:'기존 시간 도전',daily:'오늘의 도전',endless:'무한 모드',tutorial:'조작 연습'};
 const screen=$('screen'),content=screen.querySelector('.screen-content');
 function bestKey(){if(mode==='stage')return material+':stage:'+stageNumber;return(difficulty==='standard'?'':difficulty+':')+(material==='glass'?'':material+':')+(mode==='daily'?'daily-'+(state!=='menu'&&game.seed.startsWith('DAILY-')?game.seed.slice(6):day()):mode);}
@@ -208,29 +208,29 @@ function renderActiveSandPiece(){
  for(let i=0;i<(reduced?28:72);i++){const q=(i*47+cells[0].id*29)%131,x=left+4+((q*23+i*7)%97)/100*Math.max(4,right-left-8),y=top+5+((q*41+i*11)%93)/100*Math.max(4,bottom-top-10);const bx=Math.floor(x/size)-p.x,by=Math.floor(y/size)-p.y;if(!occupied.has(bx+','+by))continue;ctx.globalAlpha=.2+(q%6)*.07;ctx.fillStyle=i%12===0?'#fff4cf':i%4===0?dark:light;ctx.beginPath();ctx.arc(x,y,.5+(q%3)*.3,0,Math.PI*2);ctx.fill();}
  ctx.restore();
 }
+function sandGrainsForCell(c,x,y){
+ const key=c.id+':'+x+':'+y+':'+(c.paint??0);let grains=sandGrainCache.get(key);if(grains)return grains;
+ const seed=(c.id*1103515245+x*12345+y*2654435761)>>>0;grains=[];
+ // Roughly 4px visual grains: dense enough to hide the 36px logical cell.
+ for(let i=0;i<82;i++){const a=(seed+i*2246822519)>>>0,b=(seed+i*3266489917+17)>>>0;grains.push({x:2+(a%3200)/100,y:2+(b%3200)/100,r:.8+((a>>>9)%120)/100});}
+ sandGrainCache.set(key,grains);if(sandGrainCache.size>1200)sandGrainCache.clear();return grains;
+}
 function renderSandTerrain(){
- const g=ctx,size=36;
- for(let paint=0;paint<game.colorCount;paint++){
-  const [light,dark]=materialColors.sand[paint],cells=[];
-  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(c&&!c.gem&&c.paint===paint)cells.push({x,y,c});}
-  if(!cells.length)continue;
-  // Build one continuous silhouette from the occupied sand mass instead of drawing cell boxes.
-  g.save();g.beginPath();
-  for(const {x,y} of cells){
-   const L=game.board[y]?.[x-1]?.paint===paint,R=game.board[y]?.[x+1]?.paint===paint,U=game.board[y-1]?.[x]?.paint===paint,D=game.board[y+1]?.[x]?.paint===paint;
-   const seed=(x*37+y*61+paint*83)%101,left=x*size-(L?1:0),right=(x+1)*size+(R?1:0),bottom=(y+1)*size+(D?1:0);
-   const top=y*size+(U?0:5+((seed%7)-3)*.7);
-   g.moveTo(left,top+(L?0:3));
-   if(U)g.lineTo(right,top);else{g.quadraticCurveTo(x*size+size*.24,top-4-(seed%3),x*size+size*.5,top-1);g.quadraticCurveTo(x*size+size*.76,top+3,right,top+(R?0:3));}
-   g.lineTo(right,bottom);g.lineTo(left,bottom);g.closePath();
-  }
-  const grad=g.createLinearGradient(0,0,0,720);grad.addColorStop(0,light);grad.addColorStop(.7,light+'e8');grad.addColorStop(1,dark);g.fillStyle=grad;g.fill();
-  // Dense deterministic grains erase the remaining grid impression and create mineral texture.
-  for(const {x,y,c} of cells){const seed=(c.id*47+paint*83)%127;for(let i=0;i<(reduced?10:25);i++){const q=(seed+i*43)%127,gx=x*size+2+((q*19+i*11)%94)/100*(size-4),gy=y*size+4+((q*31+i*7)%91)/100*(size-6);g.globalAlpha=.18+(q%6)*.055;g.fillStyle=i%11===0?'#fff3ce':i%4===0?dark:light;g.beginPath();g.arc(gx,gy,.45+(q%3)*.28,0,Math.PI*2);g.fill();}}
-  g.restore();
+ const size=36;
+ // Render settled sand as overlapping micro-grains. Logical cells remain invisible.
+ ctx.save();
+ for(let y=0;y<20;y++)for(let x=0;x<10;x++){
+  const c=game.board[y][x];if(!c||c.gem)continue;
+  const paint=c.paint??0,[light,dark]=materialColors.sand[paint]||materialColors.sand[0];
+  const grains=sandGrainsForCell(c,x,y);
+  for(let i=0;i<grains.length;i++){const q=grains[i],edge=q.x<4||q.x>32||q.y<4||q.y>32;ctx.globalAlpha=edge?.78:.9;ctx.fillStyle=i%13===0?'#fff1c7':i%4===0?dark:light;ctx.beginPath();ctx.arc(x*size+q.x,y*size+q.y,q.r,0,Math.PI*2);ctx.fill();}
+  // Overlap neighboring logical cells with loose grains so seams disappear.
+  const neighbors=[[1,0],[0,1],[-1,0],[0,-1]];
+  for(const[dx,dy]of neighbors){const n=game.board[y+dy]?.[x+dx];if(!n||n.gem||n.paint!==paint)continue;for(let i=0;i<8;i++){const t=(i+1)/9,gx=x*size+(dx>0?34+Math.random()*4:dx<0?-2+Math.random()*4:3+Math.random()*30),gy=y*size+(dy>0?34+Math.random()*4:dy<0?-2+Math.random()*4:3+Math.random()*30);ctx.globalAlpha=.7;ctx.fillStyle=i%3?light:dark;ctx.beginPath();ctx.arc(gx,gy,.8+(i%2)*.45,0,Math.PI*2);ctx.fill();}}
  }
- // Gems stay crisp above the sand terrain.
+ // Gems remain readable above the granular field.
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(c?.gem)softCell(c,x*size,y*size,size,{});}
+ ctx.restore();
 }
 function softCell(c,x,y,size,options){
  const g=options.context||ctx,[light,dark]=cellColors(c),kind=game.material;if(c.gem){g.save();g.translate(x+size/2,y+size/2);g.rotate(Math.PI/4);const q=size*.28;g.fillStyle='#ffe88c';g.shadowColor='#fff1a8';g.shadowBlur=10;g.fillRect(-q,-q,q*2,q*2);g.strokeStyle='#fff8d0';g.lineWidth=1.5;g.strokeRect(-q,-q,q*2,q*2);g.restore();return;}
