@@ -188,6 +188,26 @@ function update(rawDt){const dt=Math.min(100,rawDt);if(state==='playing'||state=
  if(state!=='paused'){if(goalToast>0)goalToast-=dt;if(impact){impact.life-=dt;if(impact.life<=0)impact=null;}for(const f of feedback)f.life-=dt;feedback=feedback.filter(f=>f.life>0);if(drag?.axis==='y'&&state==='playing')processSwipe(drag,drag.lastX,drag.lastY,performance.now());if(gestureFeedbackTime>0&&!drag){gestureFeedbackTime-=dt;if(gestureFeedbackTime<=0){$('pad-hint').textContent='게임판에서도 똑같이 조작하세요';$('touchpad').classList.remove('drop-ready');}}for(const p of particles){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=(p.gravity||350)*dt/1000;p.angle+=dt*.002;}particles=particles.filter(p=>p.life>0);if(dropTrail){dropTrail.life-=dt;if(dropTrail.life<=0)dropTrail=null;}for(const p of sandVisuals)p.life-=dt;sandVisuals=sandVisuals.filter(p=>p.life>0);if(sandLandingFade>0)sandLandingFade=Math.max(0,sandLandingFade-dt);if(calloutTime>0){calloutTime-=dt;if(calloutTime<=0)$('callout').classList.remove('show');}}
 }
 function cellColors(c){if(c?.gem)return['#fff6bd','#b98724'];return game.material==='glass'?(colors[c.type]||colors.I):materialColors[game.material][c.paint??0];}
+function renderActiveSandPiece(){
+ const p=game.active;if(!p||game.material!=='sand')return;
+ const cells=p.cells,paint=cells[0]?.paint??0,[light,dark]=materialColors.sand[paint]||materialColors.sand[0],size=36;
+ const occupied=new Set(cells.map(c=>c.x+','+c.y));
+ const minX=Math.min(...cells.map(c=>c.x)),maxX=Math.max(...cells.map(c=>c.x)),minY=Math.min(...cells.map(c=>c.y)),maxY=Math.max(...cells.map(c=>c.y));
+ const ox=p.x*size,oy=p.y*size;
+ ctx.save();ctx.beginPath();
+ for(const c of cells){
+  const x=ox+c.x*size,y=oy+c.y*size,L=occupied.has((c.x-1)+','+c.y),R=occupied.has((c.x+1)+','+c.y),U=occupied.has(c.x+','+(c.y-1)),D=occupied.has(c.x+','+(c.y+1));
+  const seed=(c.id*37+paint*71)%97,left=x-(L?2:0),right=x+size+(R?2:0),top=y+(U?-2:4+(seed%5)),bottom=y+size+(D?2:0);
+  ctx.moveTo(left,top+(L?0:5));
+  if(U)ctx.lineTo(right,top);else{ctx.quadraticCurveTo(x+size*.25,top-5,x+size*.52,top-2);ctx.quadraticCurveTo(x+size*.78,top+2,right,top+(R?0:5));}
+  ctx.lineTo(right,bottom);ctx.lineTo(left,bottom);ctx.closePath();
+ }
+ const grad=ctx.createLinearGradient(0,oy+minY*size,0,oy+(maxY+1)*size);grad.addColorStop(0,light);grad.addColorStop(.72,light+'e5');grad.addColorStop(1,dark);ctx.fillStyle=grad;ctx.fill();
+ // Hide the cell construction with grains across the whole moving mass.
+ const left=(p.x+minX)*size,right=(p.x+maxX+1)*size,top=(p.y+minY)*size,bottom=(p.y+maxY+1)*size;
+ for(let i=0;i<(reduced?28:72);i++){const q=(i*47+cells[0].id*29)%131,x=left+4+((q*23+i*7)%97)/100*Math.max(4,right-left-8),y=top+5+((q*41+i*11)%93)/100*Math.max(4,bottom-top-10);const bx=Math.floor(x/size)-p.x,by=Math.floor(y/size)-p.y;if(!occupied.has(bx+','+by))continue;ctx.globalAlpha=.2+(q%6)*.07;ctx.fillStyle=i%12===0?'#fff4cf':i%4===0?dark:light;ctx.beginPath();ctx.arc(x,y,.5+(q%3)*.3,0,Math.PI*2);ctx.fill();}
+ ctx.restore();
+}
 function renderSandTerrain(){
  const g=ctx,size=36;
  for(let paint=0;paint<game.colorCount;paint++){
@@ -279,7 +299,7 @@ function render(){ctx.clearRect(0,0,360,720);const bg=ctx.createLinearGradient(0
  if(game.material==='sand'){ctx.save();if(sandLandingFade>0)ctx.globalAlpha=.45+.55*(1-sandLandingFade/150);if(phase==='settle')ctx.translate(0,Math.sin(Math.min(1,phaseTime/48)*Math.PI)*1.4);renderSandTerrain();ctx.restore();}
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const c=game.board[y][x];if(!c)continue;if(game.material==='sand')continue;let yy=y,xx=x,squash=0;const f=fallMap.get(c.id);if(f&&(phase==='fall'||phase==='settle')){const t=Math.min(1,phaseTime/(phase==='settle'?(game.material==='sand'?48:42):(240))),ease=game.material==='sand'?(1-Math.pow(1-t,2)):1-Math.pow(1-t,3);yy=f.from+(f.to-f.from)*ease;xx=(f.fromX??x)+(x-(f.fromX??x))*ease;squash=Math.sin(t*Math.PI)*(game.material==='sand'?.24:.14);}const hot=clearMap.has(y*10+x)&&phaseTime>=clearMap.get(y*10+x)*24;const links=game.material!=='glass'&&game.material!=='sand'&&!(f&&phase==='settle')?E.DIRS.filter(([dx,dy])=>game.board[y+dy]?.[x+dx]?.paint===c.paint):null;glass(c,xx*36,yy*36,36,{hot,squash,links});}
  renderSandVisuals();
- if(game.active&&['playing','paused'].includes(state)){const p=game.active,dy=game.dropDistance();for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y+dy)*36,36,{ghost:true,ready:!!drag?.dropReady});for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y)*36,36);}
+ if(game.active&&['playing','paused'].includes(state)){const p=game.active,dy=game.dropDistance();for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y+dy)*36,36,{ghost:true,ready:!!drag?.dropReady});if(game.material==='sand')renderActiveSandPiece();else for(const c of p.cells)glass(c,(p.x+c.x)*36,(p.y+c.y)*36,36);}
  if(strategy&&state==='playing'){
   ctx.save();
   if(game.material==='sand'){
