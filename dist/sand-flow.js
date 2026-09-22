@@ -177,9 +177,11 @@ function pour(){if(paused||finished)return;if(run.pour()){drag=null;noticeTime=0
 $('pour').addEventListener('click',pour);$('hold').addEventListener('click',()=>{if(!paused&&!finished){run.hold();hud();}});
 $('aim').addEventListener('input',()=>{if(!paused&&!finished){run.moveTo(Number($('aim').value));hud();}});
 function aimAt(x){const rect=canvas.getBoundingClientRect();run.moveTo((x-rect.left)/rect.width*M.W);hud();}
-canvas.addEventListener('pointerdown',e=>{if(paused||finished||!run.ready||drag||e.button!==0||e.isPrimary===false)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);aimAt(e.clientX);drag={id:e.pointerId,x:e.clientX,y:e.clientY,started:performance.now(),maxX:0};});
-canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();d.maxX=Math.max(d.maxX,Math.abs(e.clientX-d.x));if(Math.abs(e.clientX-d.x)>Math.abs(e.clientY-d.y)*.6)aimAt(e.clientX);});
-canvas.addEventListener('pointerup',e=>{const d=drag;drag=null;if(!d||d.id!==e.pointerId||paused)return;e.preventDefault();const dy=e.clientY-d.y,dx=e.clientX-d.x,age=Math.max(1,performance.now()-d.started);if(dy>45&&dy>Math.abs(dx)*1.5&&d.maxX<dy*.55&&age<350&&dy/age>.4)pour();});
+// Preserve the original board gesture grammar: horizontal drag owns aiming,
+// vertical drag never changes X, and a fast downward release confirms the pour.
+canvas.addEventListener('pointerdown',e=>{if(paused||finished||!run.ready||drag||e.button!==0||e.isPrimary===false)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,x:e.clientX,y:e.clientY,origin:run.x,started:performance.now(),max:0,axis:null};});
+canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();const dx=e.clientX-d.x,dy=e.clientY-d.y;d.max=Math.max(d.max,Math.hypot(dx,dy));if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';if(d.axis==='x'){const rect=canvas.getBoundingClientRect();run.moveTo(d.origin+dx/rect.width*M.W);hud();}});
+canvas.addEventListener('pointerup',e=>{const d=drag;drag=null;if(!d||d.id!==e.pointerId||paused)return;e.preventDefault();const dy=e.clientY-d.y,dx=e.clientX-d.x,age=Math.max(1,performance.now()-d.started);if(d.axis==='y'&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4)pour();});
 for(const event of ['pointercancel','lostpointercapture'])canvas.addEventListener(event,()=>{drag=null;});
 document.addEventListener('keydown',e=>{
  if(!$('overlay').hidden){if(e.key==='Escape'){e.preventDefault();resume();}if(e.key==='Tab'){const els=[...$('overlay').querySelectorAll('button:not(:disabled),a,summary')].filter(el=>el.getClientRects().length),first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}return;}
