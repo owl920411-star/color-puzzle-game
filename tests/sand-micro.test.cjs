@@ -1,0 +1,23 @@
+'use strict';
+const assert=require('node:assert/strict');
+const M=require('../dist/sand-micro.js');
+const S=require('../dist/stages.js');
+let passed=0;
+function test(name,fn){fn();passed++;console.log('PASS',name);}
+function settle(f){let n=0;while(f.sleep<4&&n++<1500)f.step();assert.ok(n<1500,'settling must terminate');return n;}
+test('packets have 576 unique grains, not four cells',()=>{const rng=M.random('mask');for(let i=0;i<50;i++){const p=M.packet(rng,3,i);assert.equal(p.grains.length,M.PACKET);assert.equal(new Set(p.grains.map(g=>g.x+','+g.y)).size,M.PACKET);assert.ok(p.color>=1&&p.color<=3);assert.ok(p.bounds.right-p.bounds.left>15);}});
+test('deposit conserves mass and surface fills without texture gaps',()=>{const r=new M.Run();r.drop();assert.equal(r.field.count(),576);settle(r.field);assert.equal(r.field.count(),576);let occupied=0;for(let x=0;x<M.W;x++)occupied+=r.field.cells[(M.H-1)*M.W+x]>0;assert.ok(occupied>25);});
+test('exact displayed positions are exact collision positions',()=>{const f=new M.Field(),p=M.packet(M.random('p'),2,1);p.x=60;p.y=-p.bounds.top+3;assert.ok(f.fits(p));assert.ok(f.deposit(p));assert.equal(f.fits(p),false);});
+test('gravity can fall through old 36px cell boundaries',()=>{const f=new M.Field();f.set(37,126,1,11);f.step();assert.equal(f.cells[127*M.W+37],1);settle(f);assert.equal(f.cells[239*M.W+37],1);});
+test('grains never move sideways without descending',()=>{const f=new M.Field();for(let x=0;x<M.W;x++)f.set(x,239,2);f.set(60,238,1);const a=f.cells.slice();f.step();assert.deepEqual(f.cells,a);});
+test('diagonal falling cannot tunnel through a solid corner',()=>{const f=new M.Field();f.set(60,230,1);for(const[x,y]of[[59,230],[61,230],[60,231]])f.set(x,y,4);f.step();assert.equal(f.cells[230*M.W+60],1);});
+test('stable terrain stops computing and never shimmers or jitters',()=>{const r=new M.Run();r.drop();settle(r.field);const a=r.field.cells.slice(),s=r.field.shade.slice(),t=r.field.tick;for(let i=0;i<100;i++)assert.equal(r.field.step(),0);assert.deepEqual(r.field.cells,a);assert.deepEqual(r.field.shade,s);assert.equal(r.field.tick,t);});
+test('same seed and input produce identical field and score',()=>{const a=new M.Run({seed:'repeat'}),b=new M.Run({seed:'repeat'});for(let i=0;i<12;i++){for(const r of[a,b]){r.moveTo(12+i%3*38);r.drop();for(let k=0;k<400&&r.state!=='falling';k++)r.step(16.6667);}}assert.deepEqual(a.field.cells,b.field.cells);assert.equal(a.score,b.score);});
+test('four-neighbor flood fill uses grains and does not wrap rows',()=>{const f=new M.Field();f.set(119,220,1);f.set(0,221,1);assert.equal(f.groups(2).length,0);for(let x=0;x<20;x++)f.set(x,239,2);assert.equal(f.groups(20)[0].indices.length,20);assert.equal(f.groups(21).length,0);});
+test('clearing preserves other colors and wakes suspended sand',()=>{const f=new M.Field();for(let x=0;x<25;x++){f.set(x,239,1);f.set(x,238,2);}settle(f);const group=f.groups(20).find(g=>g.color===1);const result=f.clear([group]);assert.equal(result.count,25);assert.equal(f.count(),25);assert.equal(f.sleep,0);settle(f);assert.equal(f.cells.slice(239*M.W).filter(c=>c===2).length,25);});
+test('gem requires adjacent burst, not just empty air',()=>{const f=new M.Field();f.addGem(60,235);assert.equal(f.clear([]).gemCount,0);const indices=[];for(let y=231;y<=239;y++)for(let x=55;x<=65;x++)if(!f.cells[y*M.W+x]){f.set(x,y,1);indices.push(y*M.W+x);}assert.equal(f.clear([{color:1,indices}]).gemCount,1);assert.ok(f.gems[0].collected);assert.equal(f.cells.filter(c=>c===4).length,0);});
+test('hold once per packet, four rotations preserve every grain',()=>{const r=new M.Run();const before=r.active.grains.map(g=>g.x+','+g.y).sort();for(let i=0;i<4;i++)assert.ok(r.rotate());assert.deepEqual(r.active.grains.map(g=>g.x+','+g.y).sort(),before);assert.ok(r.hold());assert.equal(r.hold(),false);});
+test('all 100 stage settings remain intact',()=>{for(let n=1;n<=100;n++){const c=S.config(n,'sand');assert.equal(c.number,n);assert.equal(c.sandColors,n<=2?2:3);assert.ok(c.target>0);assert.equal(c.sandBurst,n<=2?10:12);}});
+test('real falling triggers burst -> settling -> second chain',()=>{const r=new M.Run({burst:1});r.active=null;r.state='settling';for(let x=0;x<80;x++)r.field.set(x,239,2);for(let x=0;x<120;x++)for(let y=237;y<239;y++)r.field.set(x,y,1);for(let x=0;x<80;x++)r.field.set(x,236,2);for(let i=0;i<800&&r.state!=='falling';i++)r.step(16.6667);assert.equal(r.removed,400);assert.equal(r.maxChain,2);assert.equal(r.field.count(),0);});
+test('physics frame is bounded after a long suspended tab',()=>{const r=new M.Run();const y=r.active.y;r.step(100000);assert.ok(r.active.y-y<2);});
+console.log('\n'+passed+' tests passed.');
