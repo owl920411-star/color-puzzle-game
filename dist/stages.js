@@ -4,7 +4,7 @@ const chapters=['첫 번째 빛','빛의 계단','깊어지는 흐름','반짝�
 function number(n){return Math.max(1,Math.min(100,Math.floor(Number(n)||1)));}
 function config(n,material='glass'){
  n=number(n);const chapter=Math.floor((n-1)/10),boss=n%10===0;
- const base={glass:10,sand:20,water:10,jelly:8}[material]||10;
+ const base={glass:10,sand:20}[material]||10;
  const sandTitles=['첫 붕괴','색을 모아라','마지막 한 조각','첫 연쇄','모래 폭포'];const title=material==='sand'&&n<=5?sandTitles[n-1]:chapters[chapter];const sandTarget=material==='sand'&&n<=5?[20,30,40,50,70][n-1]:null;return{number:n,chapter:chapter+1,title,boss:material==='sand'&&n===5?true:boss,seed:`STAGE-v2-${material}-${n}`,target:sandTarget??(base+Math.floor((n-1)*1.6)+(boss?12:0)),sandBurst:material==='sand'?(n<=2?10:12):null,sandColors:material==='sand'?(n<=2?2:3):null,gems:material==='sand'&&n>=6?Math.min(3,1+Math.floor((n-6)/5)):0,speed:Math.max(.48,1-(n-1)*.0045),rows:material==='glass'?Math.min(4,Math.floor((n-1)/20)):0};
 }
 function progress(raw){const cleared=[...new Set((Array.isArray(raw?.cleared)?raw.cleared:[]).filter(n=>Number.isInteger(n)&&n>=1&&n<=100))];let unlocked=1;while(unlocked<100&&cleared.includes(unlocked))unlocked++;return{cleared,unlocked};}
