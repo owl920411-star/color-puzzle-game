@@ -48,13 +48,11 @@
 .material-options button.selected{border-color:#ccfff2;background:#28464c;color:#f0fff9;box-shadow:0 0 0 1px #ccfff244 inset}
 .material-swatch{width:17px;height:17px;border-radius:4px;background:#95eee2;border:1px solid #d7fff9;transform:rotate(12deg)}
 .material-swatch.sand{background:#f6cc7c;border-color:#ffe6b2;border-radius:3px;transform:rotate(-8deg)}
-.material-swatch.water{background:#62ccef;border-color:#b3ecff;border-radius:50% 50% 50% 12%;transform:rotate(-45deg)}
 .material-swatch.jelly{background:#ef8fbe;border-color:#ffc4e1;border-radius:6px;transform:rotate(-8deg)}
 .screen .material-description{font-size:14px;line-height:1.65;min-height:68px;margin-bottom:12px}
 .material-description strong{display:inline-block;color:#e2f8f2;font-weight:500;margin-bottom:3px}
 .material-guide{margin:0 0 8px;color:var(--ice);font-size:13px;line-height:1.5;padding:7px 9px;border-left:2px solid var(--ice);background:#122530}
 .play-section[data-material="sand"]{--ice:#f6cc7c}
-.play-section[data-material="water"]{--ice:#82dcff}
 .play-section[data-material="jelly"]{--ice:#ffadd5}
 @media(max-width:650px){.material-options{margin-top:10px}.material-options button{min-height:62px}.screen .material-description{min-height:0}.material-guide{font-size:13px}}
 
