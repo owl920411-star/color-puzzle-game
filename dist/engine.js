@@ -27,7 +27,7 @@ function groups(board){
 }
 function materialPlan(board,material='glass',sandTarget=10){
  if(material==='glass')return clearPlan(board);
- const target=Math.max(10,Number(sandTarget)||10);const eligible=groups(board).filter(cells=>cells.length>=(material==='sand'?target:material==='water'?10:8));
+ const target=Math.max(10,Number(sandTarget)||10);const eligible=groups(board).filter(cells=>cells.length>=target);
  if(!eligible.length)return null;
  const cells=eligible.flat();return{rows:[],cells,extra:cells.length,groups:eligible.length};
 }
@@ -59,7 +59,7 @@ function settleStep(board,material,step=0){
  return moves;
 }
 class Game{
- constructor(seed='glass',mode='sprint',material='glass',difficulty='standard'){this.difficulty=['calm','standard','challenge'].includes(difficulty)?difficulty:'standard';this.material=['glass','sand','water','jelly'].includes(material)?material:'glass';this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;this.sandColors=2;this.gems=0;for(let i=0;i<4;i++)this.queue.push(this.makePiece());if(this.difficulty==='challenge')this.prepareChallenge();this.spawn();}
+ constructor(seed='glass',mode='sprint',material='glass',difficulty='standard'){this.difficulty=['calm','standard','challenge'].includes(difficulty)?difficulty:'standard';this.material=['glass','sand'].includes(material)?material:'glass';this.seed=String(seed);this.mode=mode;this.rng=random(seed);this.bag=[];this.queue=[];this.board=blank();this.serial=0;this.score=0;this.lines=0;this.shards=0;this.extra=0;this.maxChain=0;this.pieces=0;this.held=null;this.holdUsed=false;this.over=false;this.sandColors=2;this.gems=0;for(let i=0;i<4;i++)this.queue.push(this.makePiece());if(this.difficulty==='challenge')this.prepareChallenge();this.spawn();}
  prepareChallenge(){
   const offset=hash(this.seed+'-terrain')%W;
   for(let y=H-3;y<H;y++)for(let x=0;x<W;x++){
