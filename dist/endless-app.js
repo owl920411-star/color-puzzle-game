@@ -141,8 +141,19 @@ function action(a){
  const grounded=!run.fits(run.active,0,1);
  if(a==='left'||a==='right')moved=run.move(a==='left'?-1:1);
  else if(a==='rotate'){
+  const beforeX=run.active.x,hadDrag=!!drag,target=hadDrag&&Number.isFinite(drag.virtualX)?drag.virtualX:null;
   moved=run.rotate();if(moved)tone('rotate');
-  if(drag){rebase();drag.noRelease=true;drag.axis='x';drag.lane=run.active.x;}
+  if(drag){
+   // CONTROL 9: preserve the finger's virtual target through wall-kick rotation.
+   // A wall kick may move the piece inward by one cell, but the thumb must not
+   // be pushed farther off-screen to recover that cell.
+   const kick=run.active.x-beforeX;
+   if(target!==null)drag.virtualX=target;
+   drag.startPieceX-=kick;
+   drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;
+   drag.piece=pieceID();drag.downAnchor=drag.lastY;drag.noRelease=true;drag.axis='x';drag.lane=run.active.x;
+   if(target!==null)moveTo(Math.round(target));
+  }
  }else if(a==='down'){moved=run.move(0,1);if(moved){run.score++;fallTime=0;}}
  else if(a==='drop'){
   const keep=carry(),p=run.active,d=run.dropDistance();trail={cells:p.cells.map(c=>({...c,x:c.x+p.x,y:c.y+p.y})),distance:d,life:170};
