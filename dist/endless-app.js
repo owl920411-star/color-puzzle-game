@@ -243,16 +243,26 @@ function processSwipe(d,x,y,now){
  if(!d.axis&&kind==='normal'){if(Math.abs(dx)>=12&&Math.abs(dx)>Math.abs(dy)*1.25)d.axis='x';else if(Math.abs(dy)>=14&&Math.abs(dy)>Math.abs(dx)*1.4){d.axis='y';d.vertical=Math.sign(dy);}}
  if(d.axis==='x'){
   if(kind==='normal'){
-   // Stable lane quantization: calculate the desired column directly from the
-   // original touch anchor. A small hysteresis band prevents finger jitter near
-   // a cell boundary from producing the occasional extra/missing column.
-   const raw=Math.max(-20,Math.min(20,(x-d.anchorX)/d.unit)),dead=.18;
-   let targetShift=d.shift;
-   while(raw>targetShift+.5+dead)targetShift++;
-   while(raw<targetShift-.5-dead)targetShift--;
-   d.shift=targetShift;
-   if(state==='clearing'){d.lane=Math.max(-2,Math.min(9,d.originX+d.shift));return;}
-   if(!run.active)return;const before=run.active.x;moveTo(d.originX+d.shift);if(run.active.x!==before)d.translated=true;
+   // Incremental stepping. One physical cell-width of finger travel equals
+   // exactly one requested column. We consume that distance and move the anchor
+   // with the finger, so noisy pointer samples cannot skip or invent a column.
+   const step=Math.max(22,d.unit*.92),delta=x-d.anchorX;
+   let steps=Math.trunc(Math.abs(delta)/step)*Math.sign(delta);
+   steps=Math.max(-6,Math.min(6,steps));
+   if(steps){
+    d.anchorX+=steps*step;
+    d.shift+=steps;
+    const desired=d.originX+d.shift;
+    if(state==='clearing'){d.lane=Math.max(-2,Math.min(9,desired));return;}
+    if(!run.active)return;
+    const before=run.active.x;
+    moveTo(desired);
+    // Walls/occupied cells may reject part of the requested travel. Re-anchor
+    // to the position actually reached instead of accumulating hidden error.
+    const reached=run.active.x;
+    d.originX=reached;d.shift=0;d.anchorX=x-(delta-steps*step);
+    if(reached!==before)d.translated=true;
+   }
   }else if(canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
   if(run.active)d.lane=run.active.x;
  }else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){
@@ -264,7 +274,7 @@ function processSwipe(d,x,y,now){
 }
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect();
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,lane:run.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(16,Math.min(34,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,lane:run.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(24,Math.min(38,r.width/10)),rowUnit:Math.max(12,r.height/20)};
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
