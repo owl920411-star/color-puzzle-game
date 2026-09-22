@@ -14,12 +14,23 @@ function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h
 function random(seed){let n=hash(seed);return()=>{n+=0x6D2B79F5;let t=n;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
 function bounds(points){return{left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y))};}
 function packet(rng,colorCount=2,id=0){
-  // Pick a fixed mass from a noisy elliptical distance field, never a tetromino.
-  const aspect=1.1+rng()*.65,angle=rng()*6.283,phase=rng()*6.283,points=[];
-  for(let y=-25;y<=25;y++)for(let x=-25;x<=25;x++){
-    const theta=Math.atan2(y*aspect,x),edge=1+.10*Math.sin(theta*3+phase)+.06*Math.cos(theta*5-angle);
-    const r=(x*x/(aspect*aspect)+y*y)*aspect/(edge*edge);
-    points.push({x,y,r:r+((hash(id+':'+x+':'+y)%100)/100)*2,shade:hash(id+':'+x+':'+y)%21});
+  // A tied sand sack silhouette: narrow gathered neck, full shoulders,
+  // tapered lower body and a slightly flattened base. Still made of the
+  // same 576 physical grains; the sack itself disappears on landing.
+  const lean=(rng()-.5)*.16,phase=rng()*6.283,points=[];
+  for(let y=-29;y<=29;y++)for(let x=-24;x<=24;x++){
+    const yy=y,center=lean*(yy+5);
+    let half;
+    if(yy<-20)half=5+(yy+29)*.38;             // tied neck
+    else if(yy<-14)half=8+(yy+20)*1.65;       // shoulders open out
+    else if(yy<13)half=18.2+2.2*Math.cos((yy+3)*.12+phase); // filled body
+    else half=18.5-(yy-13)*.72;                // taper to base
+    const nx=(x-center)/Math.max(4,half),ny=(yy+1)/30;
+    let score=nx*nx+ny*ny*.47;
+    if(yy<-19)score+=Math.abs(x-center)*.055;   // pinch the neck visibly
+    if(yy>19)score+=Math.abs(yy-22)*.012;       // flatter heavy bottom
+    score+=((hash(id+':sack:'+x+':'+y)%100)/100)*.025;
+    points.push({x,y,r:score,shade:hash(id+':'+x+':'+y)%21});
   }
   points.sort((a,b)=>a.r-b.r);const grains=points.slice(0,PACKET).map(({x,y,shade})=>({x,y,shade}));
   return{id,color:1+Math.floor(rng()*colorCount),grains,bounds:bounds(grains),x:W/2,y:0};
