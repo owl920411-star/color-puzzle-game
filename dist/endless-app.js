@@ -20,6 +20,8 @@ const playing=()=>state==='playing'||state==='clearing';
 const canAct=()=>state==='playing'&&run?.active&&(kind==='normal'||run.state==='falling');
 const pieceID=()=>kind==='sand'?run?.active?.id:run?.active?.cells[0]?.id;
 const finite=v=>Number.isFinite(Number(v))&&Number(v)>=0?Number(v):0;
+const touchLevel=()=>Math.max(1,Math.min(5,Math.round(Number(saved.touchSensitivity)||3)));
+const touchScale=()=>[0,.78,.89,1,1.13,1.28][touchLevel()];
 function writeStore(change){try{const fresh=readStore();change(fresh);localStorage.setItem(KEY,JSON.stringify(fresh));saved=fresh;saveOK=true;}catch{saveOK=false;}}
 function pref(key,value){saved[key]=value;writeStore(s=>{s[key]=value;});}
 function loadBest(){recordBest=finite(object(object(readStore().endlessV1)[kind]).best);initialBest=recordBest;}
@@ -80,7 +82,7 @@ function finish(){
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
- showPanel(`<div class="kicker">HOW TO PLAY</div><h2>${name()} 모드</h2><div class="rule-box">${ruleHTML()}</div><p>게임판을 좌우로 밀어 이동하세요.<br>${kind==='normal'?'짧게 탭하거나 회전 버튼으로 회전합니다.<br>':''}다른 손가락으로 하강${kind==='normal'?'·회전':''} 버튼을 눌러도<br>게임판의 스와이프는 계속 이어집니다.</p><div class="settings-row"><button data-menu="sound">소리 ${saved.sound?'켬':'끔'}</button><button data-menu="haptics" ${typeof navigator.vibrate!=='function'?'disabled':''}>진동 ${saved.haptics?'켬':'끔'}</button><button data-menu="effects" ${systemReduced?'disabled':''}>효과 ${reduced?'간결':'풍부'}</button></div><button class="primary" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p>`,'settings');hud();
+ showPanel(`<div class="kicker">HOW TO PLAY</div><h2>${name()} 모드</h2><div class="rule-box">${ruleHTML()}</div><p>게임판을 좌우로 밀어 이동하세요.<br>${kind==='normal'?'짧게 탭하거나 회전 버튼으로 회전합니다.<br>':''}다른 손가락으로 하강${kind==='normal'?'·회전':''} 버튼을 눌러도<br>게임판의 스와이프는 계속 이어집니다.</p><div class="settings-row"><button data-menu="sound">소리 ${saved.sound?'켬':'끔'}</button><button data-menu="haptics" ${typeof navigator.vibrate!=='function'?'disabled':''}>진동 ${saved.haptics?'켬':'끔'}</button><button data-menu="effects" ${systemReduced?'disabled':''}>효과 ${reduced?'간결':'풍부'}</button></div><div class="rule-box" style="margin-top:10px;text-align:center"><b>좌우 터치 민감도</b><br><button data-menu="touch-down" aria-label="민감도 낮추기" style="width:52px;padding:8px;margin:8px">−</button><strong style="display:inline-block;min-width:86px"> ${touchLevel()} / 5 </strong><button data-menu="touch-up" aria-label="민감도 높이기" style="width:52px;padding:8px;margin:8px">＋</button><br><small>${['','매우 안정적','안정적','균형','빠름','매우 빠름'][touchLevel()]} · 즉시하강 민감도는 고정</small></div><button class="primary" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p>`,'settings');hud();
 }
 panel.addEventListener('click',e=>{
  const b=e.target.closest('button[data-menu]');if(!b||b.disabled)return;const a=b.dataset.menu;
@@ -88,6 +90,8 @@ panel.addEventListener('click',e=>{
  else if(a==='start'||a==='new')start();else if(a==='retry')start(true);else if(a==='resume')resume();else if(a==='menu')menu();else if(a==='settings')settings();
  else if(a==='sound'){pref('sound',!saved.sound);initAudio();settings();}else if(a==='haptics'){pref('haptics',!saved.haptics);settings();}
  else if(a==='effects'&&!systemReduced){reduced=!reduced;pref('effects',reduced?'light':'rich');settings();}
+ else if(a==='touch-down'){pref('touchSensitivity',Math.max(1,touchLevel()-1));settings();}
+ else if(a==='touch-up'){pref('touchSensitivity',Math.min(5,touchLevel()+1));settings();}
  else if(a==='back'){if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over'){state='paused';beforePause='playing';menu();}else showMenu();}
 });
 function hud(){
@@ -260,7 +264,7 @@ function processSwipe(d,x,y,now){
    // CONTROL 8: continuous finger tracking with a predictive landing target.
    // The piece follows the finger freely in virtual space; the integer board
    // column is chosen only from that continuous target. No distance is consumed.
-   const raw=(x-d.startX)/d.unit;
+   const raw=(x-d.startX)/d.unit*touchScale();
    d.virtualX=d.startPieceX+raw;
    const desired=Math.round(d.virtualX);
    d.lane=desired;
