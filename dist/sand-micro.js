@@ -93,7 +93,7 @@ class Run{
     const ox=Math.max(-b.left,Math.min(W-1-b.right,p.x)),oy=Math.max(p.y,-b.top);for(const dx of [0,-1,1,-3,3,-6,6,-12,12])for(const dy of [0,-1,-3])if(this.field.fits(next,ox+dx,oy+dy)){next.x=ox+dx;next.y=oy+dy;this.active=next;return true;}return false;
   }
   hold(){if(this.state!=='falling'||!this.active||this.holdUsed)return false;const p=this.active;if(this.held){const h=this.held;this.held=p;this.place(h);}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
-  land(){if(!this.active)return;const p=this.active;if(!this.field.deposit(p)){this.state='over';this.active=null;this.events.push({type:'over'});return;}this.pieces++;this.active=null;this.state='settling';this.chain=0;this.events.push({type:'land'});}
+  land(){if(!this.active)return;const p=this.active;if(!this.field.deposit(p)){this.state='over';this.active=null;this.events.push({type:'over'});return;}this.pieces++;this.active=null;this.chain=0;this.events.push({type:'land'});this.spawn();}
   drop(){if(!this.active||this.state!=='falling')return;const p=this.active,y=this.field.dropY(p);this.score+=Math.floor((y-p.y)/6);p.y=y;this.land();}
   softDrop(distance=3){if(!this.active||this.state!=='falling')return;const p=this.active;for(let i=0;i<distance;i++){if(!this.field.fits(p,p.x,p.y+1)){this.land();break;}p.y++;}}
   step(dt){
@@ -104,14 +104,14 @@ class Run{
       while(y<target){const next=Math.min(target,y+1);if(!this.field.fits(p,p.x,next)){p.y=y;this.land();break;}y=next;}if(this.active)p.y=y;
     }
     if(this.state==='clearing'){
-      this.clearTime-=dt;if(this.clearTime<=0){const result=this.field.clear(this.pending);this.removed+=result.count;this.collected+=result.gemCount;const gain=Math.round(result.count/UNIT*20+this.pending.length*100)*Math.pow(2,Math.min(10,this.chain-1))+result.gemCount*500;this.score+=gain;this.events.push({type:'burst',groups:this.pending,gain,chain:this.chain,gems:result.gemCount});this.pending=null;this.state='settling';}return;
+      this.clearTime-=dt;if(this.clearTime<=0){const result=this.field.clear(this.pending);this.removed+=result.count;this.collected+=result.gemCount;const gain=Math.round(result.count/UNIT*20+this.pending.length*100)*Math.pow(2,Math.min(10,this.chain-1))+result.gemCount*500;this.score+=gain;this.events.push({type:'burst',groups:this.pending,gain,chain:this.chain,gems:result.gemCount});this.pending=null;this.state=this.active?'falling':'settling';}return;
     }
     this.accumulator+=dt;this.lastMoves=0;let steps=0;
     while(this.accumulator>=1000/120&&steps++<6){this.accumulator-=1000/120;this.lastMoves+=this.field.step();}
-    if(this.state==='settling'&&this.field.sleep>=4){
+    if(this.field.sleep>=4&&this.state!=='clearing'){
       const groups=this.field.groups(this.burst);
       if(groups.length){this.pending=groups;this.chain++;this.maxChain=Math.max(this.maxChain,this.chain);this.clearTime=180;this.state='clearing';this.events.push({type:'prepare',chain:this.chain});}
-      else this.spawn();
+      else if(!this.active)this.spawn();
     }
   }
 }
