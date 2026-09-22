@@ -3,7 +3,7 @@
  * the player must still be able to return to the mode-selection screen. */
 (function(){
 'use strict';
-const KEY='glassfall-v1',VERSION='micro1-entry2';
+const KEY='glassfall-v1',VERSION='recovery1';
 function readSave(){
  try{const value=JSON.parse(localStorage.getItem(KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch{return {};}
 }
@@ -39,7 +39,7 @@ function markEntry(){
  let note=content.querySelector('#sand-entry-version');
  if(sand&&start&&!note){
   note=document.createElement('p');note.id='sand-entry-version';note.setAttribute('role','status');
-  note.textContent='MICRO SAND 1 · 작은 입자가 직접 흐르는 새 모래 버전';
+  note.textContent='MICRO SAND 1.3.1 · 모래 실행 복구';
   note.style.cssText='font-size:12px;line-height:1.5;color:#d9c590;text-align:center;margin:8px 0';
   start.before(note);
  }else if(!sand&&note)note.remove();

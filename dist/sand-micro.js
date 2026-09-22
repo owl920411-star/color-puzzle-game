@@ -104,19 +104,21 @@ class Run{
     const ox=Math.max(-b.left,Math.min(W-1-b.right,p.x)),oy=Math.max(p.y,-b.top);for(const dx of [0,-1,1,-3,3,-6,6,-12,12])for(const dy of [0,-1,-3])if(this.field.fits(next,ox+dx,oy+dy)){next.x=ox+dx;next.y=oy+dy;this.active=next;return true;}return false;
   }
   hold(){if(this.state!=='falling'||!this.active||this.holdUsed)return false;const p=this.active;if(this.held){const h=this.held;this.held=p;this.place(h);}else{this.held=p;this.spawn();}this.holdUsed=true;return true;}
-  land(){if(!this.active)return;const p=this.active;if(!this.field.deposit(p)){this.state='over';this.active=null;this.events.push({type:'over'});return;}this.pieces++;this.active=null;this.chain=0;this.events.push({type:'land'});this.spawn();}
+  land(){if(!this.active)return;const p=this.active;if(!this.field.deposit(p)){this.state='over';this.active=null;this.events.push({type:'over'});return;}this.pieces++;this.active=null;this.chain=0;this.events.push({type:'land',id:p.id});this.spawn();}
   drop(){if(!this.active||this.state!=='falling')return;const p=this.active,y=this.field.dropY(p);this.score+=Math.floor((y-p.y)/6);p.y=y;this.land();}
   softDrop(distance=3){if(!this.active||this.state!=='falling')return;const p=this.active;for(let i=0;i<distance;i++){if(!this.field.fits(p,p.x,p.y+1)){this.land();break;}p.y++;}}
   step(dt){
     if(this.state==='over')return;
     // dt capped at the caller boundary; pause does not call this method.
     dt=Math.max(0,Math.min(50,dt));
-    if(this.active){const p=this.active,target=p.y+this.gravity*dt/1000;let y=p.y;
-      while(y<target){const next=Math.min(target,y+1);if(!this.field.fits(p,p.x,next)){p.y=y;this.land();break;}y=next;}if(this.active)p.y=y;
-    }
     if(this.state==='clearing'){
       this.clearTime-=dt;if(this.clearTime<=0){const result=this.field.clear(this.pending);this.removed+=result.count;this.collected+=result.gemCount;const gain=Math.round(result.count/UNIT*20+this.pending.length*100)*Math.pow(2,Math.min(10,this.chain-1))+result.gemCount*500;this.score+=gain;this.events.push({type:'burst',groups:this.pending,gain,chain:this.chain,gems:result.gemCount});this.pending=null;this.state=this.active?'falling':'settling';}return;
     }
+    // Finish the pending clear before gravity can land/spawn another packet.
+    if(this.active){const p=this.active,target=p.y+this.gravity*dt/1000;let y=p.y;
+      while(y<target){const next=Math.min(target,y+1);if(!this.field.fits(p,p.x,next)){p.y=y;this.land();break;}y=next;}if(this.active===p)p.y=y;
+    }
+    if(this.state==='over')return;
     this.accumulator+=dt;this.lastMoves=0;let steps=0;
     while(this.accumulator>=1000/120&&steps++<6){this.accumulator-=1000/120;this.lastMoves+=this.field.step();}
     if(this.field.sleep>=4&&this.state!=='clearing'){
@@ -152,7 +154,7 @@ function begin(retry){
  config=S.config(stage,'sand');currentSeed=retry||seed();
  run=new M.Run({seed:currentSeed,colors:mode==='stage'?config.sandColors:3,burst:mode==='stage'?config.sandBurst:12,gravity:26/(mode==='stage'?config.speed:1),gems:mode==='stage'?config.gems:0,stage});
  elapsed=0;last=performance.now();paused=false;finished=false;drag=null;fx=[];ghost=null;messageTime=0;hudTime=0;$('notice').textContent='';$('overlay').hidden=true;
- const q=new URLSearchParams({mode,stage:String(stage),v:'micro1'});try{history.replaceState(null,'','?'+q);}catch{}updateHUD();draw();
+ const q=new URLSearchParams({mode,stage:String(stage),v:'recovery1'});if(query.get('qa')==='1')q.set('qa','1');try{history.replaceState(null,'','?'+q);}catch{}updateHUD();draw();
 }
 function sprite(p){let out=sprites.get(p.grains);if(out)return out;const b=p.bounds,c=document.createElement('canvas');c.width=b.right-b.left+1;c.height=b.bottom-b.top+1;const g=c.getContext('2d'),im=g.createImageData(c.width,c.height);for(const grain of p.grains){const i=((grain.y-b.top)*c.width+grain.x-b.left)*4;const rgb=M.tint(p.color,grain.shade);im.data.set([...rgb,255],i);}g.putImageData(im,0,0);sprites.set(p.grains,c);return c;}
 function drawPacket(g,p,cx,cy,scale=3,alpha=1){if(!p)return;g.save();g.globalAlpha=alpha;g.imageSmoothingEnabled=false;g.drawImage(sprite(p),cx+p.bounds.left*scale,cy+p.bounds.top*scale,(p.bounds.right-p.bounds.left+1)*scale,(p.bounds.bottom-p.bounds.top+1)*scale);g.restore();}
@@ -179,39 +181,52 @@ function finish(won){
  saved.sandMicro[key]=Math.max(Number(saved.sandMicro[key])||0,run.score);
  if(won&&mode==='stage'){saved.campaign.sand=S.complete(saved.campaign.sand,stage);saved.mastery=saved.mastery&&typeof saved.mastery==='object'?saved.mastery:{};saved.mastery.sand=(Number(saved.mastery.sand)||0)+65+stage;}
  save();$('overlay-title').textContent=won?(mode==='stage'?stage+' 스테이지 완료':'도전 완료'):'모래가 입구에 닿았어요';
- $('overlay-body').innerHTML='<p class="result">'+run.score.toLocaleString()+'<small>최대 '+run.maxChain+'연쇄 · '+Math.floor(run.removed/M.UNIT)+' 모래량 제거</small></p>'+(won&&mode==='stage'&&stage<100?'<button data-menu="next" class="primary">다음 스테이지</button>':'')+'<button data-menu="retry">같은 판 다시 시작</button><button data-menu="settings">스테이지·설정</button><a class="button" href="index.html?v=micro1">모드 선택</a><p class="muted">'+(saveOK?'진행도는 기존 기록에 보존됩니다. 마이크로 모래 최고 점수는 별도 집계합니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.')+'</p>';$('overlay').hidden=false;updateHUD();
+ $('overlay-body').innerHTML='<p class="result">'+run.score.toLocaleString()+'<small>최대 '+run.maxChain+'연쇄 · '+Math.floor(run.removed/M.UNIT)+' 모래량 제거</small></p>'+(won&&mode==='stage'&&stage<100?'<button data-menu="next" class="primary">다음 스테이지</button>':'')+'<button data-menu="retry">같은 판 다시 시작</button><button data-menu="settings">스테이지·설정</button><a class="button" href="index.html?v=recovery1">유리·모래 선택</a><p class="muted">'+(saveOK?'진행도는 기존 기록에 보존됩니다. 마이크로 모래 최고 점수는 별도 집계합니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.')+'</p>';$('overlay').hidden=false;updateHUD();
 }
 function updateHUD(){
  if(!run)return;$('score').textContent=run.score.toLocaleString();const seconds=Math.floor(mode==='daily'?Math.max(0,180-elapsed/1000):elapsed/1000);
  $('time').textContent=mode==='stage'?stage+' / 100':Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');$('time-label').textContent=mode==='stage'?'스테이지':mode==='daily'?'남은 시간':'플레이 시간';
  $('goal').textContent=mode==='stage'?'제거 '+Math.min(config.target,Math.floor(run.removed/M.UNIT))+' / '+config.target+' 모래량'+(config.gems?' · 💎 '+run.collected+'/'+config.gems:''):'최대 '+run.maxChain+'연쇄 · '+Math.floor(run.removed/M.UNIT)+' 모래량 제거';
  $('rule').textContent=(mode==='stage'?config.sandBurst:12)+' 모래량 연결 → 붕괴 · 한 덩어리 = 4 모래량';
- $('hold').disabled=paused||finished||!run.active||run.holdUsed;$('rotate').disabled=$('drop').disabled=paused||finished||!run.active;
+ $('hold').disabled=paused||finished||!run.active||run.holdUsed||run.state!=='falling';$('drop').disabled=paused||finished||!run.active||run.state!=='falling';
  preview('next',run.queue[0]);preview('next2',run.queue[1]);preview('held',run.held);$('pause').textContent=paused?'▶':'Ⅱ';
 }
 function settings(){
  paused=true;drag=null;const p=S.progress(saved.campaign.sand);$('overlay-title').textContent=finished?'스테이지·설정':'잠시 쉬어가세요';
- $('overlay-body').innerHTML=(finished?'':'<button data-menu="resume" class="primary">계속하기</button>')+'<button data-menu="retry">같은 판 다시 시작</button><details><summary>스테이지 선택 · '+(saved.devMode?'DEV 1~100 전체 열림':p.unlocked+'까지 열림')+'</summary><div class="stage-grid">'+Array.from({length:100},(_,i)=>i+1).map(n=>'<button data-stage="'+n+'" '+(!saved.devMode&&n>p.unlocked?'disabled':'')+' class="'+(n===stage?'selected':'')+'">'+n+'</button>').join('')+'</div></details><button data-menu="dev">개발자 모드 '+(saved.devMode?'ON':'OFF')+'</button><button data-menu="effects" '+(systemReduced?'disabled':'')+'>효과 '+(reduced?'간결':'풍부')+'</button><button data-menu="sound">소리 '+(saved.sound?'ON':'OFF')+'</button><button data-menu="haptics">진동 '+(saved.haptics?'ON':'OFF')+'</button><p class="muted">좌우로 밀기: 이동<br>짧게 터치 / 회전 버튼: 덩어리 방향 바꾸기<br>아래로 빠르게 밀기 / 즉시 하강: 떨어뜨리기<br>착지한 알갱이는 실제로 아래·대각선으로 흐릅니다. 같은 색 '+(mode==='stage'?config.sandBurst:12)+' 모래량이 연결되면 붕괴합니다.<br>1 모래량 = '+M.UNIT+'개 알갱이. 효과 설정을 바꿔도 모래량과 판정은 같습니다.</p><a class="button" href="index.html?v=micro1">모드 선택</a>';
+ $('overlay-body').innerHTML=(finished?'':'<button data-menu="resume" class="primary">계속하기</button>')+'<button data-menu="retry">같은 판 다시 시작</button><details><summary>스테이지 선택 · '+(saved.devMode?'DEV 1~100 전체 열림':p.unlocked+'까지 열림')+'</summary><div class="stage-grid">'+Array.from({length:100},(_,i)=>i+1).map(n=>'<button data-stage="'+n+'" '+(!saved.devMode&&n>p.unlocked?'disabled':'')+' class="'+(n===stage?'selected':'')+'">'+n+'</button>').join('')+'</div></details><button data-menu="dev">개발자 모드 '+(saved.devMode?'ON':'OFF')+'</button><button data-menu="effects" '+(systemReduced?'disabled':'')+'>효과 '+(reduced?'간결':'풍부')+'</button><button data-menu="sound">소리 '+(saved.sound?'ON':'OFF')+'</button><button data-menu="haptics">진동 '+(saved.haptics?'ON':'OFF')+'</button><p class="muted">좌우로 밀기: 이동<br>아래로 빠르게 밀기 / 즉시 하강: 떨어뜨리기<br>착지한 알갱이는 실제로 아래·대각선으로 흐릅니다. 같은 색 '+(mode==='stage'?config.sandBurst:12)+' 모래량이 연결되면 붕괴합니다.<br>1 모래량 = '+M.UNIT+'개 알갱이. 효과 설정을 바꿔도 모래량과 판정은 같습니다.</p><a class="button" href="index.html?v=recovery1">유리·모래 선택</a>';
  $('overlay').hidden=false;updateHUD();
 }
 $('overlay-body').addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b||b.disabled)return;
- if(b.dataset.stage){const n=Number(b.dataset.stage);if(n>=1&&n<=100&&(saved.devMode||n<=S.progress(saved.campaign.sand).unlocked)){if(mode!=='stage'){location.href='sand-micro.html?mode=stage&stage='+n+'&v=micro1';return;}stage=n;begin();}return;}
+ if(b.dataset.stage){const n=Number(b.dataset.stage);if(n>=1&&n<=100&&(saved.devMode||n<=S.progress(saved.campaign.sand).unlocked)){if(mode!=='stage'){location.href='sand-micro.html?mode=stage&stage='+n+'&v=recovery1';return;}stage=n;begin();}return;}
  switch(b.dataset.menu){case'resume':if(!finished){paused=false;last=performance.now();$('overlay').hidden=true;}break;case'retry':begin(currentSeed);break;case'next':stage++;begin();break;case'settings':settings();break;case'dev':saved.devMode=!saved.devMode;save();settings();break;case'effects':if(!systemReduced){reduced=!reduced;saved.effects=reduced?'light':'rich';save();settings();}break;case'sound':saved.sound=!saved.sound;save();settings();break;case'haptics':saved.haptics=!saved.haptics;save();settings();break;}updateHUD();
 });
 $('pause').addEventListener('click',()=>{if(finished)return;if(paused){paused=false;last=performance.now();$('overlay').hidden=true;updateHUD();}else settings();});
-function act(name){if(paused||finished||!run.active)return;if(name==='hold')run.hold();if(name==='drop')run.drop();ghost=null;drag=null;updateHUD();}
-for(const name of ['hold','drop'])$(name).addEventListener('pointerdown',e=>{if(e.button!==0||paused||finished||!run.active)return;e.preventDefault();e.stopPropagation();act(name);});
+function act(name){
+ if(paused||finished||!run.active||run.state!=='falling'||(name==='hold'&&run.holdUsed))return;
+ // A second finger on the rail commits the currently dragged packet once.
+ // Release its capture before spawning; lifting the old finger cannot drop the next packet.
+ const previous=drag;drag=null;
+ if(previous&&canvas.hasPointerCapture?.(previous.id))canvas.releasePointerCapture(previous.id);
+ if(name==='hold')run.hold();if(name==='drop')run.drop();ghost=null;updateHUD();
+}
+for(const name of ['hold','drop']){
+ const button=$(name);
+ button.addEventListener('pointerdown',e=>{if(e.button!==0||button.disabled)return;e.preventDefault();e.stopPropagation();act(name);});
+ // Keyboard/assistive activation has no preceding pointerdown. Ignore the
+ // compatibility click from a finger/mouse so it never drops two packets.
+ button.addEventListener('click',e=>{if(e.detail===0&&!button.disabled)act(name);});
+}
 for(const [id,index]of [['peek1',0],['peek2',1]])$(id).addEventListener('click',()=>{if(finished)return;paused=true;drag=null;$('overlay-title').textContent='다음 모래 '+(index+1);$('overlay-body').innerHTML='<canvas id="large-preview" width="192" height="150"></canvas><button data-menu="resume" class="primary">닫고 계속하기</button>';$('overlay').hidden=false;preview('large-preview',run.queue[index]);updateHUD();});
 canvas.addEventListener('pointerdown',e=>{if(paused||finished||!run.active||drag||!e.isPrimary||e.button!==0)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,packet:run.active.id,x:e.clientX,y:e.clientY,lastY:e.clientY,origin:run.active.x,started:performance.now(),max:0,axis:null};});
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId||run.active?.id!==d.packet)return;e.preventDefault();const dx=e.clientX-d.x,dy=e.clientY-d.y;d.max=Math.max(d.max,Math.hypot(dx,dy));if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';if(d.axis==='x'){run.moveTo(d.origin+dx/canvas.getBoundingClientRect().width*M.W);ghost=null;}else if(d.axis==='y'&&dy>0&&performance.now()-d.started>300){const steps=Math.floor((e.clientY-d.lastY)/canvas.getBoundingClientRect().height*M.H);if(steps>0){run.softDrop(Math.min(12,steps));d.lastY=e.clientY;}}});
 canvas.addEventListener('pointerup',e=>{const d=drag;drag=null;if(!d||d.id!==e.pointerId||run.active?.id!==d.packet||paused)return;e.preventDefault();const dy=e.clientY-d.y,dx=e.clientX-d.x,age=performance.now()-d.started;if(dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4)run.drop();ghost=null;updateHUD();});
-for(const event of ['pointercancel','lostpointercapture'])canvas.addEventListener(event,()=>{drag=null;});
+for(const event of ['pointercancel','lostpointercapture'])canvas.addEventListener(event,e=>{if(drag?.id===e.pointerId)drag=null;});
 document.addEventListener('keydown',e=>{if(e.target.closest('button,summary,a,input,select'))return;if(['Escape','p','P'].includes(e.key)){e.preventDefault();if(!finished)settings();return;}if(paused||finished||!run.active)return;if(['ArrowLeft','ArrowRight','ArrowDown',' ','c','C'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')run.moveTo(run.active.x-3);if(e.key==='ArrowRight')run.moveTo(run.active.x+3);if(e.key==='ArrowDown')run.softDrop(3);if(!e.repeat&&e.key===' ')run.drop();if(!e.repeat&&['c','C'].includes(e.key))run.hold();ghost=null;updateHUD();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&!paused&&!finished)settings();});window.addEventListener('blur',()=>{if(!paused&&!finished)settings();});window.addEventListener('resize',resize);
 function frame(now){const dt=Math.max(0,Math.min(50,now-last));last=now;
  if(!paused&&!finished){elapsed+=dt;run.step(dt);if(messageTime>0){messageTime-=dt;if(messageTime<=0)$('notice').textContent='';}
-  for(const event of run.events.splice(0)){if(event.type==='over')finish(false);if(event.type==='land'){drag=null;feedback(event);}if(event.type==='prepare')status(event.chain>=3?'산사태 · '+event.chain+' CHAIN':event.chain>1?event.chain+' CHAIN':'SAND BURST');if(event.type==='burst'){feedback(event);if(!reduced)for(const group of event.groups){const hop=Math.max(1,Math.ceil(group.indices.length/40));for(let j=0;j<group.indices.length&&fx.length<160;j+=hop){const i=group.indices[j];fx.push({x:i%M.W*3,y:Math.floor(i/M.W)*3,life:350,vx:(Math.random()-.5)*35,vy:30+Math.random()*45,color:'rgb('+M.PALETTE[group.color-1].join(',')+')'});}}}}
+  for(const event of run.events.splice(0)){if(event.type==='over')finish(false);if(event.type==='land'){if(drag?.packet===event.id)drag=null;feedback(event);}if(event.type==='prepare')status(event.chain>=3?'산사태 · '+event.chain+' CHAIN':event.chain>1?event.chain+' CHAIN':'SAND BURST');if(event.type==='burst'){feedback(event);if(!reduced)for(const group of event.groups){const hop=Math.max(1,Math.ceil(group.indices.length/40));for(let j=0;j<group.indices.length&&fx.length<160;j+=hop){const i=group.indices[j];fx.push({x:i%M.W*3,y:Math.floor(i/M.W)*3,life:350,vx:(Math.random()-.5)*35,vy:30+Math.random()*45,color:'rgb('+M.PALETTE[group.color-1].join(',')+')'});}}}}
   for(const p of fx){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=dt*.12;}fx=fx.filter(p=>p.life>0);
   if(!finished&&mode==='stage'&&run.removed>=config.target*M.UNIT&&run.collected>=config.gems&&run.state==='falling')finish(true);
   if(!finished&&mode==='daily'&&elapsed>=180000)finish(true);
