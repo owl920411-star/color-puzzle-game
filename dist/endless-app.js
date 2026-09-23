@@ -168,7 +168,7 @@ function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬�
 function resume(){if(state!=='paused')return;clearInput();state=beforePause;last=performance.now();hidePanel();hud();}
 function finish(){
  if(state==='over')return;state='over';clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
- showPanel(`<div class="kicker">${run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
+ const ds=object(readStore().desertSurvival);showPanel(`<div class="kicker">${run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>DESERT ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 DESERT LV.${finite(ds.maxLevel)}`:''}</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
@@ -329,6 +329,13 @@ function desertAtmosphere(g){
  if(danger){g.save();g.strokeStyle='rgba(255,91,53,.72)';g.setLineDash([10,7]);g.lineWidth=2;g.beginPath();g.moveTo(0,108);g.lineTo(360,108);g.stroke();g.restore();}
  if(desert.previewHoles){g.save();g.fillStyle='rgba(255,220,115,.22)';for(const x of desert.previewHoles)g.fillRect(x*36,684,36,36);g.restore();}
 }
+function pyramidProgress(g){
+ if(kind!=='normal')return;const step=Math.min(8,Math.floor(elapsed/120000)),baseY=640,cx=180;
+ g.save();g.globalAlpha=.18+.055*step;for(let layer=0;layer<=step;layer++){const w=55+layer*22,h=18,y=baseY-layer*18;g.fillStyle=layer===step?'#e9c36f':'#9d6a35';g.beginPath();g.moveTo(cx-w/2,y);g.lineTo(cx+w/2,y);g.lineTo(cx+w/2-9,y+h);g.lineTo(cx-w/2+9,y+h);g.closePath();g.fill();}
+ if(step>=5){g.globalAlpha=.65;g.fillStyle='#f3d781';g.fillRect(cx-4,baseY-(step+1)*18-14,8,14);}
+ if(step>=7){g.strokeStyle='#e6b95f';g.lineWidth=3;for(const x of [92,268]){g.beginPath();g.moveTo(x,620);g.lineTo(x,540);g.stroke();g.beginPath();g.moveTo(x-7,548);g.lineTo(x,532);g.lineTo(x+7,548);g.stroke();}}
+ g.restore();
+}
 function drawPyramidBackground(g){
  const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#171321');sky.addColorStop(.42,'#6e4328');sky.addColorStop(.7,'#c58a48');sky.addColorStop(1,'#3a2419');g.fillStyle=sky;g.fillRect(0,0,360,720);
  g.save();g.globalAlpha=.7;g.fillStyle='#f0b45c';g.beginPath();g.arc(292,112,48,0,Math.PI*2);g.fill();g.globalAlpha=.42;g.fillStyle='#d5a45e';g.beginPath();g.moveTo(-35,610);g.lineTo(105,310);g.lineTo(245,610);g.closePath();g.fill();g.fillStyle='#9a6437';g.beginPath();g.moveTo(105,310);g.lineTo(245,610);g.lineTo(160,610);g.closePath();g.fill();
@@ -336,7 +343,7 @@ function drawPyramidBackground(g){
  g.globalAlpha=.22;g.fillStyle='#f2cf8b';g.fillRect(0,610,360,110);
  g.globalAlpha=.22;g.strokeStyle='#6d4026';g.lineWidth=2;for(let yy=350;yy<610;yy+=24){g.beginPath();g.moveTo(0,yy);g.lineTo(360,yy);g.stroke();}
  g.globalAlpha=.32;g.fillStyle='#d8a45c';g.beginPath();g.moveTo(0,650);g.quadraticCurveTo(90,610,180,655);g.quadraticCurveTo(270,700,360,642);g.lineTo(360,720);g.lineTo(0,720);g.closePath();g.fill();g.restore();
- const haze=g.createLinearGradient(0,0,0,720);haze.addColorStop(0,'rgba(20,12,18,.18)');haze.addColorStop(.55,'rgba(38,20,15,.08)');haze.addColorStop(1,'rgba(18,10,10,.48)');g.fillStyle=haze;g.fillRect(0,0,360,720);
+ const haze=g.createLinearGradient(0,0,0,720);haze.addColorStop(0,'rgba(20,12,18,.18)');haze.addColorStop(.55,'rgba(38,20,15,.08)');haze.addColorStop(1,'rgba(18,10,10,.48)');g.fillStyle=haze;g.fillRect(0,0,360,720);pyramidProgress(g);
 }
 function pyramidTile(g,c,x,y,size){
  const pair=COLORS[c.type]||COLORS.I,dark=pair[1],light=pair[0],r=Math.max(2,size*.055);
