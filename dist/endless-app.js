@@ -286,8 +286,11 @@ function processSwipe(d,x,y,now){
  if(kind==='normal'){
   // CONTROL 12: invisible left/right pad. Short touch = one cell. Hold = DAS/ARR.
   // A deliberate downward swipe always wins and performs hard drop.
-  if(!d.dropIntent&&dy>Math.max(30,d.unit*.9)&&dy>Math.abs(dx)*1.25)d.dropIntent=true;
-  if(d.dropIntent){d.mode='drop';return;}
+  if(!d.dropIntent&&!d.rotateIntent&&dy>Math.max(30,d.unit*.9)&&dy>Math.abs(dx)*1.25)d.dropIntent=true;
+  if(!d.dropIntent&&!d.rotateIntent&&dy<-Math.max(30,d.unit*.9)&&-dy>Math.abs(dx)*1.25){
+   d.rotateIntent=true;d.mode='rotate';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
+  }
+  if(d.dropIntent||d.rotateIntent)return;
   hiddenRepeat(d,now);return;
  }
  if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
@@ -296,7 +299,7 @@ function processSwipe(d,x,y,now){
 }
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,dropIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,dropIntent:false,rotateIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
  if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{if(drag!==d||d.dropIntent||!canAct())return;d.repeatStarted=true;d.mode='hold';hiddenMove(d,d.side);repeat={id:'hidden-'+d.id,action:d.side<0?'left':'right',time:38,hidden:true,drag:d};},92);}
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
@@ -305,6 +308,7 @@ canvas.addEventListener('pointerup',e=>{
  if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
  if(kind==='normal'){
   if(d.dropIntent||fastDown(d,e.clientX,e.clientY,now)){action('drop');return;}
+  if(d.rotateIntent){action('rotate');return;}
   if(!d.repeatStarted&&now-d.started<115&&d.peakDistance<18)hiddenMove(d,d.side);
   return;
  }
