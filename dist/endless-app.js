@@ -87,6 +87,11 @@ function loadPreset(type){
  if(type==='ceiling')for(let y=2;y<20;y++)for(let x=0;x<10;x++)if(x!==4&&x!==5)run.board[y][x]=cell(x,y);
  callout('DEV PRESET',type.toUpperCase());hud();
 }
+function patternAudit(samples=5000){
+ const counts=Array(10).fill(0),streaks=Array(10).fill(0);let prev=-1,streak=0,maxStreak=0,edge=0;
+ const rng=E.random('pattern-audit');for(let i=0;i<samples;i++){let h=Math.floor(rng()*10);if(h===prev&&streak>=2)h=(h+1+Math.floor(rng()*8))%10;counts[h]++;if(h===0||h===9)edge++;streak=h===prev?streak+1:1;maxStreak=Math.max(maxStreak,streak);prev=h;}
+ const avg=samples/10,maxDev=Math.max(...counts.map(n=>Math.abs(n-avg)/avg));return{samples,maxStreak,maxDev,edgeRate:edge/samples,pass:maxStreak<=3&&maxDev<.12};
+}
 function simOne(skill=2,minutes=30){
  const rng=E.random('desert-sim-'+skill+'-'+minutes),board=Array.from({length:20},()=>Array(10).fill(0));let lines=0,rises=0,death=minutes*60;
  const holes=()=>{let best=0,bh=-1;for(let x=0;x<10;x++){let h=0;for(let y=0;y<20;y++)h+=board[y][x];if(h>bh){bh=h;best=x;}}return best;};
@@ -96,8 +101,8 @@ function simOne(skill=2,minutes=30){
  }return{death,lines,rises};
 }
 function runSim(){
- const names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4],rows=skills.map((s,i)=>{let sum=0,best=0,deaths=0;for(let n=0;n<200;n++){const r=simOne(s,30);sum+=r.death;best=Math.max(best,r.death);if(r.death<1800)deaths++;}return{name:names[i],avg:Math.round(sum/200),best,deaths};});
- showPanel('<div class="kicker">DESERT SIMULATION</div><h2>1,000판 빠른 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 최고 ${Math.floor(r.best/60)}:${String(r.best%60).padStart(2,'0')} · 30분전 사망 ${r.deaths}/200`).join('<br>')+'</div><p class="storage-note">BOT은 재미 판정이 아닌 난이도/무한생존 허점 탐색용 근사 시뮬레이션입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
+ const audit=patternAudit(5000),names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4],rows=skills.map((s,i)=>{let sum=0,best=0,deaths=0;for(let n=0;n<200;n++){const r=simOne(s,30);sum+=r.death;best=Math.max(best,r.death);if(r.death<1800)deaths++;}return{name:names[i],avg:Math.round(sum/200),best,deaths};});
+ showPanel('<div class="kicker">DESERT SIMULATION</div><h2>1,000판 빠른 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 최고 ${Math.floor(r.best/60)}:${String(r.best%60).padStart(2,'0')} · 30분전 사망 ${r.deaths}/200`).join('<br>')+'</div><p class="storage-note">패턴 감사 5,000회: '+(audit.pass?'PASS':'REVIEW')+' · 최대 동일구멍 '+audit.maxStreak+'연속 · 분포편차 '+Math.round(audit.maxDev*100)+'%<br><br>BOT은 재미 판정이 아닌 난이도/무한생존 허점 탐색용 근사 시뮬레이션입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
 }
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg();
