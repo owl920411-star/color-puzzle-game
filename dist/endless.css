@@ -13,3 +13,9 @@ body[data-kind="normal"].ground-warning .board-shell{animation:desertWarn .42s e
 body[data-kind="normal"][data-desert="5"] .board-shell,body[data-kind="normal"][data-desert="6"] .board-shell{filter:saturate(.92) brightness(.9)}
 body[data-kind="normal"][data-desert="7"] .board-shell,body[data-kind="normal"][data-desert="8"] .board-shell{filter:saturate(.82) brightness(.82)}
 @keyframes desertWarn{from{transform:translateY(0);border-color:#d6aa6288}to{transform:translateY(-1px);border-color:#ffd36dcc}}
+
+.relic-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.relic-grid button{padding:12px 7px;font-size:12px;min-height:54px}
+body[data-kind="normal"][data-desert="3"]{background:radial-gradient(circle at 50% 24%,#a35d31 0,#392019 44%,#100b10 80%)}
+body[data-kind="normal"][data-desert="4"]{background:radial-gradient(circle at 50% 22%,#70462d 0,#281a19 45%,#090a11 82%)}
+body[data-kind="normal"][data-desert="5"],body[data-kind="normal"][data-desert="6"]{background:radial-gradient(circle at 50% 20%,#34334a 0,#171824 48%,#08090d 85%)}
+body[data-kind="normal"][data-desert="7"],body[data-kind="normal"][data-desert="8"]{background:radial-gradient(circle at 50% 30%,#6d4b31 0,#251b18 45%,#080707 88%)}
