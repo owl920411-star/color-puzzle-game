@@ -24,6 +24,15 @@ function clearRows(board,rows){
 class NormalGame extends E.Game{
   constructor(seed){super(seed,'endless','glass','standard');this.combo=0;this.maxCombo=0;}
   makePiece(){const p=super.makePiece();for(const c of p.cells)c.mask=0;return p;}
+  rotateDir(dir=1){
+    if(!this.active)return false;const p=this.active,n=((dir%4)+4)%4;if(!n)return false;
+    let cells=p.cells.map(c=>({...c}));
+    for(let r=0;r<n;r++)cells=cells.map(c=>({...c,x:p.size-1-c.y,y:c.x,mask:0}));
+    const next={...p,cells};
+    for(const[dx,dy]of[[0,0],[-1,0],[1,0],[-2,0],[2,0],[0,-1],[-1,-1],[1,-1],[0,-2]])if(this.fits(next,dx,dy)){next.x+=dx;next.y+=dy;this.active=next;return true;}
+    return false;
+  }
+  rotate(){return this.rotateDir(1);}
   get level(){return 1+Math.floor(this.lines/10);}
   resolve(plan){
     const level=this.level,count=plan.rows.length;
