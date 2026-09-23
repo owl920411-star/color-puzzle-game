@@ -33,10 +33,12 @@ function desertRecord(final=false){
  if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
  writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
 }
+function boardDanger(){let top=20,holes=0,bump=0,prev=20;for(let x=0;x<10;x++){let h=20;for(let y=0;y<20;y++)if(run.board[y][x]){h=y;break;}top=Math.min(top,h);if(x)bump+=Math.abs(h-prev);prev=h;for(let y=h;y<20;y++)if(!run.board[y][x])holes++;}return{top,holes,bump};}
 function fairHoles(){
  const heights=Array(10).fill(20);for(let x=0;x<10;x++)for(let y=0;y<20;y++)if(run.board[y][x]){heights[x]=y;break;}
  let choices=[0,1,2,3,4,5,6,7,8,9].sort((a,b)=>heights[b]-heights[a]);
  choices=choices.filter(x=>!desert.lastHoles.includes(x)).concat(choices.filter(x=>desert.lastHoles.includes(x)));
+ const d=boardDanger();if(d.top<5)choices=choices.filter(x=>heights[x]>=7).concat(choices.filter(x=>heights[x]<7));
  const first=choices[0]??Math.floor(Math.random()*10),second=Math.max(0,Math.min(9,first+(first<5?1:-1)));
  const holes=desert.level<=3?[first,second]:[first];desert.lastHoles=holes;return holes;
 }
@@ -76,9 +78,18 @@ function desertTick(){
  if(left<=3000&&!desert.warned){desert.warned=true;document.body.classList.add('ground-warning');setTimeout(()=>document.body.classList.remove('ground-warning'),2900);vibrate(8);}
  if(left<=0){desert.delay=0;riseGround();desert.nextRise=elapsed+cfg.interval;}
 }
+function loadPreset(type){
+ if(kind!=='normal')return;run.board=Array.from({length:20},()=>Array(10).fill(null));const cell=(x,y)=>({type:Object.keys(COLORS)[(x+y)%7],mask:0,id:++run.serial,desert:true});
+ if(type==='high')for(let y=11;y<20;y++)for(let x=0;x<10;x++)if((x+y)%5!==0)run.board[y][x]=cell(x,y);
+ if(type==='holes')for(let y=9;y<20;y++)for(let x=0;x<10;x++)if((x*3+y)%4!==0)run.board[y][x]=cell(x,y);
+ if(type==='left')for(let y=5;y<20;y++)for(let x=0;x<5;x++)if((x+y)%3)run.board[y][x]=cell(x,y);
+ if(type==='right')for(let y=5;y<20;y++)for(let x=5;x<10;x++)if((x+y)%3)run.board[y][x]=cell(x,y);
+ if(type==='ceiling')for(let y=2;y<20;y++)for(let x=0;x<10;x++)if(x!==4&&x!==5)run.board[y][x]=cell(x,y);
+ callout('DEV PRESET',type.toUpperCase());hud();
+}
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg();
- showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
+ showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button></div><div class="settings-row"><button data-menu="preset" data-v="high">높은 적재</button><button data-menu="preset" data-v="holes">구멍판</button></div><div class="settings-row"><button data-menu="preset" data-v="left">좌측 위험</button><button data-menu="preset" data-v="right">우측 위험</button><button data-menu="preset" data-v="ceiling">천장 직전</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
 }
 
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
@@ -159,6 +170,7 @@ panel.addEventListener('click',e=>{
  else if(a==='effects'&&!systemReduced){reduced=!reduced;pref('effects',reduced?'light':'rich');settings();}
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
+ else if(a==='preset'){loadPreset(b.dataset.v);devPanel();}
  else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);desert.nextRise=elapsed+desertCfg().interval;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
  else if(a==='devrelicview'){showRelics();}
  else if(a==='devrise'){hidePanel();state=beforePause==='clearing'?'clearing':'playing';riseGround();last=performance.now();hud();}
