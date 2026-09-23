@@ -26,9 +26,9 @@ const DESERT_LEVELS=[
  {at:840000,lv:7,interval:11000,mult:2.15,label:'ETERNAL DESERT'},
  {at:960000,lv:8,interval:10000,mult:2.40,label:'DESERT MAX'}
 ];
-let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null};
+let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
-function resetDesert(){desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null};document.body.dataset.desert='0';}
+function resetDesert(){desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};document.body.dataset.desert='0';}
 function desertRecord(final=false){
  if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
  writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
@@ -40,12 +40,32 @@ function fairHoles(){
  const first=choices[0]??Math.floor(Math.random()*10),second=Math.max(0,Math.min(9,first+(first<5?1:-1)));
  const holes=desert.level<=3?[first,second]:[first];desert.lastHoles=holes;return holes;
 }
+
+const RELICS=['hourglass','sun','eye','hammer','scarab','ankh'];
+const RELIC_NAMES={hourglass:'시간의 모래시계',sun:'태양의 부적',eye:'호루스의 눈',hammer:'파라오의 망치',scarab:'황금 스카라베',ankh:'앙크'};
+function awardRelic(reason='SURVIVAL'){
+ if(kind!=='normal'||desert.level===0)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];
+ if(desert.inventory[key]>=2)return;desert.inventory[key]++;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();
+}
+function useRelic(key){
+ if(kind!=='normal'||!desert.inventory[key])return false;desert.inventory[key]--;
+ if(key==='hourglass')desert.delay+=10000;
+ else if(key==='sun'){run.board.shift();run.board.unshift(Array(10).fill(null));}
+ else if(key==='eye'){desert.previewHoles=fairHoles();}
+ else if(key==='hammer'){for(let y=19;y>=0;y--)for(let x=0;x<10;x++)if(run.board[y][x]&&Math.abs(x-5)<=1){run.board[y][x]=null;if(--y<15)break;}}
+ else if(key==='scarab')desert.scarabUntil=elapsed+20000;
+ else if(key==='ankh'){} // consumed automatically at lethal rise; manual use is intentionally disabled.
+ callout(RELIC_NAMES[key],key==='scarab'?'20초 SCORE ×2':'유물 사용');hud();return true;
+}
+function relicHTML(){return RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'?'disabled':''}>${RELIC_NAMES[k]} ×${desert.inventory[k]}</button>`).join('');}
+function showRelics(){if(!run||kind!=='normal')return;beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">DESERT RELICS</div><h2>사막 유물</h2><div class="relic-grid">${relicHTML()}</div><p class="storage-note">앙크는 치명적인 지반 상승 순간 자동 발동합니다.</p><button class="primary" data-menu="back">게임으로 돌아가기</button>`,'relic');}
+panel.addEventListener('click',e=>{const b=e.target.closest('[data-relic]');if(!b||b.disabled)return;if(useRelic(b.dataset.relic)){hidePanel();state='playing';last=performance.now();}});
 function riseGround(){
  if(kind!=='normal'||!run?.board)return;
- if(run.board[0].some(Boolean)&&!desert.invincible){finish();return;}
- const holes=fairHoles(),types=Object.keys(COLORS),row=Array(10).fill(null).map((_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%types.length],mask:0,id:++run.serial,desert:true});
+ if(run.board[0].some(Boolean)&&!desert.invincible){if(desert.inventory.ankh>0){desert.inventory.ankh--;for(let y=0;y<4;y++)run.board[y]=Array(10).fill(null);callout('ANKH REVIVAL','위기 구조 · 상단 4줄 정화');}else{finish();return;}}
+ const holes=desert.previewHoles||fairHoles();desert.previewHoles=null;const types=Object.keys(COLORS),row=Array(10).fill(null).map((_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%types.length],mask:0,id:++run.serial,desert:true});
  run.board.shift();run.board.push(row);desert.rises++;desert.warned=false;vibrate([18,28,24]);callout('GROUND RISING','사막 지반 +1 · 빈틈 '+holes.map(x=>x+1).join(', '));
- if(run.active&&!run.fits(run.active)){let safe=false;for(let n=0;n<3;n++){run.active.y--;if(run.fits(run.active)){safe=true;break;}}if(!safe&&!desert.invincible){finish();return;}}
+ if(desert.rises>0&&desert.rises%4===0)awardRelic('지반 생존');if(run.active&&!run.fits(run.active)){let safe=false;for(let n=0;n<3;n++){run.active.y--;if(run.fits(run.active)){safe=true;break;}}if(!safe&&!desert.invincible){finish();return;}}
 }
 function desertTick(){
  if(kind!=='normal'||state==='over')return;const cfg=desertCfg();
@@ -58,7 +78,7 @@ function desertTick(){
 }
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg();
- showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
+ showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
 }
 
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
@@ -140,8 +160,10 @@ panel.addEventListener('click',e=>{
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
  else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);desert.nextRise=elapsed+desertCfg().interval;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
+ else if(a==='devrelicview'){showRelics();}
  else if(a==='devrise'){hidePanel();state=beforePause==='clearing'?'clearing':'playing';riseGround();last=performance.now();hud();}
  else if(a==='devinv'){desert.invincible=!desert.invincible;devPanel();}
+ else if(a==='devrelic'){for(const k of RELICS)desert.inventory[k]=Math.max(1,desert.inventory[k]);devPanel();}
  else if(a==='devdanger'){for(let y=3;y<20;y++)for(let x=0;x<10;x++)if(y>13&&x!==4&&x!==5&&!run.board[y][x])run.board[y][x]={type:'J',mask:0,id:++run.serial,desert:true};hidePanel();state='playing';last=performance.now();hud();}
  else if(a==='back'){if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over'){state='paused';beforePause='playing';menu();}else showMenu();}
 });
@@ -236,10 +258,10 @@ function emitNormal(plan,result){
  const cap=reduced?45:260,count=reduced?1:8;
  for(const c of plan.cells)for(let i=0;i<count&&fx.length<cap;i++){const life=650+Math.random()*220;fx.push({x:(c.x+.5)*36,y:(c.y+.5)*36,vx:(Math.random()-.5)*260,vy:-90-Math.random()*160,gravity:350,life,total:life,size:2+Math.random()*4.5,kind:'glass',spark:i%4===0,sprite:Math.floor(Math.random()*8),angle:Math.random()*6.28,color:COLORS[c.cell.type]?.[0]||COLORS.I[0]});}
  const y=plan.rows.reduce((s,r)=>s+r+.5,0)/plan.rows.length*36;floaters.push({x:180,y,gain:result.gain,life:1000,total:1000,rows:plan.rows,color:'#b6f3e5',power:Math.min(3,plan.rows.length)});floaters=floaters.slice(-6);
- const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}
+ const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}if(desert.scarabUntil>elapsed){run.score+=result.gain;result.gain*=2;}
  const imminent=kind==='normal'&&cfg.lv>0&&(desert.nextRise+desert.delay-elapsed)<=3000;
  if(imminent){const bonus=250*cfg.lv;run.score+=bonus;desert.lastEscapeUntil=elapsed+1000;callout('LAST ESCAPE','+'+bonus.toLocaleString()+'점 · 상승 직전 탈출');}
- if(plan.rows.length===4&&cfg.lv>0){desert.delay+=5000;desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
+ if(plan.rows.length===4&&cfg.lv>0){desert.delay+=5000;awardRelic('PYRAMID COLLAPSE');desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
  const title=plan.rows.length===4?'4 LINES!':plan.rows.length+' LINE'+(plan.rows.length>1?'S':'');if(!imminent&&plan.rows.length!==4)callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',plan.rows.length);vibrate(result.combo>1?[12,35,12]:12);
 }
 function sandEvents(){
@@ -272,7 +294,7 @@ function update(raw){
  if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');
  recordBest=Math.max(recordBest,run.score);
  if(initialBest>0&&run.score>initialBest&&!recordAnnounced){recordAnnounced=true;$('best').parentElement.classList.add('record');}
- if(run.score>0&&performance.now()-lastSave>1500){rememberScore();desertRecord();}
+ if(run.score>0&&performance.now()-lastSave>1500){rememberScore();desertRecord();}if(kind==='normal'&&desert.level>0&&Math.floor(elapsed/60000)>desert.relicMeter){desert.relicMeter=Math.floor(elapsed/60000);awardRelic('장기 생존');}
 }
 function drawPyramidBackground(g){
  const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#171321');sky.addColorStop(.42,'#6e4328');sky.addColorStop(.7,'#c58a48');sky.addColorStop(1,'#3a2419');g.fillStyle=sky;g.fillRect(0,0,360,720);
@@ -391,6 +413,7 @@ for(const b of document.querySelectorAll('[data-preview]'))b.addEventListener('c
  showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas><button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
 });
 $('pause').addEventListener('click',pause);
+$('mode-label')?.addEventListener('click',()=>{if(kind==='normal'&&run&&state!=='menu'&&state!=='over')showRelics();});
 $('build')?.addEventListener('click',()=>{if(kind!=='normal'||!run||state==='menu'||state==='over')return;beforePause=state;state='paused';clearInput();devPanel();hud();});
 const keys={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'rotate',x:'rotate',X:'rotate',' ':'drop',c:'hold',C:'hold'};
 document.addEventListener('keydown',e=>{
