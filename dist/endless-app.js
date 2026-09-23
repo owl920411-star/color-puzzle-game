@@ -14,6 +14,53 @@ let saved=readStore(),saveOK=true,kind=new URLSearchParams(location.search).get(
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
+/* DESERT SURVIVAL MASTER PLAN — phase 1 core. CONTROL 14 input is intentionally untouched. */
+const DESERT_LEVELS=[
+ {at:0,lv:0,interval:Infinity,mult:1,label:'CALM'},
+ {at:120000,lv:1,interval:30000,mult:1.10,label:'DAWN'},
+ {at:240000,lv:2,interval:25000,mult:1.20,label:'SCORCH'},
+ {at:360000,lv:3,interval:20000,mult:1.35,label:'SUNSET'},
+ {at:480000,lv:4,interval:17000,mult:1.50,label:'DUSK'},
+ {at:600000,lv:5,interval:15000,mult:1.70,label:'NIGHT'},
+ {at:720000,lv:6,interval:13000,mult:1.90,label:'SANDSTORM'},
+ {at:840000,lv:7,interval:11000,mult:2.15,label:'ETERNAL DESERT'},
+ {at:960000,lv:8,interval:10000,mult:2.40,label:'DESERT MAX'}
+];
+let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null};
+function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
+function resetDesert(){desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null};document.body.dataset.desert='0';}
+function desertRecord(final=false){
+ if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
+ writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
+}
+function fairHoles(){
+ const heights=Array(10).fill(20);for(let x=0;x<10;x++)for(let y=0;y<20;y++)if(run.board[y][x]){heights[x]=y;break;}
+ let choices=[0,1,2,3,4,5,6,7,8,9].sort((a,b)=>heights[b]-heights[a]);
+ choices=choices.filter(x=>!desert.lastHoles.includes(x)).concat(choices.filter(x=>desert.lastHoles.includes(x)));
+ const first=choices[0]??Math.floor(Math.random()*10),second=Math.max(0,Math.min(9,first+(first<5?1:-1)));
+ const holes=desert.level<=3?[first,second]:[first];desert.lastHoles=holes;return holes;
+}
+function riseGround(){
+ if(kind!=='normal'||!run?.board)return;
+ if(run.board[0].some(Boolean)&&!desert.invincible){finish();return;}
+ const holes=fairHoles(),types=Object.keys(COLORS),row=Array(10).fill(null).map((_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%types.length],mask:0,id:++run.serial,desert:true});
+ run.board.shift();run.board.push(row);desert.rises++;desert.warned=false;vibrate([18,28,24]);callout('GROUND RISING','사막 지반 +1 · 빈틈 '+holes.map(x=>x+1).join(', '));
+ if(run.active&&!run.fits(run.active)){let safe=false;for(let n=0;n<3;n++){run.active.y--;if(run.fits(run.active)){safe=true;break;}}if(!safe&&!desert.invincible){finish();return;}}
+}
+function desertTick(){
+ if(kind!=='normal'||state==='over')return;const cfg=desertCfg();
+ if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv>0)callout(cfg.lv===8?'DESERT MAX':'DESERT LEVEL '+cfg.lv,cfg.label+' · SCORE ×'+cfg.mult.toFixed(2));}
+ if(cfg.lv===0){desert.nextRise=120000;return;}
+ if(!Number.isFinite(desert.nextRise)||desert.nextRise<cfg.at)desert.nextRise=elapsed+cfg.interval;
+ const left=desert.nextRise+desert.delay-elapsed;
+ if(left<=3000&&!desert.warned){desert.warned=true;document.body.classList.add('ground-warning');setTimeout(()=>document.body.classList.remove('ground-warning'),2900);vibrate(8);}
+ if(left<=0){desert.delay=0;riseGround();desert.nextRise=elapsed+cfg.interval;}
+}
+function devPanel(){
+ if(kind!=='normal')return;const cfg=desertCfg();
+ showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
+}
+
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
 const bg=bitmap.getContext('2d'),pixels=bg.createImageData(M.W,M.H),sprites=new WeakMap();let ghost=null;
 const playing=()=>state==='playing'||state==='clearing';
@@ -70,14 +117,14 @@ function showMenu(){
 function start(retry=false){
  if(playing()||state==='paused')rememberScore();clearInput();currentSeed=retry&&currentSeed?currentSeed:seed();
  run=kind==='normal'?new R.NormalGame(currentSeed):new M.Run({seed:currentSeed,colors:3,burst:12,gravity:26,gems:0});
- state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
+ state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
  loadBest();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();
 }
 function pause(){if(!playing())return;beforePause=state;state='paused';clearInput();rememberScore();pausePanel();hud();}
 function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">점수 규칙 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">일반·모래 선택</button>`,'pause');}
 function resume(){if(state!=='paused')return;clearInput();state=beforePause;last=performance.now();hidePanel();hud();}
 function finish(){
- if(state==='over')return;state='over';clearInput();run.active=null;phase=null;pending=null;rememberScore(true);
+ if(state==='over')return;state='over';clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
  showPanel(`<div class="kicker">${run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
 }
 function settings(){
@@ -92,6 +139,10 @@ panel.addEventListener('click',e=>{
  else if(a==='effects'&&!systemReduced){reduced=!reduced;pref('effects',reduced?'light':'rich');settings();}
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
+ else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);desert.nextRise=elapsed+desertCfg().interval;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
+ else if(a==='devrise'){hidePanel();state=beforePause==='clearing'?'clearing':'playing';riseGround();last=performance.now();hud();}
+ else if(a==='devinv'){desert.invincible=!desert.invincible;devPanel();}
+ else if(a==='devdanger'){for(let y=3;y<20;y++)for(let x=0;x<10;x++)if(y>13&&x!==4&&x!==5&&!run.board[y][x])run.board[y][x]={type:'J',mask:0,id:++run.serial,desert:true};hidePanel();state='playing';last=performance.now();hud();}
  else if(a==='back'){if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over'){state='paused';beforePause='playing';menu();}else showMenu();}
 });
 function hud(){
@@ -99,9 +150,10 @@ function hud(){
  if(state!=='menu')recordBest=Math.max(recordBest,run.score);
  $('score').textContent=(state==='menu'?0:run.score).toLocaleString();$('best').textContent=recordBest.toLocaleString();$('time').textContent=timeText();
  $('score').style.fontSize=run.score>=1e9?'14px':'';$('best').style.fontSize=recordBest>=1e9?'14px':'';
- $('pace-label').textContent=kind==='normal'?'LEVEL '+run.level:'CHAIN '+run.maxChain;
+ $('pace-label').textContent=kind==='normal'?(desert.level?'DESERT '+(desert.level===8?'MAX':'LV.'+desert.level):'LEVEL '+run.level):'CHAIN '+run.maxChain;
  $('rotate').hidden=kind==='sand';for(const b of document.querySelectorAll('[data-action]'))b.disabled=!canAct()||(b.dataset.action==='hold'&&run.holdUsed);
  $('pause').disabled=!playing();$('notice').textContent=kind==='normal'?`제거 ${run.lines}줄 · 연속 ${run.combo||0}회`:`3색 · 12 모래량 연결 → 붕괴 · 최대 ${run.maxChain}연쇄`;
+ if(kind==='normal'&&desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`DESERT LV.${desert.level} · 지반 상승 ${left}초 · ×${desertCfg().mult.toFixed(2)}`;}
  if(!saveOK)$('notice').textContent='기록 저장이 제한되어 있습니다.';
  for(const [id,p]of [['next',run.queue[0]],['next2',run.queue[1]],['held',run.held]]){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(p)(kind==='normal'?normalPreview:sandPreview)(g,p,c.width,c.height);}
 }
@@ -184,7 +236,11 @@ function emitNormal(plan,result){
  const cap=reduced?45:260,count=reduced?1:8;
  for(const c of plan.cells)for(let i=0;i<count&&fx.length<cap;i++){const life=650+Math.random()*220;fx.push({x:(c.x+.5)*36,y:(c.y+.5)*36,vx:(Math.random()-.5)*260,vy:-90-Math.random()*160,gravity:350,life,total:life,size:2+Math.random()*4.5,kind:'glass',spark:i%4===0,sprite:Math.floor(Math.random()*8),angle:Math.random()*6.28,color:COLORS[c.cell.type]?.[0]||COLORS.I[0]});}
  const y=plan.rows.reduce((s,r)=>s+r+.5,0)/plan.rows.length*36;floaters.push({x:180,y,gain:result.gain,life:1000,total:1000,rows:plan.rows,color:'#b6f3e5',power:Math.min(3,plan.rows.length)});floaters=floaters.slice(-6);
- const title=plan.rows.length===4?'4 LINES!':plan.rows.length+' LINE'+(plan.rows.length>1?'S':'');callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',plan.rows.length);vibrate(result.combo>1?[12,35,12]:12);
+ const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}
+ const imminent=kind==='normal'&&cfg.lv>0&&(desert.nextRise+desert.delay-elapsed)<=3000;
+ if(imminent){const bonus=250*cfg.lv;run.score+=bonus;desert.lastEscapeUntil=elapsed+1000;callout('LAST ESCAPE','+'+bonus.toLocaleString()+'점 · 상승 직전 탈출');}
+ if(plan.rows.length===4&&cfg.lv>0){desert.delay+=5000;desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
+ const title=plan.rows.length===4?'4 LINES!':plan.rows.length+' LINE'+(plan.rows.length>1?'S':'');if(!imminent&&plan.rows.length!==4)callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',plan.rows.length);vibrate(result.combo>1?[12,35,12]:12);
 }
 function sandEvents(){
  for(const e of run.events.splice(0)){
@@ -200,7 +256,7 @@ function sandEvents(){
 }
 function update(raw){
  const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;
- if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
+ desertTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
  if(kind==='sand'){run.step(Math.min(50,dt));sandEvents();}
  else if(state==='playing'){
   if(run.active&&!run.fits(run.active,0,1)){fallTime=0;lockTime+=dt;if(lockTime>=run.lockDelay)lockNormal();}
@@ -216,7 +272,7 @@ function update(raw){
  if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');
  recordBest=Math.max(recordBest,run.score);
  if(initialBest>0&&run.score>initialBest&&!recordAnnounced){recordAnnounced=true;$('best').parentElement.classList.add('record');}
- if(run.score>0&&performance.now()-lastSave>1500)rememberScore();
+ if(run.score>0&&performance.now()-lastSave>1500){rememberScore();desertRecord();}
 }
 function drawPyramidBackground(g){
  const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#171321');sky.addColorStop(.42,'#6e4328');sky.addColorStop(.7,'#c58a48');sky.addColorStop(1,'#3a2419');g.fillStyle=sky;g.fillRect(0,0,360,720);
@@ -335,6 +391,7 @@ for(const b of document.querySelectorAll('[data-preview]'))b.addEventListener('c
  showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas><button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
 });
 $('pause').addEventListener('click',pause);
+$('build')?.addEventListener('click',()=>{if(kind!=='normal'||!run||state==='menu'||state==='over')return;beforePause=state;state='paused';clearInput();devPanel();hud();});
 const keys={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'rotate',x:'rotate',X:'rotate',' ':'drop',c:'hold',C:'hold'};
 document.addEventListener('keydown',e=>{
  if(['Escape','p','P'].includes(e.key)){if(e.repeat)return;e.preventDefault();if(state==='paused')resume();else pause();return;}
