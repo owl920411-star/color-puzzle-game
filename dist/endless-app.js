@@ -289,14 +289,17 @@ function processSwipe(d,x,y,now){
   // CONTROL 12: invisible left/right pad. Short touch = one cell. Hold = DAS/ARR.
   // A deliberate downward swipe always wins and performs hard drop.
   const swipe=Math.max(30,d.unit*.9);
-  // Vertical swipe in either direction = hard drop.
-  if(!d.dropIntent&&!d.rotateIntent&&Math.abs(dy)>swipe&&Math.abs(dy)>Math.abs(dx)*1.25)d.dropIntent=true;
+  // Vertical gestures: up = hold, down = hard drop.
+  if(!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&dy>swipe&&dy>Math.abs(dx)*1.25)d.dropIntent=true;
+  if(!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&dy<-swipe&&-dy>Math.abs(dx)*1.25){
+   d.holdIntent=true;d.mode='holdSwipe';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
+  }
   // Horizontal swipe is rotation: right=CW, left=CCW. It must be a real swipe,
   // not the stationary left/right hidden pad hold.
   if(!d.dropIntent&&!d.rotateIntent&&Math.abs(dx)>swipe&&Math.abs(dx)>Math.abs(dy)*1.35){
    d.rotateIntent=dx>0?1:-1;d.mode='rotate';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
   }
-  if(d.dropIntent||d.rotateIntent)return;
+  if(d.dropIntent||d.rotateIntent||d.holdIntent)return;
   hiddenRepeat(d,now);return;
  }
  if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
@@ -305,14 +308,15 @@ function processSwipe(d,x,y,now){
 }
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,dropIntent:false,rotateIntent:0,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
- if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{if(drag!==d||d.dropIntent||d.rotateIntent||d.peakDistance>16||!canAct())return;d.repeatStarted=true;d.mode='hold';hiddenMove(d,d.side);repeat={id:'hidden-'+d.id,action:d.side<0?'left':'right',time:38,hidden:true,drag:d};},92);}
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,dropIntent:false,rotateIntent:0,holdIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{if(drag!==d||d.dropIntent||d.rotateIntent||d.holdIntent||d.peakDistance>16||!canAct())return;d.repeatStarted=true;d.mode='hold';hiddenMove(d,d.side);repeat={id:'hidden-'+d.id,action:d.side<0?'left':'right',time:38,hidden:true,drag:d};},92);}
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
  const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);if(drag!==d)return;if(d.holdTimer)clearTimeout(d.holdTimer);if(repeat?.hidden&&repeat.drag===d)repeat=null;drag=null;
  if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
  if(kind==='normal'){
+  if(d.holdIntent){action('hold');return;}
   if(d.dropIntent||fastDown(d,e.clientX,e.clientY,now)){action('drop');return;}
   if(d.rotateIntent){action(d.rotateIntent>0?'rotate':'rotateCCW');return;}
   if(!d.repeatStarted&&now-d.started<115&&d.peakDistance<18)hiddenMove(d,d.side);
