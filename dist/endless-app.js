@@ -152,11 +152,11 @@ function action(a){
    // A wall kick may move the piece inward by one cell, but the thumb must not
    // be pushed farther off-screen to recover that cell.
    const kick=run.active.x-beforeX;
-   if(target!==null)drag.virtualX=target;
-   drag.startPieceX-=kick;
-   drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;
-   drag.piece=pieceID();drag.downAnchor=drag.lastY;drag.noRelease=true;drag.axis='x';drag.lane=run.active.x;
-   if(target!==null)moveTo(Math.round(target));
+   if(drag.mode==='tap'||drag.mode==='hold'){
+    drag.originX=run.active.x;drag.lane=run.active.x;drag.piece=pieceID();drag.downAnchor=drag.lastY;drag.noRelease=true;
+   }else{
+    if(target!==null)drag.virtualX=target;drag.startPieceX-=kick;drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;drag.piece=pieceID();drag.downAnchor=drag.lastY;drag.noRelease=true;drag.axis='x';drag.lane=run.active.x;if(target!==null)moveTo(Math.round(target));
+   }
   }
  }else if(a==='down'){moved=run.move(0,1);if(moved){run.score++;fallTime=0;}}
  else if(a==='drop'){
@@ -266,47 +266,48 @@ function draw(){
  if(kind==='normal'&&!reduced)shatterFX?.draw();
  for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='600 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f1fff9';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
 }
-function fastDown(d,x,y,now){const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);if(kind==='sand')return!d.noRelease&&d.axis==='y'&&!d.soft&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4;return!d.noRelease&&d.axis==='y'&&d.vertical===1&&!d.soft&&dy>=Math.max(44,d.unit*1.5)&&age<=300&&dy/age>=.5&&dy>Math.abs(dx)*1.6&&d.peakX<=Math.max(20,dy*.55)&&d.peakDown-dy<d.unit*.6;}
+function fastDown(d,x,y,now){const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);if(kind==='sand')return!d.noRelease&&d.axis==='y'&&!d.soft&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4;return!d.noRelease&&dy>=Math.max(48,d.unit*1.5)&&age<=380&&dy>Math.abs(dx)*1.35&&d.peakDown-dy<d.unit*.65;}
+function hiddenMove(d,dir){
+ if(!canAct()||kind!=='normal')return false;
+ const before=run.active.x,moved=action(dir<0?'left':'right');
+ if(moved){d.translated=true;d.lane=run.active.x;d.virtualX=run.active.x;}
+ return run.active.x!==before;
+}
+function hiddenRepeat(d,now){
+ if(kind!=='normal'||d.mode!=='tap'||!canAct())return;
+ const held=now-d.started;if(held<115)return;
+ if(!d.repeatStarted){d.repeatStarted=true;d.repeatNext=now;d.mode='hold';}
+ let n=0;while(now>=d.repeatNext&&n++<4){hiddenMove(d,d.side);d.repeatNext+=42;}
+}
 function processSwipe(d,x,y,now){
  if(drag!==d||!playing())return;d.lastX=x;d.lastY=y;
  if(d.piece!==null&&d.piece!==pieceID()){clearInput();return;}
- const dx=x-d.startX,dy=y-d.startY,age=now-d.started;d.peakX=Math.max(d.peakX,Math.abs(dx));d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
- if(!d.axis&&kind==='sand'&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
- if(!d.axis&&kind==='normal'){if(Math.abs(dx)>=12&&Math.abs(dx)>Math.abs(dy)*1.25)d.axis='x';else if(Math.abs(dy)>=14&&Math.abs(dy)>Math.abs(dx)*1.4){d.axis='y';d.vertical=Math.sign(dy);}}
- if(d.axis==='x'){
-  if(kind==='normal'){
-   // CONTROL 8: continuous finger tracking with a predictive landing target.
-   // The piece follows the finger freely in virtual space; the integer board
-   // column is chosen only from that continuous target. No distance is consumed.
-   const raw=(x-d.startX)/d.unit*touchScale();
-   d.virtualX=d.startPieceX+raw;
-   const desired=Math.round(d.virtualX);
-   d.lane=desired;
-   if(state==='clearing')return;
-   if(!run.active)return;
-   const before=run.active.x;moveTo(desired);
-   if(run.active.x!==before)d.translated=true;
-  }else if(canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
-  if(run.active)d.lane=run.active.x;
- }else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){
-  if(age>300||(kind==='normal'&&age>=120&&dy>=24&&dy/age<.28))d.soft=true;
-  if(d.soft){const unit=kind==='normal'?d.rowUnit:canvas.getBoundingClientRect().height/M.H;let n=Math.min(kind==='normal'?20:80,Math.floor((y-d.downAnchor)/unit));
-   while(n-->0){d.downAnchor+=unit;const id=pieceID();if(kind==='sand')run.softDrop(1);else if(!action('down')){d.downAnchor=y;break;}if(id!==pieceID()){clearInput();break;}}
-  }
+ const dx=x-d.startX,dy=y-d.startY;d.peakX=Math.max(d.peakX,Math.abs(dx));d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
+ if(kind==='normal'){
+  // CONTROL 12: invisible left/right pad. Short touch = one cell. Hold = DAS/ARR.
+  // A deliberate downward swipe always wins and performs hard drop.
+  if(!d.dropIntent&&dy>Math.max(30,d.unit*.9)&&dy>Math.abs(dx)*1.25)d.dropIntent=true;
+  if(d.dropIntent){d.mode='drop';return;}
+  hiddenRepeat(d,now);return;
  }
+ if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
+ if(d.axis==='x'&&canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
+ else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){if(now-d.started>300)d.soft=true;if(d.soft){const unit=canvas.getBoundingClientRect().height/M.H;let n=Math.min(80,Math.floor((y-d.downAnchor)/unit));while(n-->0){d.downAnchor+=unit;const id=pieceID();run.softDrop(1);if(id!==pieceID()){clearInput();break;}}}}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect();
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,dropIntent:false,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
  const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);if(drag!==d)return;drag=null;
  if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
- if(kind==='normal'&&!d.axis&&d.peakDistance<=10&&now-d.started<=300)action('rotate');
- else if(fastDown(d,e.clientX,e.clientY,now))action('drop');
- else if(kind==='normal'&&d.axis==='x'&&!d.translated&&Math.abs(e.clientX-d.startX)>=12)action(e.clientX>d.startX?'right':'left');
- else if(kind==='normal'&&d.axis==='y'&&d.vertical===1&&!d.soft&&e.clientY-d.startY>=Math.max(18,d.unit*.6)){let n=Math.min(20,Math.max(1,Math.floor((e.clientY-d.startY)/d.rowUnit)));const id=pieceID();while(n-->0&&canAct()&&pieceID()===id)action('down');}
+ if(kind==='normal'){
+  if(d.dropIntent||fastDown(d,e.clientX,e.clientY,now)){action('drop');return;}
+  if(!d.repeatStarted&&now-d.started<115&&d.peakDistance<18)hiddenMove(d,d.side);
+  return;
+ }
+ if(fastDown(d,e.clientX,e.clientY,now))action('drop');
 });
 for(const type of ['pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if(drag?.id===e.pointerId)clearInput();});
 for(const b of document.querySelectorAll('[data-action]')){
