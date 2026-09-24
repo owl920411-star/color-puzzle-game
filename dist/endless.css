@@ -29,3 +29,8 @@ body[data-kind="normal"] .drop-card{flex:1.65 1 112px;max-height:142px;min-heigh
 body[data-kind="normal"] .drop-card b{font-size:38px;line-height:1}
 body[data-kind="normal"] .drop-card span{font-size:12px;font-weight:700}
 body[data-kind="normal"] .rotate-card b{font-size:30px}
+
+/* CONTROL 16 — right-hand rail. Board stays left, all rail UI moves to the right. */
+#game-area{grid-template-columns:var(--board-width) var(--rail)}
+.board-shell{grid-column:1;grid-row:1}
+.rail{grid-column:2;grid-row:1}
