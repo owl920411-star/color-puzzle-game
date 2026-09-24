@@ -98,21 +98,29 @@ DESERT SURVIVAL의 시간 압박에 두 번째 판단 루프를 추가한다.
 - 자동 시뮬레이션에서 아이템별 생존 기여/사망 직후 연관성 수집.
 
 ## 구현 순서
-- [ ] ITEM CORE 데이터 구조
-- [ ] 특수 셀 렌더링
-- [ ] NEXT 예고
-- [ ] OASIS
-- [ ] MUMMY CURSE
-- [ ] SUN BURST
-- [ ] SCARAB INFESTATION
-- [ ] PHARAOH BLESSING
-- [ ] ANUBIS JUDGEMENT
-- [ ] DESERT DIRECTOR
-- [ ] CURSE BROKEN 보상
-- [ ] DEV LAB 아이템 테스트
+- [x] ITEM CORE 데이터 구조
+- [x] 특수 셀 렌더링
+- [x] NEXT 예고
+- [x] OASIS
+- [x] MUMMY CURSE
+- [x] SUN BURST
+- [x] SCARAB INFESTATION
+- [x] PHARAOH BLESSING
+- [x] ANUBIS JUDGEMENT
+- [x] DESERT DIRECTOR
+- [x] CURSE BROKEN 보상
+- [x] DEV LAB 아이템 테스트
 - [ ] 아이템 자동 밸런스 검증
 - [ ] 모바일 실전 테스트
 - [ ] 수치 조정
 
 ## 보존 규칙
 개발 도중 일부 구현이 어렵거나 테스트에서 수치를 변경하더라도 위 항목을 조용히 삭제하지 않는다. 변경/보류 이유를 이 문서에 기록하고 미완료 체크리스트를 끝까지 유지한다.
+
+
+## 2026-09-24 구현 메모
+- NOVICE 7 밸런스 변경으로 DESERT 시작은 현재 3분이며 아이템 해금은 시간값이 아니라 DESERT LEVEL 기준을 유지한다. 따라서 기획의 LV1~LV6 순서는 보존되지만 실제 등장 시각은 현재 난이도 곡선을 따른다.
+- NEXT 카드에 GOOD/저주 이름을 직접 표시하도록 구현.
+- 저주 2회 정화 시 다음 큐에 GOOD ITEM 1개를 예약하는 정화 게이지 구현.
+- 동시 특수 아이템은 기본 2개로 제한하고, 천장 임계 상태에서는 BAD ITEM 자동 생성을 억제한다.
+- 남은 핵심: 아이템 자동 밸런스 검증, 모바일 실전 테스트, 수치 조정, 파라오의 거래(V1 안정화 후).
