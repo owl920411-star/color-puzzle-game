@@ -1,9 +1,9 @@
-/* ENDLESS 1 — two independent engines, one score-first interface.
- * The MicroSand Field/Run are reused unchanged. No campaign/daily controller is loaded.
+/* ENDLESS / BLOCK ITEMS V2. CONTROL 16 and NOVICE 7 retained.
+ * Item design: DESERT-BLOCK-ITEMS-V2.md. Sand engine is unchanged.
  */
 (() => {
 'use strict';
-const E=window.GlassEngine,M=window.MicroSand,R=window.EndlessRules,$=id=>document.getElementById(id);
+const E=window.GlassEngine,M=window.MicroSand,R=window.EndlessRules,B=window.BlockItems,$=id=>document.getElementById(id);
 const canvas=$('board'),ctx=canvas.getContext('2d'),panel=$('panel'),KEY='glassfall-v1';
 const shatterFX=window.SandShatterFX?new window.SandShatterFX(canvas,{cellSize:36,originX:0,originY:0,maxParticles:180}):window.GlassShatterFX?new window.GlassShatterFX(canvas,{cellSize:36,originX:0,originY:0,maxParticles:180}):null;
 const COLORS={I:['#e8c878','#9b672e'],O:['#f2d58a','#a97432'],T:['#d7ad5d','#805126'],S:['#e2bf72','#91602d'],Z:['#c98a4b','#713d22'],J:['#e7c47a','#8b5929'],L:['#f0d18a','#a2672d']};
@@ -14,7 +14,6 @@ let saved=readStore(),saveOK=true,kind=new URLSearchParams(location.search).get(
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
-/* DESERT SURVIVAL MASTER PLAN — phase 1 core. CONTROL 14 input is intentionally untouched. */
 const DESERT_LEVELS=[
  {at:0,lv:0,interval:Infinity,mult:1,label:'CALM'},
  {at:180000,lv:1,interval:45000,mult:1.10,label:'DAWN'},
@@ -26,189 +25,62 @@ const DESERT_LEVELS=[
  {at:900000,lv:7,interval:13000,mult:2.15,label:'ETERNAL DESERT'},
  {at:1020000,lv:8,interval:11000,mult:2.40,label:'DESERT MAX'}
 ];
-let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};
+let desert, itemSystem=B.state('preview'),relicReturn='game';
+const DESERT_ITEMS=B.ITEMS;
+// Golden Scarab score item was removed; non-score support relics stay available.
+const RELICS=['hourglass','sun','eye','hammer','ankh'];
+const RELIC_NAMES={hourglass:'시간의 모래시계',sun:'태양의 부적',eye:'호루스의 눈',hammer:'파라오의 망치',ankh:'앙크'};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
-function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:180000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';}
-function desertRecord(final=false){
- if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
- writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
-}
+function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:180000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,inventory:Object.fromEntries(RELICS.map(k=>[k,0])),previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';itemSystem=B.state(currentSeed+'/block-items-v2');}
+function practice(){return kind==='normal'&&itemSystem.practice;}
+function markPractice(){itemSystem.practice=true;recordBest=initialBest;}
+function desertRecord(final=false){if(kind!=='normal'||practice())return;const sec=Math.floor(elapsed/1000);writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});}
 function boardDanger(){let top=20,holes=0,bump=0,prev=20;for(let x=0;x<10;x++){let h=20;for(let y=0;y<20;y++)if(run.board[y][x]){h=y;break;}top=Math.min(top,h);if(x)bump+=Math.abs(h-prev);prev=h;for(let y=h;y<20;y++)if(!run.board[y][x])holes++;}return{top,holes,bump};}
-function fairHoles(){
- const heights=Array(10).fill(20);for(let x=0;x<10;x++)for(let y=0;y<20;y++)if(run.board[y][x]){heights[x]=y;break;}
- let choices=[0,1,2,3,4,5,6,7,8,9].sort((a,b)=>heights[b]-heights[a]);
- choices=choices.filter(x=>!desert.lastHoles.includes(x)).concat(choices.filter(x=>desert.lastHoles.includes(x)));
- const d=boardDanger();if(d.top<5)choices=choices.filter(x=>heights[x]>=7).concat(choices.filter(x=>heights[x]<7));
- const first=choices[0]??Math.floor(Math.random()*10),second=Math.max(0,Math.min(9,first+(first<5?1:-1)));
- const danger=d.top<6,holes=(desert.level<=3||danger)?[first,second]:[first];desert.lastHoles=holes;return holes;
-}
-
-/* DESERT ITEM SYSTEM V1 — source of truth: DESERT-ITEM-SYSTEM-V1.md */
-const DESERT_ITEMS={
- oasis:{kind:'good',unlock:1,label:'OASIS',icon:'◈',color:'#63e6d2'},
- mummy:{kind:'bad',unlock:2,label:'MUMMY CURSE',icon:'M',color:'#d7c7a0'},
- sunburst:{kind:'good',unlock:3,label:'SUN BURST',icon:'☀',color:'#ffd76b'},
- scarabCurse:{kind:'bad',unlock:4,label:'SCARAB',icon:'S',color:'#7c6b91'},
- pharaoh:{kind:'good',unlock:5,label:'PHARAOH',icon:'P',color:'#f4c86b'},
- anubis:{kind:'bad',unlock:6,label:'ANUBIS',icon:'A',color:'#a48bbd'}
-};
-let itemSystem={enabled:true,goodStreak:0,badStreak:0,lastKind:null,serial:0,active:[],purify:0,stats:{spawned:0,good:0,bad:0,cleared:0,failed:0}};
+function fairHoles(){const heights=Array(10).fill(20);for(let x=0;x<10;x++)for(let y=0;y<20;y++)if(run.board[y][x]){heights[x]=y;break;}let choices=[0,1,2,3,4,5,6,7,8,9].sort((a,b)=>heights[b]-heights[a]);choices=choices.filter(x=>!desert.lastHoles.includes(x)).concat(choices.filter(x=>desert.lastHoles.includes(x)));const d=boardDanger();if(d.top<5)choices=choices.filter(x=>heights[x]>=7).concat(choices.filter(x=>heights[x]<7));const first=choices[0],second=Math.max(0,Math.min(9,first+(first<5?1:-1)));const holes=(desert.level<=3||d.top<6)?[first,second]:[first];desert.lastHoles=holes;return holes;}
 function itemEligible(){return kind==='normal'&&desert.level>0&&itemSystem.enabled;}
-function liveSpecialCount(){return findSpecials().filter(q=>!q.s.failed).length+(run?.queue||[]).reduce((n,p)=>n+(p.cells?.some(c=>c.special)?1:0),0);}
-function directorPick(forceKind=null){
- if(!itemEligible())return null;const danger=boardDanger();if(forceKind==='bad'&&danger.top<4)return null;const pool=Object.entries(DESERT_ITEMS).filter(([,v])=>v.unlock<=desert.level&&(forceKind? v.kind===forceKind:true));if(!pool.length)return null;
- let goodWeight=danger.top<6?1.8:danger.top>11?.85:1,badWeight=danger.top<6?.45:danger.top>11?1.25:1;
- if(itemSystem.goodStreak>=2)goodWeight*=.35;if(itemSystem.badStreak>=2)badWeight*=.35;
- const weighted=pool.map(([key,v])=>({key,v,w:v.kind==='good'?goodWeight:badWeight})),sum=weighted.reduce((s,x)=>s+x.w,0);let r=Math.random()*sum;
- for(const x of weighted){r-=x.w;if(r<=0)return x.key;}return weighted[0].key;
+function findSpecials(){return kind==='normal'&&run?B.specials(run.board):[];}
+function directorPick(k=null){return itemEligible()?B.pick(run,itemSystem,desert.level,k):null;}
+function attachItemToPiece(p,type){return B.attach(p,type,itemSystem);}
+function forceNextItem(type){if(kind!=='normal'||!DESERT_ITEMS[type]||!run?.queue[0])return false;markPractice();for(const c of run.queue[0].cells)delete c.special;return attachItemToPiece(run.queue[0],type);}
+function maybeSeedNextItem(){if(!itemEligible()||!run?.queue?.[0]||B.liveCount(run)>=B.LIMIT)return;
+ // Keep earned rewards until a free slot exists; never discard them.
+ if(itemSystem.purify>=2){const p=run.queue[1]||run.queue[0],t=directorPick('good');if(t&&attachItemToPiece(p,t)){itemSystem.purify-=2;callout('정화의 선물','다음 블록에 블록형 축복이 예약됐습니다');}return;}
+ if(run.queue.some(p=>p.cells.some(c=>c.special)))return;const early=elapsed<420000?.55:1,chance=Math.min(.20,(.04+desert.level*.010)*early);if(itemSystem.random()<chance){const t=directorPick();if(t)attachItemToPiece(run.queue[0],t);}
 }
-function markItemKind(type){const k=DESERT_ITEMS[type]?.kind;if(!k)return;itemSystem.goodStreak=k==='good'?(itemSystem.lastKind==='good'?itemSystem.goodStreak+1:1):0;itemSystem.badStreak=k==='bad'?(itemSystem.lastKind==='bad'?itemSystem.badStreak+1:1):0;itemSystem.lastKind=k;}
-function attachItemToPiece(piece,type){
- if(!piece?.cells?.length||!DESERT_ITEMS[type])return false;const cell=piece.cells[Math.floor(piece.cells.length/2)];cell.special={type,id:++itemSystem.serial,born:elapsed,hp:type==='mummy'?2:1,deadline:['scarabCurse','anubis'].includes(type)?elapsed+(type==='scarabCurse'?12000:10000):0};itemSystem.stats.spawned++;itemSystem.stats[DESERT_ITEMS[type].kind]++;markItemKind(type);return true;
+function announceItems(events){if(!events.length)return;const names=events.map(e=>DESERT_ITEMS[e.type].label).join(' · '),text=events.map(e=>e.status==='wounded'?'붕대 파손 · 남은 줄을 한 번 더 완성':e.status==='purified'?'정화 성공 · 축복 게이지 +1':e.status==='failed'?`${e.blocks}칸 ${e.type==='seal'?'석화':'증식'}`:e.status==='blocked'?'안전한 대상 없음 · 추가 피해 없음':e.status==='removed'?'남은 저주 블록 제거':e.type==='oasis'?'아래 적재 줄 세척':e.type==='spear'?`아래쪽 ${e.blocks}칸 관통`:`주변 ${e.blocks}칸 파괴`).join(' / ');callout(names,text);}
+function resolveNormal(p){if(!p)return null;const tx=itemSystem.enabled?B.resolve(run.board,p.rows,p.itemAt??elapsed):{board:run.board,scoringRows:p.rows,events:[],purified:0,extraRemoved:0,falls:null};let result;
+ if(itemSystem.enabled){run.board=tx.board;result=run.awardClear(tx.scoringRows.length);result.falls=tx.falls;if(!tx.scoringRows.length)run.noClear();}else result=run.resolve(p);
+ itemSystem.purify+=tx.purified;itemSystem.stats.cleared+=tx.events.filter(e=>e.status==='activated'||e.status==='purified').length;itemSystem.stats.removed+=tx.extraRemoved;
+ // Score only naturally completed, removable rows. Block effects never add points.
+ emitNormal({...p,rows:tx.scoringRows},result);announceItems(tx.events);return result;
 }
-function findSpecials(){const out=[];if(!run?.board)return out;for(let y=0;y<20;y++)for(let x=0;x<10;x++){const cell=run.board[y][x];if(cell?.special)out.push({x,y,cell,s:cell.special});}return out;}
-function clearAround(cx,cy,r=1){let n=0;for(let y=Math.max(0,cy-r);y<=Math.min(19,cy+r);y++)for(let x=Math.max(0,cx-r);x<=Math.min(9,cx+r);x++){if(run.board[y][x]){run.board[y][x]=null;n++;}}return n;}
-function safeCurseBlock(cx,cy){const opts=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const x=cx+dx,y=cy+dy;if(x>=0&&x<10&&y>=5&&y<20&&!run.board[y][x])opts.push({x,y});}if(!opts.length)return false;const p=opts[Math.floor(Math.random()*opts.length)];run.board[p.y][p.x]={type:'J',mask:0,id:++run.serial,desert:true,curseSpawn:true};return true;}
-function rewardPurification(){
- itemSystem.purify++;if(itemSystem.purify<2)return;itemSystem.purify=0;const type=directorPick('good');if(type&&run?.queue?.[1]&&!run.queue[1].cells.some(c=>c.special)){attachItemToPiece(run.queue[1],type);callout('DESERT BLESSING','저주 정화 보상 · GOOD ITEM 예약');}
-}
-function itemClearEffects(plan){
- const cleared=plan.cells.filter(c=>c.cell?.special);if(!cleared.length)return;
- for(const c of cleared){const sp=c.cell.special,type=sp.type,it=DESERT_ITEMS[type];if(!it)continue;
-  if(type==='mummy'&&sp.hp>1){sp.hp--;const keep={...c.cell,special:{...sp}};setTimeout(()=>{if(run?.board){const y=Math.min(19,c.y+1);if(!run.board[y][c.x])run.board[y][c.x]=keep;}},0);callout('MUMMY WOUNDED','붕대 파손 · 한 번 더 정화');continue;}
-  itemSystem.stats.cleared++;
-  if(type==='oasis'){desert.delay=Math.min(15000,desert.delay+8000);callout('OASIS','다음 지반 상승 +8초');}
-  else if(type==='sunburst'){setTimeout(()=>{const n=clearAround(c.x,c.y,1);run.score+=n*25;},0);callout('SUN BURST','주변 사암 붕괴');}
-  else if(type==='pharaoh'){desert.scarabUntil=Math.max(desert.scarabUntil,elapsed+10000);desert.previewHoles=fairHoles();callout("PHARAOH'S BLESSING",'10초 SCORE ×2 · 다음 지반 예고');}
-  else if(type==='scarabCurse'){run.score+=300;rewardPurification();callout('CURSE BROKEN','SCARAB 정화 +300');}
-  else if(type==='anubis'){run.score+=500;rewardPurification();callout('ANUBIS DEFEATED','심판 극복 +500');}
-  else if(type==='mummy'){run.score+=350;rewardPurification();callout('MUMMY PURIFIED','저주 정화 +350');}
- }
-}
-function itemTick(){
- if(!itemEligible())return;for(const q of findSpecials()){const {x,y,s}=q;if(!s.deadline||s.failed||elapsed<s.deadline)continue;s.failed=true;itemSystem.stats.failed++;
-  if(s.type==='scarabCurse'){safeCurseBlock(x,y);callout('SCARAB INFESTATION','사암이 번식했습니다');}
-  else if(s.type==='anubis'){desert.nextRise=Math.max(elapsed+1000,desert.nextRise-5000);callout('ANUBIS JUDGEMENT','지반 상승 -5초');}
- }
-}
-function forceNextItem(type){if(kind!=='normal'||!run?.queue?.[0])return false;for(const p of run.queue)for(const cell of p.cells||[])delete cell.special;return attachItemToPiece(run.queue[0],type);}
-function maybeSeedNextItem(){
- if(!itemEligible()||!run?.queue?.[0]||liveSpecialCount()>=2)return;const has=run.queue.some(p=>p.cells?.some(c=>c.special));if(has)return;
- const early=elapsed<420000?.55:1;const chance=Math.min(.20,(.04+desert.level*.010)*early);if(Math.random()<chance){const type=directorPick();if(type)attachItemToPiece(run.queue[0],type);}
-}
-const RELICS=['hourglass','sun','eye','hammer','scarab','ankh'];
-const RELIC_NAMES={hourglass:'시간의 모래시계',sun:'태양의 부적',eye:'호루스의 눈',hammer:'파라오의 망치',scarab:'황금 스카라베',ankh:'앙크'};
-function awardRelic(reason='SURVIVAL'){
- if(kind!=='normal'||desert.level===0||elapsed-desert.lastRelicAt<45000)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];
- if(desert.inventory[key]>=2)return;desert.inventory[key]++;desert.lastRelicAt=elapsed;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();
-}
-function useRelic(key){
- if(kind!=='normal'||!desert.inventory[key])return false;desert.inventory[key]--;
+function itemTick(){if(kind!=='normal'||!itemSystem.enabled||state!=='playing')return;announceItems(B.expire(run,itemSystem,elapsed));}
+function awardRelic(reason='SURVIVAL'){if(kind!=='normal'||desert.level===0||elapsed-desert.lastRelicAt<45000)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];if(desert.inventory[key]>=2)return;desert.inventory[key]++;desert.lastRelicAt=elapsed;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();}
+function useRelic(key){if(kind!=='normal'||!RELICS.includes(key)||key==='ankh'||!desert.inventory[key]||beforePause==='clearing')return false;
  if(key==='hourglass')desert.delay=Math.min(15000,desert.delay+10000);
- else if(key==='sun'){run.board.pop();run.board.unshift(Array(10).fill(null));}
- else if(key==='eye'){desert.previewHoles=fairHoles();}
- else if(key==='hammer'){for(let y=16;y<20;y++)for(let x=4;x<=6;x++)run.board[y][x]=null;}
- else if(key==='scarab')desert.scarabUntil=elapsed+20000;
- else if(key==='ankh'){} // consumed automatically at lethal rise; manual use is intentionally disabled.
- callout(RELIC_NAMES[key],key==='scarab'?'20초 SCORE ×2':'유물 사용');hud();return true;
+ else if(key==='sun'){const b=B.removeBottom(run.board,run.active);if(!b){callout('태양의 부적','대상이 없거나 현재 블록과 겹쳐 사용하지 않았습니다');return false;}run.board=b;}
+ else if(key==='eye')desert.previewHoles ||= fairHoles();
+ else if(key==='hammer')for(let y=16;y<20;y++)for(let x=4;x<=6;x++)run.board[y][x]=null;
+ desert.inventory[key]--;callout(RELIC_NAMES[key],'유물 사용 · 아이템 추가 점수 없음');hud();return true;
 }
-function relicHTML(){return RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'?'disabled':''}>${RELIC_NAMES[k]} ×${desert.inventory[k]}</button>`).join('');}
-function showRelics(){if(!run||kind!=='normal')return;if(state!=='paused')beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">DESERT RELICS</div><h2>사막 유물</h2><div class="relic-grid">${relicHTML()}</div><p class="storage-note">앙크는 치명적인 지반 상승 순간 자동 발동합니다.</p><button class="primary" data-menu="back">게임으로 돌아가기</button>`,'relic');}
-panel.addEventListener('click',e=>{const b=e.target.closest('[data-relic]');if(!b||b.disabled)return;if(useRelic(b.dataset.relic)){if(overlayView==='relic'&&beforePause==='paused'){devPanel();}else{hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}}});
-function riseGround(){
- if(kind!=='normal'||!run?.board)return;
- if(run.board[0].some(Boolean)&&!desert.invincible){if(desert.inventory.ankh>0){desert.inventory.ankh--;for(let y=0;y<4;y++)run.board[y]=Array(10).fill(null);callout('ANKH REVIVAL','위기 구조 · 상단 4줄 정화');}else{finish();return;}}
- const holes=desert.previewHoles||fairHoles();desert.previewHoles=null;const types=Object.keys(COLORS),row=Array(10).fill(null).map((_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%types.length],mask:0,id:++run.serial,desert:true});
- run.board.shift();run.board.push(row);desert.rises++;desert.warned=false;vibrate([18,28,24]);callout('GROUND RISING','사막 지반 +1 · 빈틈 '+holes.map(x=>x+1).join(', '));
- if(desert.rises>0&&desert.rises%4===0)awardRelic('지반 생존');if(run.active&&!run.fits(run.active)){let safe=false;for(let n=0;n<3;n++){run.active.y--;if(run.fits(run.active)){safe=true;break;}}if(!safe&&!desert.invincible){finish();return;}}
+function showRelics(){if(!run||kind!=='normal')return;relicReturn=overlayView==='dev'?'dev':'game';if(playing())beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">SUPPORT RELICS</div><h2>보조 유물</h2><div class="relic-grid">${RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'||beforePause==='clearing'?'disabled':''}>${RELIC_NAMES[k]} ×${desert.inventory[k]}</button>`).join('')}</div><p>점수 증가 유물은 삭제됐습니다.<br>앙크는 치명적인 지반 상승 때 자동 발동합니다.${beforePause==='clearing'?'<br>줄 제거 연출 후 사용할 수 있습니다.':''}</p><button class="primary" data-menu="back">${relicReturn==='dev'?'개발자 모드':'게임으로 돌아가기'}</button>`,'relic');}
+function riseGround(){if(kind!=='normal'||!run||state==='clearing'||state==='over')return false;const source=B.clone(run.board),holes=desert.previewHoles||fairHoles();const types=Object.keys(COLORS);let topOut=source[0].some(Boolean);const row=Array.from({length:10},(_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%7],mask:0,id:++run.serial,desert:true});source.shift();source.push(row);let p=run.active?{...run.active}:null;
+ const locate=()=>{if(!p)return true;for(const dy of [0,-1,-2]){const q={...run.active,y:run.active.y+dy};if(B.fits(source,q)){p=q;return true;}}return false;};let safe=locate();
+ if(topOut||!safe){if(desert.inventory.ankh>0||desert.invincible){if(!desert.invincible)desert.inventory.ankh--;for(let y=0;y<4;y++)source[y]=Array(10).fill(null);topOut=false;safe=locate();if(!safe&&desert.invincible){for(let y=0;y<20;y++)source[y]=Array(10).fill(null);p=run.active?{...run.active,y:0}:null;safe=true;}}if(topOut||!safe){finish();return false;}}
+ run.board=source;run.active=p;desert.previewHoles=null;desert.rises++;desert.warned=false;fallTime=lockTime=0;vibrate([18,28,24]);callout('GROUND RISING','사막 지반 +1');if(desert.rises%4===0)awardRelic('지반 생존');return true;
 }
-function desertTick(){
- if(kind!=='normal'||state==='over')return;const cfg=desertCfg();
- if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv>0)callout(cfg.lv===8?'DESERT MAX':'DESERT LEVEL '+cfg.lv,cfg.label+' · SCORE ×'+cfg.mult.toFixed(2));}
- if(cfg.lv===0){desert.nextRise=180000;return;}
- if(!Number.isFinite(desert.nextRise)||desert.nextRise<cfg.at)desert.nextRise=elapsed+cfg.interval;
- const left=desert.nextRise+desert.delay-elapsed;
- if(left<=3000&&!desert.warned){desert.warned=true;document.body.classList.add('ground-warning');setTimeout(()=>document.body.classList.remove('ground-warning'),2900);vibrate(8);}
- if(left<=0){desert.delay=0;riseGround();desert.nextRise=elapsed+cfg.interval;}
+function desertTick(){if(kind!=='normal'||!playing())return;const cfg=desertCfg();if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv)callout(cfg.lv===8?'DESERT MAX':'DESERT LEVEL '+cfg.lv,cfg.label);}
+ const left=desert.nextRise+desert.delay-elapsed,warning=left<=3000;document.body.classList.toggle('ground-warning',warning);if(warning&&!desert.warned){desert.warned=true;vibrate(8);}if(left>3000)desert.warned=false;
+ // Never change the board while its line-clear transaction is pending.
+ if(cfg.lv&&left<=0&&state==='playing'){desert.delay=0;if(riseGround())desert.nextRise=elapsed+cfg.interval;}
 }
-function desertChecklist(){
- const items=[
- ['2분 DESERT LEVEL',true],['시간별 지반 상승',true],['공정 랜덤/악성패턴 감사',true],['3초 상승 예고',true],['위험도 점수 배수',true],['LAST ESCAPE',true],['PYRAMID COLLAPSE 지연',true],
- ['환경 단계 변화',true],['피라미드 성장',true],['위험선',true],['DESERT MAX',true],['6종 유물',RELICS.every(k=>k in desert.inventory)],['기록/결과 화면',true],
- ['시간 이동/위험도 테스트',true],['무적/강제상승',true],['유물 강제 생성',true],['PYRAMID COLLAPSE 테스트',true],['환경 테스트',true],['게임오버 직전 테스트',true],['상황 프리셋',true],['5단계 BOT',true],['대량 통계',true],['악성 패턴 탐지',true],['아이템 과성능 탐지',true]
- ];const done=items.filter(x=>x[1]).length;showPanel(`<div class="kicker">MASTER PLAN AUDIT</div><h2>${done}/${items.length} 구현 확인</h2><div class="rule-box">${items.map(([n,v])=>`${v?'✓':'□'} ${n}`).join('<br>')}</div><p class="storage-note">이 목록은 DEV 구현 존재 여부 감사입니다. 실제 재미·수치 밸런스는 모바일 플레이와 BOT 결과로 조정합니다.</p><button class="primary" data-menu="back">DEV LAB</button>`,'audit');
-}
-function loadPreset(type){
- if(kind!=='normal')return;run.board=Array.from({length:20},()=>Array(10).fill(null));const cell=(x,y)=>({type:Object.keys(COLORS)[(x+y)%7],mask:0,id:++run.serial,desert:true});
- if(type==='high')for(let y=11;y<20;y++)for(let x=0;x<10;x++)if((x+y)%5!==0)run.board[y][x]=cell(x,y);
- if(type==='holes')for(let y=9;y<20;y++)for(let x=0;x<10;x++)if((x*3+y)%4!==0)run.board[y][x]=cell(x,y);
- if(type==='left')for(let y=5;y<20;y++)for(let x=0;x<5;x++)if((x+y)%3)run.board[y][x]=cell(x,y);
- if(type==='right')for(let y=5;y<20;y++)for(let x=5;x<10;x++)if((x+y)%3)run.board[y][x]=cell(x,y);
- if(type==='ceiling')for(let y=2;y<20;y++)for(let x=0;x<10;x++)if(x!==4&&x!==5)run.board[y][x]=cell(x,y);
- if(type==='rise')for(let y=12;y<20;y++)for(let x=0;x<10;x++)if((x+y)%4!==0)run.board[y][x]=cell(x,y);
- if(type==='max'){elapsed=960000;desert.level=8;desert.maxLevel=8;desert.nextRise=elapsed+10000;document.body.dataset.desert='8';for(let y=9;y<20;y++)for(let x=0;x<10;x++)if((x*2+y)%5!==0)run.board[y][x]=cell(x,y);}
- callout('DEV PRESET',type.toUpperCase());hud();
-}
-function patternAudit(samples=5000){
- const counts=Array(10).fill(0),streaks=Array(10).fill(0);let prev=-1,streak=0,maxStreak=0,edge=0;
- const rng=E.random('pattern-audit');for(let i=0;i<samples;i++){let h=Math.floor(rng()*10);if(h===prev&&streak>=2)h=(h+1+Math.floor(rng()*8))%10;counts[h]++;if(h===0||h===9)edge++;streak=h===prev?streak+1:1;maxStreak=Math.max(maxStreak,streak);prev=h;}
- const avg=samples/10,maxDev=Math.max(...counts.map(n=>Math.abs(n-avg)/avg));return{samples,maxStreak,maxDev,edgeRate:edge/samples,pass:maxStreak<=3&&maxDev<.12};
-}
-function simOne(skill=2,minutes=45,seedN=0){
- const rng=E.random('desert-sim-'+skill+'-'+minutes+'-'+seedN),board=Array.from({length:20},()=>Array(10).fill(0));let lines=0,rises=0,death=minutes*60,maxLevel=0,escapes=0,collapses=0;
- const clearChance=[.055,.085,.115,.145,.175][Math.max(0,Math.min(4,skill))],tetrisChance=[.015,.025,.04,.055,.07][Math.max(0,Math.min(4,skill))];
- const height=()=>{for(let y=0;y<20;y++)if(board[y].some(Boolean))return 20-y;return 0;};
- const bestGap=()=>{let best=0,bh=99;for(let x=0;x<10;x++){let h=0;for(let y=0;y<20;y++)if(board[y][x]){h=20-y;break;}if(h<bh){bh=h;best=x;}}return best;};
- let nextRise=120,delay=0;
- for(let sec=0;sec<minutes*60;sec++){
-  const lv=Math.min(8,Math.max(0,Math.floor(sec/120)));maxLevel=Math.max(maxLevel,lv);
-  if(rng()<clearChance){const rows=rng()<tetrisChance?4:1;for(let q=0;q<rows;q++){board.pop();board.unshift(Array(10).fill(0));lines++;}if(rows===4&&lv){delay=Math.min(10,delay+5);collapses++;}}
-  const intervals=[99999,30,25,20,17,15,13,11,10],iv=intervals[lv];
-  if(lv&&sec>=nextRise+delay){if(board[0].some(Boolean)){death=sec;break;}const gap=bestGap();board.shift();board.push(Array.from({length:10},(_,x)=>x===gap?0:1));rises++;nextRise=sec+iv;delay=0;}
-  const pressure=.065+.006*lv;if(rng()<pressure){const x=Math.floor(rng()*10);for(let y=19;y>=0;y--)if(!board[y][x]){board[y][x]=1;break;}}
-  if(lv&&nextRise+delay-sec<=3&&rng()<clearChance*.35)escapes++;
-  if(height()>=20){death=sec;break;}
- }
- return{death,lines,rises,maxLevel,escapes,collapses};
-}
-function relicBalanceAudit(samples=600){
- const modes=[['NONE',0],['NORMAL',1],['DOUBLE',2],['OPTIMAL',3]],rng=E.random('relic-balance-v2');return modes.map(([name,power])=>{let vals=[],immortal=0;
-  for(let n=0;n<samples;n++){const base=simOne(2,60,n).death;let bonus=0;if(power===1)bonus=Math.min(360,Math.floor(base/150)*22);if(power===2)bonus=Math.min(600,Math.floor(base/120)*30);if(power===3)bonus=Math.min(900,Math.floor(base/100)*36);bonus+=power&&rng()<.16*power?90:0;const life=Math.min(3600,base+bonus);vals.push(life);if(life>=3600)immortal++;}
-  vals.sort((a,b)=>a-b);return{name,avg:Math.round(vals.reduce((a,b)=>a+b,0)/samples),median:vals[Math.floor(samples/2)],max:vals[vals.length-1],immortal};});
-}
-function itemBalanceAudit(samples=3000){
- const names=Object.keys(DESERT_ITEMS),stats=Object.fromEntries(names.map(k=>[k,{spawn:0,success:0,fail:0,lifeGain:0,deaths:0}]));
- let unfair=0,overpowered=0,totalLife=0,baseLife=0;const rng=E.random('item-v1-audit');
- for(let n=0;n<samples;n++){
-  const skill=n%5,base=simOne(skill,45,n).death;let life=base,goodStreak=0,badStreak=0,last='';
-  for(let minute=3;minute<Math.min(45,Math.ceil(base/60)+4);minute++){
-   const lv=Math.min(8,Math.max(1,Math.floor((minute-1)/2))),danger=life-base<180&&rng()<.22;
-   let pool=names.filter(k=>DESERT_ITEMS[k].unlock<=lv);if(danger)pool=pool.filter(k=>DESERT_ITEMS[k].kind==='good').concat(pool);
-   if(last==='bad'&&badStreak>=2)pool=pool.filter(k=>DESERT_ITEMS[k].kind!=='bad').concat(pool);
-   const type=pool[Math.floor(rng()*pool.length)],it=DESERT_ITEMS[type],s=stats[type];s.spawn++;
-   const successChance=Math.max(.18,Math.min(.88,[.30,.43,.56,.68,.78][skill]+(it.kind==='good'?.08:-.05)));
-   const success=rng()<successChance;if(success)s.success++;else s.fail++;
-   if(it.kind==='good'&&success){const gain=type==='oasis'?18:type==='sunburst'?28:22;life+=gain;s.lifeGain+=gain;if(gain>60)overpowered++;}
-   if(it.kind==='bad'){if(success){life+=8;s.lifeGain+=8;}else{const loss=type==='mummy'?10:type==='scarabCurse'?14:18;life-=loss;if(life<=base*.55){unfair++;s.deaths++;}}}
-   if(it.kind==='good'){goodStreak=last==='good'?goodStreak+1:1;badStreak=0;}else{badStreak=last==='bad'?badStreak+1:1;goodStreak=0;}last=it.kind;
-  }
-  baseLife+=base;totalLife+=Math.max(0,life);
- }
- const impact=(totalLife-baseLife)/Math.max(1,baseLife),rows=names.map(k=>{const s=stats[k];return{key:k,label:DESERT_ITEMS[k].label,...s,rate:s.spawn?Math.round(s.success/s.spawn*100):0};});
- return{samples,impact,unfair,overpowered,rows,pass:impact<.22&&unfair<samples*.01&&overpowered===0};
-}
-function runSim(){
- const audit=patternAudit(5000),relics=relicBalanceAudit(600),items=itemBalanceAudit(3000),names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4];
- const rows=skills.map((s,i)=>{const vals=[];let lv4=0,max=0,post20=0;for(let n=0;n<300;n++){const r=simOne(s,45,n);vals.push(r.death);if(r.death>=480)lv4++;if(r.death>=960)max++;if(r.death>=1200)post20++;}vals.sort((a,b)=>a-b);return{name:names[i],avg:Math.round(vals.reduce((a,b)=>a+b,0)/vals.length),median:vals[150],p90:vals[269],lv4,max,post20};});
- const normal=relics[1],none=relics[0],ratio=normal.avg/Math.max(1,none.avg),relicPass=ratio<1.35&&normal.immortal===0;
- const curvePass=rows[0].median<=rows[1].median&&rows[1].median<=rows[2].median&&rows[2].median<=rows[3].median&&rows[3].median<=rows[4].median;
- showPanel('<div class="kicker">DESERT BALANCE LAB</div><h2>7,500+ 자동 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · P90 ${Math.floor(r.p90/60)}:${String(r.p90%60).padStart(2,'0')} · 8분 ${r.lv4}/300 · MAX ${r.max}/300 · 20분 ${r.post20}/300`).join('<br>')+'<br><br><b>유물 비교 2,400판</b><br>'+relics.map(r=>`${r.name}: 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 60분 ${r.immortal}/600`).join('<br>')+'</div><p class="storage-note">난이도 곡선 '+(curvePass?'PASS':'REVIEW')+' · 패턴 '+(audit.pass?'PASS':'REVIEW')+' · 유물 '+(relicPass?'PASS':'REVIEW')+' · ITEM V1 '+(items.pass?'PASS':'REVIEW')+'<br>아이템 생존 영향 '+Math.round(items.impact*100)+'% · 억울한 사망 후보 '+items.unfair+'/'+items.samples+'<br>'+items.rows.map(r=>r.label+' 성공 '+r.rate+'%').join(' · ')+'<br>동일구멍 최대 '+audit.maxStreak+'연속 · 유물 평균 생존 기여 +'+Math.round((ratio-1)*100)+'%<br><br>실제 인간 플레이를 대체하지 않으며 수치 이상과 무한생존 허점을 찾는 용도입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
-}
-function devPanel(){
- if(kind!=='normal')return;const cfg=desertCfg(),danger=boardDanger();
- showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}<br>보드 높이 ${20-danger.top}/20 · 내부 구멍 ${danger.holes} · 표면 요철 ${danger.bump}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button><button data-menu="devsim">BOT/밸런스</button></div><div class="settings-row"><button data-menu="devaudit">MASTER PLAN 감사</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="forcegood">GOOD 강제</button><button data-menu="forcebad">BAD 강제</button></div><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="forceitem" data-v="${k}">${v.label}</button>`).join('')}</div><div class="rule-box" style="margin-top:8px">ITEM DIRECTOR · GOOD ${itemSystem.goodStreak}연속 / BAD ${itemSystem.badStreak}연속<br>생성 ${itemSystem.stats.spawned} · 성공 ${itemSystem.stats.cleared} · 실패 ${itemSystem.stats.failed}<br>정화 게이지 ${itemSystem.purify}/2</div><div class="settings-row"><button data-menu="preset" data-v="high">높은 적재</button><button data-menu="preset" data-v="holes">구멍판</button></div><div class="settings-row"><button data-menu="preset" data-v="left">좌측 위험</button><button data-menu="preset" data-v="right">우측 위험</button><button data-menu="preset" data-v="ceiling">천장 직전</button></div><div class="settings-row"><button data-menu="preset" data-v="rise">상승 직전판</button><button data-menu="preset" data-v="max">MAX 위험판</button></div><div class="settings-row"><button data-menu="itemdeadline">저주 1초</button><button data-menu="itemcombo">MAX+복합아이템</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note"><b>모바일 확인 순서</b><br>① 2분 → 경고/첫 상승 ② 8분 → 속도/유물 ③ MAX → 위험선/회복성 ④ 천장 직전 → 앙크 ⑤ BOT/밸런스 → PASS 확인<br><br>DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
-}
-
+function jumpTime(ms){markPractice();elapsed=Math.max(0,ms);const c=desertCfg();desert.level=c.lv;desert.maxLevel=Math.max(desert.maxLevel,c.lv);desert.nextRise=c.lv?elapsed+c.interval:180000;desert.delay=0;desert.warned=false;document.body.dataset.desert=String(c.lv);document.body.classList.remove('ground-warning');for(const q of findSpecials())if(q.s.deadline&&!q.s.failed)q.s.deadline=elapsed+(DESERT_ITEMS[q.s.type].duration||0);}
+function freshPractice(){markPractice();clearInput();B.strip(run);run.board=B.blank();run.over=false;run.active=null;run.spawn();phase=pending=null;falls=[];fx=[];floaters=[];trail=impact=null;fallTime=lockTime=lockResets=0;beforePause='playing';state='paused';itemSystem.enabled=true;}
+function loadPreset(type){if(kind!=='normal')return;freshPractice();const cell=(x,y)=>({type:Object.keys(COLORS)[(x+y)%7],mask:0,id:++run.serial,desert:true});for(let y=0;y<20;y++)for(let x=0;x<10;x++){const put=type==='high'?y>=11&&(x+y)%5!==0:type==='holes'?y>=9&&(x*3+y)%4!==0:type==='left'?y>=5&&x<5&&(x+y)%3:type==='right'?y>=5&&x>=5&&(x+y)%3:type==='ceiling'?y>=2&&x!==4&&x!==5:type==='rise'?y>=12&&(x+y)%4!==0:type==='max'?y>=9&&(x*2+y)%5!==0:false;if(put)run.board[y][x]=cell(x,y);}if(type==='max')jumpTime(1020000);if(type==='rise'){jumpTime(180000);desert.nextRise=elapsed+3000;}hud();}
+function itemScenario(type){if(!DESERT_ITEMS[type])return;freshPractice();const cell=()=>({type:'J',mask:0,id:++run.serial});if(type==='spear'){for(let x=0;x<10;x++)if(x!==4)run.board[12][x]=cell();for(let y=13;y<20;y++)run.board[y][5]=cell();run.board[15][4]=cell();attachItemToPiece({cells:[run.board[12][5]]},type);B.arm(run.board,elapsed);run.active={type:'I',size:4,x:4,y:0,cells:[0,1,2,3].map(y=>({...cell(),type:'I',x:0,y}))};hud();return;}for(let x=0;x<10;x++)if(x!==4)run.board[18][x]=cell();for(const x of [1,2,5,6,7])run.board[19][x]=cell();for(const x of [3,5,6])run.board[17][x]=cell();const target=run.board[18][5];attachItemToPiece({cells:[target]},type);B.arm(run.board,elapsed);run.active={type:'I',size:4,x:4,y:0,cells:[0,1,2,3].map(y=>({...cell(),type:'I',x:0,y}))};hud();}
+function runSim(){const t=B.regression(300);showPanel(`<div class="kicker">REAL BOARD REGRESSION</div><h2>${t.cases}개 보드 연산 검사</h2><div class="rule-box">${t.pass?'통과':'실패'} · 오류 ${t.failures.length}<br>검사: 보드 크기·셀 ID 중복·원본 보드 보존·미라의 줄 판정</div><p>${t.scope}<br>이전 생존시간 근사 계산은 이번 아이템의 검증 근거로 사용하지 않습니다.</p><button class="primary" data-menu="back">개발자 모드</button>`,'sim');}
+function desertChecklist(){showPanel('<div class="kicker">PLAN TRACKER</div><h2>블록 아이템 V2</h2><div class="rule-box">구현: 6종 보드 효과 / 점수 아이템 제거 / NEXT 예고 / 착지 타이머 / 정화 보상 예약 / 연습 프리셋<br><br>남음: 실제 휴대폰 조작·연출 평가 / 초보 7분 목표 보정 / 실전 엔진을 사용하는 대량 BOT / 파라오의 거래</div><p>기획 원본과 교체 사유는 DESERT-BLOCK-ITEMS-V2.md에 보존합니다. 구현과 검증 완료는 구분합니다.</p><button class="primary" data-menu="back">개발자 모드</button>','audit');}
+function devPanel(){if(kind!=='normal')return;const d=boardDanger();showPanel(`<div class="kicker">DEV LAB · BLOCK ITEMS V2</div><h2>블록 아이템 테스트</h2><div class="rule-box">${timeText()} · DESERT ${desert.level} · 높이 ${20-d.top}/20 · 구멍 ${d.holes}<br>${practice()?'연습 기록 · 최고점 저장 제외':'정상 기록 · 상태를 바꾸면 연습으로 전환'}<br>생성 ${itemSystem.stats.spawned} / 성공 ${itemSystem.stats.cleared} / 실패 ${itemSystem.stats.failed}<br>정화 ${itemSystem.purify}/2 · 활성 ${B.liveCount(run)}/${B.LIMIT}</div><p>아래 아이템을 누르고 게임으로 돌아가 즉시하강하면 효과를 확인할 수 있습니다. 저주는 기다리면 실패 효과가 발생합니다.</p><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="itemscenario" data-v="${k}">${v.kind==='good'?'★':'⚠'} ${v.label}</button>`).join('')}</div><div class="settings-row"><button data-menu="forcegood">NEXT GOOD</button><button data-menu="forcebad">NEXT BAD</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="itemdeadline">저주 1초</button><button data-menu="itemcombo">MAX 복합판</button><button data-menu="devinv">무적 ${desert.invincible?'ON':'OFF'}</button></div><div class="item-force-grid">${[0,3,5,7,9,11,13,15,17,30].map(m=>`<button data-menu="devtime" data-v="${m*60000}">${m===17?'MAX 17분':m+'분'}</button>`).join('')}</div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devrelic">보조 유물 지급</button><button data-menu="devrelicview">유물함</button></div><div class="item-force-grid">${[['high','높은 적재'],['holes','구멍판'],['left','좌측 위험'],['right','우측 위험'],['ceiling','천장 직전'],['rise','상승 직전'],['max','MAX 위험']].map(([k,v])=>`<button data-menu="preset" data-v="${k}">${v}</button>`).join('')}</div><div class="settings-row"><button data-menu="devsim">보드 연산 검사</button><button data-menu="devaudit">기획 체크리스트</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">점수 추가·배수 아이템 없음. 조작 CONTROL 16 / 기본 난이도 NOVICE 7 유지.</p>`,'dev');}
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
 const bg=bitmap.getContext('2d'),pixels=bg.createImageData(M.W,M.H),sprites=new WeakMap();let ghost=null;
 const playing=()=>state==='playing'||state==='clearing';
@@ -221,7 +93,7 @@ function writeStore(change){try{const fresh=readStore();change(fresh);localStora
 function pref(key,value){saved[key]=value;writeStore(s=>{s[key]=value;});}
 function loadBest(){recordBest=finite(object(object(readStore().endlessV1)[kind]).best);initialBest=recordBest;}
 function rememberScore(final=false){
- if(!run||state==='menu')return;
+ if(!run||state==='menu')return;if(practice()){lastSave=performance.now();return;}
  recordBest=Math.max(recordBest,run.score);
  writeStore(s=>{
   s.endlessV1=object(s.endlessV1);const r=object(s.endlessV1[kind]);r.best=Math.max(finite(r.best),recordBest);recordBest=r.best;
@@ -249,16 +121,15 @@ function fit(){
 }
 function showPanel(html,view){overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
 function hidePanel(){$('overlay').hidden=true;$('app').inert=false;overlayView='';}
-function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 즉시 하강: 칸당 2점<br>10줄마다 낙하 레벨 상승':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>즉시 하강: 미세 격자 6칸당 1점';}
+function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 즉시 하강: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>저주를 제때 정화하면 좋은 블록 예약 게이지가 쌓입니다.<br>미라의 첫 붕대 파손은 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>즉시 하강: 미세 격자 6칸당 1점';}
 function menu(){
- if(playing()||state==='paused')rememberScore();clearInput();shatterFX?.clear();state='menu';phase=null;pending=null;falls=[];fx=[];floaters=[];trail=null;impact=null;elapsed=0;calloutTime=0;$('callout').classList.remove('show');
+ if(playing()||state==='paused')rememberScore();clearInput();shatterFX?.clear();state='menu';phase=null;pending=null;falls=[];fx=[];floaters=[];trail=null;impact=null;elapsed=0;calloutTime=0;$('callout').classList.remove('show');resetDesert();
  loadBest();run=kind==='normal'?new R.NormalGame('preview'):new M.Run({seed:'preview',colors:3,burst:12,gravity:26});
  if(kind==='normal')for(let x=0;x<10;x++)for(let y=19;y>=19-(x%3);y--)run.board[y][x]={type:Object.keys(COLORS)[(x+y)%7],mask:0,id:1000+y*10+x};
  run.active=null;showMenu();hud();draw();
 }
 function showMenu(){
- showPanel(`<div class="kicker">ENDLESS SCORE ATTACK</div><h1>GLASSFALL</h1><p>끝없이 쌓고, 터뜨리고,<br>나의 최고 점수를 넘어보세요.</p><div class="modes"><button class="mode-card ${kind==='normal'?'selected':''}" data-menu="normal" aria-pressed="${kind==='normal'}"><canvas class="mode-art" data-art="glass" width="320" height="180"></canvas><strong>일반 모드</strong><small>NORMAL</small></button><button class="mode-card ${kind==='sand'?'selected':''}" data-menu="sand" aria-pressed="${kind==='sand'}"><canvas class="mode-art" data-art="sand" width="320" height="180"></canvas><strong>모래 모드</strong><small>SAND</small></button></div><p class="mode-description">${kind==='normal'?'가로줄을 완성해 제거하세요.<br>여러 줄과 연속 제거로 더 높은 점수!':'모래주머니를 쌓고 같은 색을 모으세요.<br>붕괴와 산사태 연쇄로 더 높은 점수!'}</p><button class="primary" data-menu="start">▶ ${name()} 무한 모드 시작</button><div class="menu-best">이 모드 최고 ${recordBest.toLocaleString()}점</div><button class="text-button" data-menu="settings">점수 규칙 · 설정</button><p class="storage-note">기록은 이 브라우저에 저장됩니다.</p>`,'menu');
- // A readable fallback before the existing artwork finishes loading.
+ showPanel(`<div class="kicker">ENDLESS SCORE ATTACK</div><h1>GLASSFALL</h1><p>끝없이 쌓고, 터뜨리고,<br>나의 최고 점수를 넘어보세요.</p><div class="modes"><button class="mode-card ${kind==='normal'?'selected':''}" data-menu="normal" aria-pressed="${kind==='normal'}"><canvas class="mode-art" data-art="glass" width="320" height="180"></canvas><strong>일반 모드</strong><small>NORMAL</small></button><button class="mode-card ${kind==='sand'?'selected':''}" data-menu="sand" aria-pressed="${kind==='sand'}"><canvas class="mode-art" data-art="sand" width="320" height="180"></canvas><strong>모래 모드</strong><small>SAND</small></button></div><p class="mode-description">${kind==='normal'?'가로줄을 완성해 제거하세요.<br>블록을 바꾸는 축복과 저주를 활용하세요.':'모래주머니를 쌓고 같은 색을 모으세요.<br>붕괴와 산사태 연쇄로 더 높은 점수!'}</p><button class="primary" data-menu="start">▶ ${name()} 무한 모드 시작</button><div class="menu-best">이 모드 최고 ${recordBest.toLocaleString()}점</div><button class="text-button" data-menu="settings">점수 규칙 · 설정</button><p class="storage-note">기록은 이 브라우저에 저장됩니다.</p>`,'menu');
  for(const c of panel.querySelectorAll('.mode-art')){const g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(c.dataset.art==='glass'){const p=new R.NormalGame('card').queue[0];normalPreview(g,p,c.width,c.height);}else{const p=M.packet(M.random('card'),3,0);sandPreview(g,p,c.width,c.height);}}
  window.GlassArt?.menu(panel);
 }
@@ -269,17 +140,18 @@ function start(retry=false){
  loadBest();if(kind==='normal')maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();
 }
 function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
-function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">점수 규칙 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">일반·모래 선택</button>`,'pause');}
-function resume(){if(state!=='paused')return;clearInput();state=beforePause;last=performance.now();hidePanel();hud();}
+function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}${practice()?' · 연습 기록':''}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">점수 규칙 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">일반·모래 선택</button>`,'pause');}
+function resume(){if(state!=='paused')return;clearInput();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hidePanel();hud();}
 function finish(){
  if(state==='over')return;state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
- const ds=object(readStore().desertSurvival);showPanel(`<div class="kicker">${run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>DESERT ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 DESERT LV.${finite(ds.maxLevel)}`:''}</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
+ const ds=object(readStore().desertSurvival);showPanel(`<div class="kicker">${practice()?'PRACTICE':run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${!practice()&&run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>DESERT ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 DESERT LV.${finite(ds.maxLevel)}`:''}</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
- showPanel(`<div class="kicker">HOW TO PLAY</div><h2>${name()} 모드</h2><div class="rule-box">${ruleHTML()}</div><p>게임판을 좌우로 밀어 이동하세요.<br>${kind==='normal'?'짧게 탭하거나 회전 버튼으로 회전합니다.<br>':''}다른 손가락으로 하강${kind==='normal'?'·회전':''} 버튼을 눌러도<br>게임판의 스와이프는 계속 이어집니다.</p><div class="settings-row"><button data-menu="sound">소리 ${saved.sound?'켬':'끔'}</button><button data-menu="haptics" ${typeof navigator.vibrate!=='function'?'disabled':''}>진동 ${saved.haptics?'켬':'끔'}</button><button data-menu="effects" ${systemReduced?'disabled':''}>효과 ${reduced?'간결':'풍부'}</button></div><div class="rule-box" style="margin-top:10px;text-align:center"><b>좌우 터치 민감도</b><br><button data-menu="touch-down" aria-label="민감도 낮추기" style="width:52px;padding:8px;margin:8px">−</button><strong style="display:inline-block;min-width:86px"> ${touchLevel()} / 10 </strong><button data-menu="touch-up" aria-label="민감도 높이기" style="width:52px;padding:8px;margin:8px">＋</button><br><small>${touchLevel()<=2?'매우 안정적':touchLevel()<=4?'안정적':touchLevel()<=6?'균형':touchLevel()<=8?'빠름':'매우 빠름'} · 즉시하강 민감도는 고정</small></div><button class="primary" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p>`,'settings');hud();
+ showPanel(`<div class="kicker">HOW TO PLAY</div><h2>${name()} 모드</h2><div class="rule-box">${ruleHTML()}</div><p>${kind==='normal'?'왼쪽·오른쪽 짧게 터치: 한 칸 이동<br>길게 누르기: 연속 이동<br>좌우 스와이프: 회전 · 위: 보관 · 아래: 즉시하강':'게임판을 좌우로 밀어 이동하세요.<br>다른 손가락으로 즉시하강을 함께 누를 수 있습니다.'}</p><div class="settings-row"><button data-menu="sound">소리 ${saved.sound?'켬':'끔'}</button><button data-menu="haptics" ${typeof navigator.vibrate!=='function'?'disabled':''}>진동 ${saved.haptics?'켬':'끔'}</button><button data-menu="effects" ${systemReduced?'disabled':''}>효과 ${reduced?'간결':'풍부'}</button></div><button class="primary" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p>`,'settings');hud();
 }
 panel.addEventListener('click',e=>{
+ const relic=e.target.closest('[data-relic]');if(relic){if(!relic.disabled&&useRelic(relic.dataset.relic)){if(relicReturn==='dev')devPanel();else resume();}return;}
  const b=e.target.closest('button[data-menu]');if(!b||b.disabled)return;const a=b.dataset.menu;
  if(a==='normal'||a==='sand'){kind=a;pref('material',kind==='normal'?'glass':'sand');menu();}
  else if(a==='start'||a==='new')start();else if(a==='retry')start(true);else if(a==='resume')resume();else if(a==='menu')menu();else if(a==='settings')settings();
@@ -288,31 +160,31 @@ panel.addEventListener('click',e=>{
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
  else if(a==='preset'){loadPreset(b.dataset.v);devPanel();}
- else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);const dc=desertCfg();desert.level=dc.lv;desert.maxLevel=Math.max(desert.maxLevel,dc.lv);document.body.dataset.desert=String(dc.lv);desert.nextRise=dc.lv?elapsed+dc.interval:180000;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
- else if(a==='itemdeadline'){const q=findSpecials().find(q=>['scarabCurse','anubis'].includes(q.s.type));if(q){q.s.deadline=elapsed+1000;q.s.failed=false;}devPanel();}
- else if(a==='itemcombo'){loadPreset('max');forceNextItem('sunburst');if(run.queue?.[1])attachItemToPiece(run.queue[1],'anubis');devPanel();}
- else if(a==='itemtoggle'){itemSystem.enabled=!itemSystem.enabled;devPanel();}
+ else if(a==='devtime'){jumpTime(Number(b.dataset.v)||0);resume();}
+ else if(a==='itemscenario'){itemScenario(b.dataset.v);devPanel();}
+ else if(a==='itemdeadline'){markPractice();let q=findSpecials().find(q=>DESERT_ITEMS[q.s.type].duration);if(!q){itemScenario('scarabCurse');q=findSpecials()[0];}q.s.deadline=elapsed+1000;q.s.failed=false;devPanel();}
+ else if(a==='itemcombo'){loadPreset('max');B.strip(run);forceNextItem('sunburst');attachItemToPiece(run.queue[1],'seal');devPanel();}
+ else if(a==='itemtoggle'){markPractice();itemSystem.enabled=!itemSystem.enabled;if(!itemSystem.enabled){B.strip(run);itemSystem.purify=0;}devPanel();}
  else if(a==='forceitem'){forceNextItem(b.dataset.v);devPanel();}
- else if(a==='forcegood'){const t=directorPick('good');if(t)forceNextItem(t);devPanel();}
- else if(a==='forcebad'){const t=directorPick('bad');if(t)forceNextItem(t);devPanel();}
+ else if(a==='forcegood'||a==='forcebad'){const pool=Object.keys(DESERT_ITEMS).filter(k=>DESERT_ITEMS[k].kind===(a==='forcegood'?'good':'bad'));forceNextItem(pool[Math.floor(itemSystem.random()*pool.length)]);devPanel();}
  else if(a==='devaudit'){desertChecklist();}
  else if(a==='devsim'){runSim();}
  else if(a==='devrelicview'){showRelics();}
- else if(a==='devrise'){hidePanel();state=beforePause==='clearing'?'clearing':'playing';riseGround();last=performance.now();hud();}
- else if(a==='devinv'){desert.invincible=!desert.invincible;devPanel();}
- else if(a==='devrelic'){for(const k of RELICS)desert.inventory[k]=Math.max(1,desert.inventory[k]);devPanel();}
- else if(a==='devdanger'){for(let y=3;y<20;y++)for(let x=0;x<10;x++)if(y>13&&x!==4&&x!==5&&!run.board[y][x])run.board[y][x]={type:'J',mask:0,id:++run.serial,desert:true};hidePanel();state='playing';last=performance.now();hud();}
- else if(a==='back'){if(['sim','audit','relic'].includes(overlayView)){devPanel();}else if(overlayView==='dev'){resume();}else if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over'){state='paused';beforePause='playing';menu();}else showMenu();}
+ else if(a==='devrise'){markPractice();if(beforePause==='clearing'){callout('줄 제거 처리 중','게임으로 돌아가 제거가 끝난 뒤 사용해 주세요');devPanel();}else{state='playing';riseGround();if(state!=='over'){state='paused';devPanel();}}}
+ else if(a==='devinv'){markPractice();desert.invincible=!desert.invincible;devPanel();}
+ else if(a==='devrelic'){markPractice();for(const k of RELICS)desert.inventory[k]=Math.max(1,desert.inventory[k]);devPanel();}
+ else if(a==='devdanger'){loadPreset('ceiling');devPanel();}
+ else if(a==='back'){if(overlayView==='relic'){if(relicReturn==='dev')devPanel();else resume();}else if(['sim','audit'].includes(overlayView)){devPanel();}else if(overlayView==='dev'){resume();}else if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over')menu();else showMenu();}
 });
 function hud(){
- if(!run)return;document.body.dataset.kind=kind;$('mode-label').textContent=name()+' · 무한 모드';
- if(state!=='menu')recordBest=Math.max(recordBest,run.score);
+ if(!run)return;document.body.dataset.kind=kind;$('mode-label').textContent=name()+' · '+(practice()?'연습 모드':'무한 모드');
+ if(state!=='menu'&&!practice())recordBest=Math.max(recordBest,run.score);
  $('score').textContent=(state==='menu'?0:run.score).toLocaleString();$('best').textContent=recordBest.toLocaleString();$('time').textContent=timeText();
  $('score').style.fontSize=run.score>=1e9?'14px':'';$('best').style.fontSize=recordBest>=1e9?'14px':'';
  $('pace-label').textContent=kind==='normal'?(desert.level?'DESERT '+(desert.level===8?'MAX':'LV.'+desert.level):'LEVEL '+run.level):'CHAIN '+run.maxChain;
  $('rotate').hidden=kind==='sand';for(const b of document.querySelectorAll('[data-action]'))b.disabled=!canAct()||(b.dataset.action==='hold'&&run.holdUsed);
  $('pause').disabled=!playing();$('notice').textContent=kind==='normal'?`제거 ${run.lines}줄 · 연속 ${run.combo||0}회`:`3색 · 12 모래량 연결 → 붕괴 · 최대 ${run.maxChain}연쇄`;
- if(kind==='normal'&&desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`DESERT LV.${desert.level} · 지반 상승 ${left}초 · ×${desertCfg().mult.toFixed(2)}`;}
+ if(kind==='normal'&&desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`지반 상승 ${left}초 · 정화 ${itemSystem.purify}/2${practice()?' · 연습':''}`;}
  if(!saveOK)$('notice').textContent='기록 저장이 제한되어 있습니다.';
  for(const [id,p]of [['next',run.queue[0]],['next2',run.queue[1]],['held',run.held]]){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(p)(kind==='normal'?normalPreview:sandPreview)(g,p,c.width,c.height);}
 }
@@ -332,13 +204,14 @@ function moveTo(x){
 function restore(){if(!drag||!drag.noRelease||!run.active)return;moveTo(drag.lane);rebase();}
 function nextNormal(){
  phase=null;pending=null;falls=[];state='playing';fallTime=lockTime=lockResets=0;
+ desertTick();if(state==='over')return;
  if(!run.spawn()){finish();return;}maybeSeedNextItem();restore();hud();
 }
 function lockNormal(keep=false){
  if(!run.active)return;if(!keep)clearInput();
  const p=run.active;impact={x:(p.x+1.5)*36,y:(p.y+Math.max(...p.cells.map(c=>c.y))+1)*36,life:340,total:340};
- run.lock();vibrate(7);pending=R.linePlan(run.board);if(pending)itemClearEffects(pending);
- if(pending){state='clearing';phase='flash';phaseTime=0;hud();}
+ run.lock();B.arm(run.board,elapsed);vibrate(7);pending=R.linePlan(run.board);
+ if(pending){pending.itemAt=elapsed;state='clearing';phase='flash';phaseTime=0;hud();}
  else{run.noClear();nextNormal();}
 }
 function action(a){
@@ -391,15 +264,18 @@ function tone(type,power=1){
 }
 function callout(title,sub){$('callout').innerHTML='<strong>'+title+'</strong><span>'+sub+'</span>';$('callout').classList.add('show');calloutTime=1000;}
 function emitNormal(plan,result){
- if(!reduced&&shatterFX)shatterFX.trigger(plan.cells.map(c=>({col:c.x,row:c.y})),plan.rows.length);
+ const n=plan.rows.length;
+ if(!reduced&&shatterFX)shatterFX.trigger(plan.cells.map(c=>({col:c.x,row:c.y})),Math.max(1,n));
  const cap=reduced?45:260,count=reduced?1:8;
  for(const c of plan.cells)for(let i=0;i<count&&fx.length<cap;i++){const life=650+Math.random()*220;fx.push({x:(c.x+.5)*36,y:(c.y+.5)*36,vx:(Math.random()-.5)*260,vy:-90-Math.random()*160,gravity:350,life,total:life,size:2+Math.random()*4.5,kind:'glass',spark:i%4===0,sprite:Math.floor(Math.random()*8),angle:Math.random()*6.28,color:COLORS[c.cell.type]?.[0]||COLORS.I[0]});}
- const y=plan.rows.reduce((s,r)=>s+r+.5,0)/plan.rows.length*36;floaters.push({x:180,y,gain:result.gain,life:1000,total:1000,rows:plan.rows,color:'#b6f3e5',power:Math.min(3,plan.rows.length)});floaters=floaters.slice(-6);
- const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}if(desert.scarabUntil>elapsed){run.score+=result.gain;result.gain*=2;}
- const imminent=kind==='normal'&&cfg.lv>0&&(desert.nextRise+desert.delay-elapsed)<=3000;
+ if(!n){tone('clear');return;}
+ const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}
+ // This is the existing DESERT level multiplier, not an item multiplier.
+ const remaining=desert.nextRise+desert.delay-(plan.itemAt??elapsed),imminent=cfg.lv>0&&remaining>=0&&remaining<=3000;
  if(imminent){const bonus=250*cfg.lv;run.score+=bonus;desert.lastEscapeUntil=elapsed+1000;callout('LAST ESCAPE','+'+bonus.toLocaleString()+'점 · 상승 직전 탈출');}
- if(plan.rows.length===4&&cfg.lv>0){desert.delay=Math.min(15000,desert.delay+5000);awardRelic('PYRAMID COLLAPSE');desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
- const title=plan.rows.length===4?'4 LINES!':plan.rows.length+' LINE'+(plan.rows.length>1?'S':'');if(!imminent&&plan.rows.length!==4)callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',plan.rows.length);vibrate(result.combo>1?[12,35,12]:12);
+ if(n===4&&cfg.lv>0){desert.delay=Math.min(15000,desert.delay+5000);awardRelic('PYRAMID COLLAPSE');desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
+ const y=plan.rows.reduce((s,r)=>s+r+.5,0)/n*36;floaters.push({x:180,y,gain:result.gain,life:1000,total:1000,rows:plan.rows,color:'#b6f3e5',power:Math.min(3,n)});floaters=floaters.slice(-6);
+ const title=n===4?'4 LINES!':n+' LINE'+(n>1?'S':'');if(!imminent&&(n!==4||cfg.lv===0))callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',n);vibrate(result.combo>1?[12,35,12]:12);
 }
 function sandEvents(){
  for(const e of run.events.splice(0)){
@@ -415,13 +291,13 @@ function sandEvents(){
 }
 function update(raw){
  const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;
- desertTick();itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
+ desertTick();if(!playing())return;itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
  if(kind==='sand'){run.step(Math.min(50,dt));sandEvents();}
  else if(state==='playing'){
   if(run.active&&!run.fits(run.active,0,1)){fallTime=0;lockTime+=dt;if(lockTime>=run.lockDelay)lockNormal();}
-  else{lockTime=0;fallTime+=dt;while(state==='playing'&&fallTime>=run.gravity){fallTime-=run.gravity;run.move(0,1);}}
+  else{lockTime=0;fallTime+=dt;while(state==='playing'&&run.active&&fallTime>=run.gravity){fallTime-=run.gravity;run.move(0,1);}}
  }else if(state==='clearing'){
-  phaseTime+=dt;if(phase==='flash'&&phaseTime>=240){const p=pending,result=run.resolve(p);falls=result.falls;emitNormal(p,result);pending=null;phase='fall';phaseTime=0;hud();}
+  phaseTime+=dt;if(phase==='flash'&&phaseTime>=240){const p=pending,result=resolveNormal(p);falls=result?.falls||[];pending=null;phase='fall';phaseTime=0;hud();}
   else if(phase==='fall'&&phaseTime>=200)nextNormal();
  }
  if(drag?.axis==='y'&&canAct())processSwipe(drag,drag.lastX,drag.lastY,performance.now());
@@ -429,8 +305,8 @@ function update(raw){
  for(const f of floaters)f.life-=dt;floaters=floaters.filter(f=>f.life>0);
  if(impact&&(impact.life-=dt)<=0)impact=null;if(trail&&(trail.life-=dt)<=0)trail=null;
  if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');
- recordBest=Math.max(recordBest,run.score);
- if(initialBest>0&&run.score>initialBest&&!recordAnnounced){recordAnnounced=true;$('best').parentElement.classList.add('record');}
+ if(!practice())recordBest=Math.max(recordBest,run.score);
+ if(!practice()&&initialBest>0&&run.score>initialBest&&!recordAnnounced){recordAnnounced=true;$('best').parentElement.classList.add('record');}
  if(run.score>0&&performance.now()-lastSave>1500){rememberScore();desertRecord();}if(kind==='normal'&&desert.level>0&&Math.floor(elapsed/60000)>desert.relicMeter){desert.relicMeter=Math.floor(elapsed/60000);awardRelic('장기 생존');}
 }
 function desertAtmosphere(g){
@@ -468,12 +344,11 @@ function normalCell(g,c,x,y,size=36,alpha=1,ghostCell=false,hot=false){
  const [light,dark]=COLORS[c.type]||COLORS.I;g.save();g.globalAlpha=alpha;const m=Math.max(1.4,size*.055),r=Math.max(2,size*.08),px=x+m,py=y+m,s=size-m*2;
  if(ghostCell){g.fillStyle=light+'20';g.fillRect(px,py,s,s);g.strokeStyle=light;g.lineWidth=1.5;g.strokeRect(px+.5,py+.5,s-1,s-1);g.restore();return;}
  if(!pyramidTile(g,c,px,py,s)){const fill=g.createLinearGradient(px,py,px+s,py+s);fill.addColorStop(0,light+'a8');fill.addColorStop(.35,dark+'ba');fill.addColorStop(1,dark+'58');g.fillStyle=fill;g.beginPath();g.roundRect(px,py,s,s,r);g.fill();g.strokeStyle=light+'a0';g.lineWidth=.8;g.stroke();g.beginPath();g.moveTo(px+3,py+s-3);g.lineTo(px+3,py+3);g.lineTo(px+s-3,py+3);g.strokeStyle='#ffffff80';g.stroke();g.beginPath();g.moveTo(px+2,py+s*.53);g.lineTo(px+s*.55,py+2);g.lineTo(px+s*.78,py+2);g.lineTo(px+2,py+s*.78);g.closePath();g.fillStyle='#ffffff0e';g.fill();}
- // No crack masks, crack paths or fracture propagation overlays.
- if(c.special&&DESERT_ITEMS[c.special.type]){const it=DESERT_ITEMS[c.special.type];g.save();g.globalAlpha=.96;g.fillStyle=it.color;g.beginPath();g.arc(px+s*.72,py+s*.28,Math.max(5,s*.16),0,Math.PI*2);g.fill();g.fillStyle='#17120e';g.font=`700 ${Math.max(8,s*.18)}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.icon,px+s*.72,py+s*.28);if(c.special.deadline&&!c.special.failed){const sec=Math.max(0,Math.ceil((c.special.deadline-elapsed)/1000));g.fillStyle='#fff';g.font=`700 ${Math.max(7,s*.16)}px sans-serif`;g.fillText(String(sec),px+s*.25,py+s*.75);}if(c.special.type==='mummy'&&c.special.hp>1){g.fillStyle='#fff';g.font=`700 ${Math.max(7,s*.16)}px sans-serif`;g.fillText('2',px+s*.25,py+s*.75);}g.restore();}
+ if(c.special&&DESERT_ITEMS[c.special.type]){const it=DESERT_ITEMS[c.special.type],sp=c.special;g.save();g.globalAlpha=sp.failed?.48:.96;g.strokeStyle=it.color;g.lineWidth=2;g.strokeRect(px+1,py+1,s-2,s-2);g.fillStyle=it.color;g.beginPath();g.arc(px+s*.69,py+s*.30,Math.max(5,s*.21),0,Math.PI*2);g.fill();g.fillStyle='#17120e';g.font=`700 ${Math.max(8,s*.24)}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.icon,px+s*.69,py+s*.30);g.fillStyle='#fff';g.font=`700 ${Math.max(7,s*.22)}px sans-serif`;if(sp.deadline&&!sp.failed)g.fillText(String(Math.max(0,Math.ceil((sp.deadline-elapsed)/1000))),px+s*.27,py+s*.75);if(sp.type==='mummy')g.fillText(String(sp.hp),px+s*.27,py+s*.75);g.restore();}
  if(hot){g.fillStyle='#dbfff588';g.fillRect(px,py,s,s);}g.restore();
 }
-function previewItemLabel(g,p,w,h){const sp=p?.cells?.find(c=>c.special)?.special;if(!sp)return;const it=DESERT_ITEMS[sp.type];if(!it)return;g.save();g.fillStyle=it.color;g.globalAlpha=.96;g.font=`700 ${Math.max(9,w*.075)}px sans-serif`;g.textAlign='center';g.textBaseline='bottom';g.fillText((it.kind==='good'?'★ ':'⚠ ')+it.label,w/2,h-2);g.restore();}
-function normalPreview(g,p,w,h){if(!p)return;const minX=Math.min(...p.cells.map(c=>c.x)),maxX=Math.max(...p.cells.map(c=>c.x)),minY=Math.min(...p.cells.map(c=>c.y)),maxY=Math.max(...p.cells.map(c=>c.y));const size=Math.min((w-16)/(maxX-minX+1),(h-16)/(maxY-minY+1),w*.21),x=(w-(maxX-minX+1)*size)/2,y=(h-(maxY-minY+1)*size)/2;for(const c of p.cells)normalCell(g,c,x+(c.x-minX)*size,y+(c.y-minY)*size,size);previewItemLabel(g,p,w,h);}
+function previewItemLabel(g,p,w,h){const sp=p?.cells?.find(c=>c.special)?.special;if(!sp)return;const it=DESERT_ITEMS[sp.type];if(!it)return;g.save();g.fillStyle=it.color;g.globalAlpha=.96;g.font=`700 ${Math.max(9,w*.075)}px sans-serif`;g.textAlign='center';g.textBaseline='bottom';g.fillText((it.kind==='good'?'★ ':'⚠ ')+it.label,w/2,h-2,w-6);g.restore();}
+function normalPreview(g,p,w,h){if(!p)return;const minX=Math.min(...p.cells.map(c=>c.x)),maxX=Math.max(...p.cells.map(c=>c.x)),minY=Math.min(...p.cells.map(c=>c.y)),maxY=Math.max(...p.cells.map(c=>c.y));const reserve=p.cells.some(c=>c.special)?18:0,hh=h-reserve;const size=Math.min((w-16)/(maxX-minX+1),(hh-16)/(maxY-minY+1),w*.21),x=(w-(maxX-minX+1)*size)/2,y=(hh-(maxY-minY+1)*size)/2;for(const c of p.cells)normalCell(g,c,x+(c.x-minX)*size,y+(c.y-minY)*size,size);previewItemLabel(g,p,w,h);}
 function sprite(p){let out=sprites.get(p.grains);if(out)return out;const b=p.bounds,c=document.createElement('canvas');c.width=b.right-b.left+1;c.height=b.bottom-b.top+1;const g=c.getContext('2d'),im=g.createImageData(c.width,c.height);for(const grain of p.grains){const i=((grain.y-b.top)*c.width+grain.x-b.left)*4;im.data.set([...M.tint(p.color,grain.shade),255],i);}g.putImageData(im,0,0);sprites.set(p.grains,c);return c;}
 function drawPacket(g,p,cx,cy,scale=3,alpha=1){if(!p)return;g.save();g.globalAlpha=alpha;g.imageSmoothingEnabled=false;g.drawImage(sprite(p),cx+p.bounds.left*scale,cy+p.bounds.top*scale,(p.bounds.right-p.bounds.left+1)*scale,(p.bounds.bottom-p.bounds.top+1)*scale);g.restore();}
 function sandPreview(g,p,w,h){if(!p)return;const b=p.bounds,scale=Math.min((w-18)/(b.right-b.left+1),(h-18)/(b.bottom-b.top+1));drawPacket(g,p,w/2-(b.left+b.right+1)*scale/2,h/2-(b.top+b.bottom+1)*scale/2,scale);}
@@ -563,12 +438,12 @@ for(const b of document.querySelectorAll('[data-action]')){
  b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)action(b.dataset.action);});
 }
 for(const b of document.querySelectorAll('[data-preview]'))b.addEventListener('click',()=>{
- if(!run||!playing())return;const p=run.queue[Number(b.dataset.preview)];previewReturn='playing';beforePause=state;state='paused';clearInput();rememberScore();
- showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas><button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
+ if(!run||!playing())return;const p=run.queue[Number(b.dataset.preview)];previewReturn='playing';beforePause=state;state='paused';clearInput();rememberScore();const sp=p?.cells?.find(c=>c.special)?.special,it=sp&&DESERT_ITEMS[sp.type];
+ showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas>'+(it?'<p>'+it.help+'<br>추가 점수 없음 · NEXT/보관 중 저주 시간 정지</p>':'')+'<button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
 });
 $('pause').addEventListener('click',pause);
 $('mode-label')?.addEventListener('click',()=>{if(kind==='normal'&&run&&state!=='menu'&&state!=='over')showRelics();});
-$('build')?.addEventListener('click',()=>{if(kind!=='normal'||!run||state==='menu'||state==='over')return;beforePause=state;state='paused';clearInput();devPanel();hud();});
+$('build')?.addEventListener('click',()=>{if(kind!=='normal'||!run||state==='menu'||state==='over')return;if(playing())beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();devPanel();hud();});
 const keys={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'rotate',x:'rotate',X:'rotate',' ':'drop',c:'hold',C:'hold'};
 document.addEventListener('keydown',e=>{
  if(['Escape','p','P'].includes(e.key)){if(e.repeat)return;e.preventDefault();if(state==='paused')resume();else pause();return;}
@@ -582,6 +457,6 @@ window.addEventListener('pagehide',()=>{rememberScore();clearInput();});
 window.addEventListener('resize',fit);window.visualViewport?.addEventListener('resize',fit);
 window.addEventListener('glassartready',()=>{if(overlayView==='menu')window.GlassArt?.menu(panel);hud();draw();});
 function frame(now){const dt=last?now-last:0;last=now;update(dt);draw();if(now-lastHUD>=120){hud();lastHUD=now;}requestAnimationFrame(frame);}
-if(new URLSearchParams(location.search).get('qa')==='1')window.__GLASSFALL_QA__={get run(){return run;},get state(){return state;},get kind(){return kind;},get drag(){return drag;},action,update,start,menu,pause,resume,finish,draw,hud,setKind(k){kind=k;menu();},lock(){lockNormal(!!drag);}};
+if(new URLSearchParams(location.search).get('qa')==='1')window.__GLASSFALL_QA__={get run(){return run;},get state(){return state;},get kind(){return kind;},get drag(){return drag;},get desert(){return desert;},get items(){return itemSystem;},get elapsed(){return elapsed;},action,update,start,menu,pause,resume,finish,draw,hud,devPanel,jumpTime,loadPreset,itemScenario,forceNextItem,resolveNormal,riseGround,maybeSeedNextItem,useRelic,setKind(k){kind=k;menu();},lock(){lockNormal(!!drag);}};
 menu();fit();$('boot').hidden=true;if(new URLSearchParams(location.search).get('play')==='1')start();requestAnimationFrame(frame);
 })();

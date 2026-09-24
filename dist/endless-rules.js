@@ -1,4 +1,4 @@
-/* Endless 1: ordinary line clears. Legacy fracture/stage rules are never called. */
+/* Endless: normal row credit is separate from block-item board mutations. */
 (function(root,factory){
   if(typeof module==='object'&&module.exports)module.exports=factory(require('./engine.js'));
   else root.EndlessRules=factory(root.GlassEngine);
@@ -12,7 +12,6 @@ function linePlan(board){
 }
 function clearRows(board,rows){
   const removed=new Set(rows),falls=[];let target=E.H-1;
-  // Shift whole rows, not individual columns: holes and floating cells remain intact.
   for(let y=E.H-1;y>=0;y--)if(!removed.has(y)){
     const row=board[y].slice();board[target]=row;
     if(y!==target)for(let x=0;x<E.W;x++)if(row[x])falls.push({x,from:y,to:target,cell:row[x]});
@@ -34,17 +33,18 @@ class NormalGame extends E.Game{
   }
   rotate(){return this.rotateDir(1);}
   get level(){return 1+Math.floor(this.lines/10);}
-  resolve(plan){
-    const level=this.level,count=plan.rows.length;
-    if(!count)return{falls:[],gain:0,base:0,bonus:0};
-    const falls=clearRows(this.board,plan.rows);
+  awardClear(count){
+    if(!Number.isInteger(count)||count<0||count>E.H)throw new RangeError('Invalid cleared row count');
+    const level=this.level;
+    if(!count)return{falls:[],gain:0,base:0,bonus:0,level,combo:this.combo};
     this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);
     const base=(LINE_POINTS[count]||800+(count-4)*300)*level;
     const bonus=50*Math.max(0,this.combo-1)*level,gain=base+bonus;
     this.score+=gain;this.lines+=count;this.shards+=count*E.W;this.maxChain=this.maxCombo;
-    return{falls,gain,base,bonus,level,combo:this.combo};
+    return{falls:[],gain,base,bonus,level,combo:this.combo};
   }
+  resolve(plan){const result=this.awardClear(plan.rows.length);result.falls=clearRows(this.board,plan.rows);return result;}
   noClear(){this.combo=0;}
 }
-return{NormalGame,linePlan,clearRows,LINE_POINTS,version:1};
+return{NormalGame,linePlan,clearRows,LINE_POINTS,version:2};
 });
