@@ -17,18 +17,18 @@ let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=f
 /* DESERT SURVIVAL MASTER PLAN — phase 1 core. CONTROL 14 input is intentionally untouched. */
 const DESERT_LEVELS=[
  {at:0,lv:0,interval:Infinity,mult:1,label:'CALM'},
- {at:120000,lv:1,interval:30000,mult:1.10,label:'DAWN'},
- {at:240000,lv:2,interval:25000,mult:1.20,label:'SCORCH'},
- {at:360000,lv:3,interval:20000,mult:1.35,label:'SUNSET'},
- {at:480000,lv:4,interval:17000,mult:1.50,label:'DUSK'},
- {at:600000,lv:5,interval:15000,mult:1.70,label:'NIGHT'},
- {at:720000,lv:6,interval:13000,mult:1.90,label:'SANDSTORM'},
- {at:840000,lv:7,interval:11000,mult:2.15,label:'ETERNAL DESERT'},
- {at:960000,lv:8,interval:10000,mult:2.40,label:'DESERT MAX'}
+ {at:180000,lv:1,interval:45000,mult:1.10,label:'DAWN'},
+ {at:300000,lv:2,interval:38000,mult:1.20,label:'SCORCH'},
+ {at:420000,lv:3,interval:32000,mult:1.35,label:'SUNSET'},
+ {at:540000,lv:4,interval:26000,mult:1.50,label:'DUSK'},
+ {at:660000,lv:5,interval:21000,mult:1.70,label:'NIGHT'},
+ {at:780000,lv:6,interval:17000,mult:1.90,label:'SANDSTORM'},
+ {at:900000,lv:7,interval:13000,mult:2.15,label:'ETERNAL DESERT'},
+ {at:1020000,lv:8,interval:11000,mult:2.40,label:'DESERT MAX'}
 ];
 let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
-function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';}
+function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:180000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';}
 function desertRecord(final=false){
  if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
  writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
@@ -90,7 +90,7 @@ function itemTick(){
 function forceNextItem(type){if(kind!=='normal'||!run?.queue?.[0])return false;for(const p of run.queue)for(const cell of p.cells||[])delete cell.special;return attachItemToPiece(run.queue[0],type);}
 function maybeSeedNextItem(){
  if(!itemEligible()||!run?.queue?.[0])return;const has=run.queue.some(p=>p.cells?.some(c=>c.special));if(has)return;
- const chance=Math.min(.22,.055+desert.level*.012);if(Math.random()<chance){const type=directorPick();if(type)attachItemToPiece(run.queue[0],type);}
+ const early=elapsed<420000?.55:1;const chance=Math.min(.20,(.04+desert.level*.010)*early);if(Math.random()<chance){const type=directorPick();if(type)attachItemToPiece(run.queue[0],type);}
 }
 const RELICS=['hourglass','sun','eye','hammer','scarab','ankh'];
 const RELIC_NAMES={hourglass:'시간의 모래시계',sun:'태양의 부적',eye:'호루스의 눈',hammer:'파라오의 망치',scarab:'황금 스카라베',ankh:'앙크'};
@@ -121,7 +121,7 @@ function riseGround(){
 function desertTick(){
  if(kind!=='normal'||state==='over')return;const cfg=desertCfg();
  if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv>0)callout(cfg.lv===8?'DESERT MAX':'DESERT LEVEL '+cfg.lv,cfg.label+' · SCORE ×'+cfg.mult.toFixed(2));}
- if(cfg.lv===0){desert.nextRise=120000;return;}
+ if(cfg.lv===0){desert.nextRise=180000;return;}
  if(!Number.isFinite(desert.nextRise)||desert.nextRise<cfg.at)desert.nextRise=elapsed+cfg.interval;
  const left=desert.nextRise+desert.delay-elapsed;
  if(left<=3000&&!desert.warned){desert.warned=true;document.body.classList.add('ground-warning');setTimeout(()=>document.body.classList.remove('ground-warning'),2900);vibrate(8);}
@@ -263,7 +263,7 @@ panel.addEventListener('click',e=>{
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
  else if(a==='preset'){loadPreset(b.dataset.v);devPanel();}
- else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);const dc=desertCfg();desert.level=dc.lv;desert.maxLevel=Math.max(desert.maxLevel,dc.lv);document.body.dataset.desert=String(dc.lv);desert.nextRise=dc.lv?elapsed+dc.interval:120000;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
+ else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);const dc=desertCfg();desert.level=dc.lv;desert.maxLevel=Math.max(desert.maxLevel,dc.lv);document.body.dataset.desert=String(dc.lv);desert.nextRise=dc.lv?elapsed+dc.interval:180000;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
  else if(a==='itemtoggle'){itemSystem.enabled=!itemSystem.enabled;devPanel();}
  else if(a==='forceitem'){forceNextItem(b.dataset.v);devPanel();}
  else if(a==='forcegood'){const t=directorPick('good');if(t)forceNextItem(t);devPanel();}
