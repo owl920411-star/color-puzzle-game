@@ -65,6 +65,28 @@ function markItemKind(type){const k=DESERT_ITEMS[type]?.kind;if(!k)return;itemSy
 function attachItemToPiece(piece,type){
  if(!piece?.cells?.length||!DESERT_ITEMS[type])return false;const cell=piece.cells[Math.floor(piece.cells.length/2)];cell.special={type,id:++itemSystem.serial,born:elapsed,hp:type==='mummy'?2:1,deadline:['scarabCurse','anubis'].includes(type)?elapsed+(type==='scarabCurse'?12000:10000):0};itemSystem.stats.spawned++;itemSystem.stats[DESERT_ITEMS[type].kind]++;markItemKind(type);return true;
 }
+function findSpecials(){const out=[];if(!run?.board)return out;for(let y=0;y<20;y++)for(let x=0;x<10;x++){const cell=run.board[y][x];if(cell?.special)out.push({x,y,cell,s:cell.special});}return out;}
+function clearAround(cx,cy,r=1){let n=0;for(let y=Math.max(0,cy-r);y<=Math.min(19,cy+r);y++)for(let x=Math.max(0,cx-r);x<=Math.min(9,cx+r);x++){if(run.board[y][x]){run.board[y][x]=null;n++;}}return n;}
+function safeCurseBlock(cx,cy){const opts=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const x=cx+dx,y=cy+dy;if(x>=0&&x<10&&y>=5&&y<20&&!run.board[y][x])opts.push({x,y});}if(!opts.length)return false;const p=opts[Math.floor(Math.random()*opts.length)];run.board[p.y][p.x]={type:'J',mask:0,id:++run.serial,desert:true,curseSpawn:true};return true;}
+function itemClearEffects(plan){
+ const cleared=plan.cells.filter(c=>c.cell?.special);if(!cleared.length)return;
+ for(const c of cleared){const sp=c.cell.special,type=sp.type,it=DESERT_ITEMS[type];if(!it)continue;
+  if(type==='mummy'&&sp.hp>1){sp.hp--;const keep={...c.cell,special:{...sp}};setTimeout(()=>{if(run?.board){const y=Math.min(19,c.y+1);if(!run.board[y][c.x])run.board[y][c.x]=keep;}},0);callout('MUMMY WOUNDED','붕대 파손 · 한 번 더 정화');continue;}
+  itemSystem.stats.cleared++;
+  if(type==='oasis'){desert.delay=Math.min(15000,desert.delay+8000);callout('OASIS','다음 지반 상승 +8초');}
+  else if(type==='sunburst'){setTimeout(()=>{const n=clearAround(c.x,c.y,1);run.score+=n*25;},0);callout('SUN BURST','주변 사암 붕괴');}
+  else if(type==='pharaoh'){desert.scarabUntil=Math.max(desert.scarabUntil,elapsed+10000);desert.previewHoles=fairHoles();callout("PHARAOH'S BLESSING",'10초 SCORE ×2 · 다음 지반 예고');}
+  else if(type==='scarabCurse'){run.score+=300;callout('CURSE BROKEN','SCARAB 정화 +300');}
+  else if(type==='anubis'){run.score+=500;callout('ANUBIS DEFEATED','심판 극복 +500');}
+  else if(type==='mummy'){run.score+=350;callout('MUMMY PURIFIED','저주 정화 +350');}
+ }
+}
+function itemTick(){
+ if(!itemEligible())return;for(const q of findSpecials()){const {x,y,s}=q;if(!s.deadline||s.failed||elapsed<s.deadline)continue;s.failed=true;itemSystem.stats.failed++;
+  if(s.type==='scarabCurse'){safeCurseBlock(x,y);callout('SCARAB INFESTATION','사암이 번식했습니다');}
+  else if(s.type==='anubis'){desert.nextRise=Math.max(elapsed+1000,desert.nextRise-5000);callout('ANUBIS JUDGEMENT','지반 상승 -5초');}
+ }
+}
 function forceNextItem(type){if(kind!=='normal'||!run?.queue?.[0])return false;for(const p of run.queue)for(const cell of p.cells||[])delete cell.special;return attachItemToPiece(run.queue[0],type);}
 function maybeSeedNextItem(){
  if(!itemEligible()||!run?.queue?.[0])return;const has=run.queue.some(p=>p.cells?.some(c=>c.special));if(has)return;
@@ -287,7 +309,7 @@ function nextNormal(){
 function lockNormal(keep=false){
  if(!run.active)return;if(!keep)clearInput();
  const p=run.active;impact={x:(p.x+1.5)*36,y:(p.y+Math.max(...p.cells.map(c=>c.y))+1)*36,life:340,total:340};
- run.lock();vibrate(7);pending=R.linePlan(run.board);
+ run.lock();vibrate(7);pending=R.linePlan(run.board);if(pending)itemClearEffects(pending);
  if(pending){state='clearing';phase='flash';phaseTime=0;hud();}
  else{run.noClear();nextNormal();}
 }
@@ -365,7 +387,7 @@ function sandEvents(){
 }
 function update(raw){
  const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;
- desertTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
+ desertTick();itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
  if(kind==='sand'){run.step(Math.min(50,dt));sandEvents();}
  else if(state==='playing'){
   if(run.active&&!run.fits(run.active,0,1)){fallTime=0;lockTime+=dt;if(lockTime>=run.lockDelay)lockNormal();}
