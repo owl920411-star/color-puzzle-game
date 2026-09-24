@@ -19,3 +19,5 @@ body[data-kind="normal"][data-desert="3"]{background:radial-gradient(circle at 5
 body[data-kind="normal"][data-desert="4"]{background:radial-gradient(circle at 50% 22%,#70462d 0,#281a19 45%,#090a11 82%)}
 body[data-kind="normal"][data-desert="5"],body[data-kind="normal"][data-desert="6"]{background:radial-gradient(circle at 50% 20%,#34334a 0,#171824 48%,#08090d 85%)}
 body[data-kind="normal"][data-desert="7"],body[data-kind="normal"][data-desert="8"]{background:radial-gradient(circle at 50% 30%,#6d4b31 0,#251b18 45%,#080707 88%)}
+
+.item-force-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.item-force-grid button{padding:8px 4px;font-size:10px;min-height:38px}
