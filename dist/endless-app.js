@@ -54,8 +54,9 @@ const DESERT_ITEMS={
 };
 let itemSystem={enabled:true,goodStreak:0,badStreak:0,lastKind:null,serial:0,active:[],purify:0,stats:{spawned:0,good:0,bad:0,cleared:0,failed:0}};
 function itemEligible(){return kind==='normal'&&desert.level>0&&itemSystem.enabled;}
+function liveSpecialCount(){return findSpecials().filter(q=>!q.s.failed).length+(run?.queue||[]).reduce((n,p)=>n+(p.cells?.some(c=>c.special)?1:0),0);}
 function directorPick(forceKind=null){
- if(!itemEligible())return null;const danger=boardDanger(),pool=Object.entries(DESERT_ITEMS).filter(([,v])=>v.unlock<=desert.level&&(forceKind? v.kind===forceKind:true));if(!pool.length)return null;
+ if(!itemEligible())return null;const danger=boardDanger();if(forceKind==='bad'&&danger.top<4)return null;const pool=Object.entries(DESERT_ITEMS).filter(([,v])=>v.unlock<=desert.level&&(forceKind? v.kind===forceKind:true));if(!pool.length)return null;
  let goodWeight=danger.top<6?1.8:danger.top>11?.85:1,badWeight=danger.top<6?.45:danger.top>11?1.25:1;
  if(itemSystem.goodStreak>=2)goodWeight*=.35;if(itemSystem.badStreak>=2)badWeight*=.35;
  const weighted=pool.map(([key,v])=>({key,v,w:v.kind==='good'?goodWeight:badWeight})),sum=weighted.reduce((s,x)=>s+x.w,0);let r=Math.random()*sum;
@@ -92,7 +93,7 @@ function itemTick(){
 }
 function forceNextItem(type){if(kind!=='normal'||!run?.queue?.[0])return false;for(const p of run.queue)for(const cell of p.cells||[])delete cell.special;return attachItemToPiece(run.queue[0],type);}
 function maybeSeedNextItem(){
- if(!itemEligible()||!run?.queue?.[0])return;const has=run.queue.some(p=>p.cells?.some(c=>c.special));if(has)return;
+ if(!itemEligible()||!run?.queue?.[0]||liveSpecialCount()>=2)return;const has=run.queue.some(p=>p.cells?.some(c=>c.special));if(has)return;
  const early=elapsed<420000?.55:1;const chance=Math.min(.20,(.04+desert.level*.010)*early);if(Math.random()<chance){const type=directorPick();if(type)attachItemToPiece(run.queue[0],type);}
 }
 const RELICS=['hourglass','sun','eye','hammer','scarab','ankh'];
