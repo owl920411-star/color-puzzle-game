@@ -22,7 +22,7 @@ function clearRows(board,rows){
   return falls;
 }
 class NormalGame extends E.Game{
-  constructor(seed){super(seed,'endless','glass','standard');this.combo=0;this.maxCombo=0;}
+  constructor(seed){super(seed,'endless','glass','standard');this.combo=0;this.maxCombo=0;this.stageSpeed=1.16;}
   makePiece(){const p=super.makePiece();for(const c of p.cells)c.mask=0;return p;}
   rotateDir(dir=1){
     if(!this.active)return false;const p=this.active,n=((dir%4)+4)%4;if(!n)return false;
