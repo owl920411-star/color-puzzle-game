@@ -176,12 +176,33 @@ function relicBalanceAudit(samples=600){
   for(let n=0;n<samples;n++){const base=simOne(2,60,n).death;let bonus=0;if(power===1)bonus=Math.min(360,Math.floor(base/150)*22);if(power===2)bonus=Math.min(600,Math.floor(base/120)*30);if(power===3)bonus=Math.min(900,Math.floor(base/100)*36);bonus+=power&&rng()<.16*power?90:0;const life=Math.min(3600,base+bonus);vals.push(life);if(life>=3600)immortal++;}
   vals.sort((a,b)=>a-b);return{name,avg:Math.round(vals.reduce((a,b)=>a+b,0)/samples),median:vals[Math.floor(samples/2)],max:vals[vals.length-1],immortal};});
 }
+function itemBalanceAudit(samples=3000){
+ const names=Object.keys(DESERT_ITEMS),stats=Object.fromEntries(names.map(k=>[k,{spawn:0,success:0,fail:0,lifeGain:0,deaths:0}]));
+ let unfair=0,overpowered=0,totalLife=0,baseLife=0;const rng=E.random('item-v1-audit');
+ for(let n=0;n<samples;n++){
+  const skill=n%5,base=simOne(skill,45,n).death;let life=base,goodStreak=0,badStreak=0,last='';
+  for(let minute=3;minute<Math.min(45,Math.ceil(base/60)+4);minute++){
+   const lv=Math.min(8,Math.max(1,Math.floor((minute-1)/2))),danger=life-base<180&&rng()<.22;
+   let pool=names.filter(k=>DESERT_ITEMS[k].unlock<=lv);if(danger)pool=pool.filter(k=>DESERT_ITEMS[k].kind==='good').concat(pool);
+   if(last==='bad'&&badStreak>=2)pool=pool.filter(k=>DESERT_ITEMS[k].kind!=='bad').concat(pool);
+   const type=pool[Math.floor(rng()*pool.length)],it=DESERT_ITEMS[type],s=stats[type];s.spawn++;
+   const successChance=Math.max(.18,Math.min(.88,[.30,.43,.56,.68,.78][skill]+(it.kind==='good'?.08:-.05)));
+   const success=rng()<successChance;if(success)s.success++;else s.fail++;
+   if(it.kind==='good'&&success){const gain=type==='oasis'?18:type==='sunburst'?28:22;life+=gain;s.lifeGain+=gain;if(gain>60)overpowered++;}
+   if(it.kind==='bad'){if(success){life+=8;s.lifeGain+=8;}else{const loss=type==='mummy'?10:type==='scarabCurse'?14:18;life-=loss;if(life<=base*.55){unfair++;s.deaths++;}}}
+   if(it.kind==='good'){goodStreak=last==='good'?goodStreak+1:1;badStreak=0;}else{badStreak=last==='bad'?badStreak+1:1;goodStreak=0;}last=it.kind;
+  }
+  baseLife+=base;totalLife+=Math.max(0,life);
+ }
+ const impact=(totalLife-baseLife)/Math.max(1,baseLife),rows=names.map(k=>{const s=stats[k];return{key:k,label:DESERT_ITEMS[k].label,...s,rate:s.spawn?Math.round(s.success/s.spawn*100):0};});
+ return{samples,impact,unfair,overpowered,rows,pass:impact<.22&&unfair<samples*.01&&overpowered===0};
+}
 function runSim(){
- const audit=patternAudit(5000),relics=relicBalanceAudit(600),names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4];
+ const audit=patternAudit(5000),relics=relicBalanceAudit(600),items=itemBalanceAudit(3000),names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4];
  const rows=skills.map((s,i)=>{const vals=[];let lv4=0,max=0,post20=0;for(let n=0;n<300;n++){const r=simOne(s,45,n);vals.push(r.death);if(r.death>=480)lv4++;if(r.death>=960)max++;if(r.death>=1200)post20++;}vals.sort((a,b)=>a-b);return{name:names[i],avg:Math.round(vals.reduce((a,b)=>a+b,0)/vals.length),median:vals[150],p90:vals[269],lv4,max,post20};});
  const normal=relics[1],none=relics[0],ratio=normal.avg/Math.max(1,none.avg),relicPass=ratio<1.35&&normal.immortal===0;
  const curvePass=rows[0].median<=rows[1].median&&rows[1].median<=rows[2].median&&rows[2].median<=rows[3].median&&rows[3].median<=rows[4].median;
- showPanel('<div class="kicker">DESERT BALANCE LAB</div><h2>7,500+ 자동 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · P90 ${Math.floor(r.p90/60)}:${String(r.p90%60).padStart(2,'0')} · 8분 ${r.lv4}/300 · MAX ${r.max}/300 · 20분 ${r.post20}/300`).join('<br>')+'<br><br><b>유물 비교 2,400판</b><br>'+relics.map(r=>`${r.name}: 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 60분 ${r.immortal}/600`).join('<br>')+'</div><p class="storage-note">난이도 곡선 '+(curvePass?'PASS':'REVIEW')+' · 패턴 '+(audit.pass?'PASS':'REVIEW')+' · 유물 '+(relicPass?'PASS':'REVIEW')+'<br>동일구멍 최대 '+audit.maxStreak+'연속 · 유물 평균 생존 기여 +'+Math.round((ratio-1)*100)+'%<br><br>실제 인간 플레이를 대체하지 않으며 수치 이상과 무한생존 허점을 찾는 용도입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
+ showPanel('<div class="kicker">DESERT BALANCE LAB</div><h2>7,500+ 자동 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · P90 ${Math.floor(r.p90/60)}:${String(r.p90%60).padStart(2,'0')} · 8분 ${r.lv4}/300 · MAX ${r.max}/300 · 20분 ${r.post20}/300`).join('<br>')+'<br><br><b>유물 비교 2,400판</b><br>'+relics.map(r=>`${r.name}: 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 60분 ${r.immortal}/600`).join('<br>')+'</div><p class="storage-note">난이도 곡선 '+(curvePass?'PASS':'REVIEW')+' · 패턴 '+(audit.pass?'PASS':'REVIEW')+' · 유물 '+(relicPass?'PASS':'REVIEW')+' · ITEM V1 '+(items.pass?'PASS':'REVIEW')+'<br>아이템 생존 영향 '+Math.round(items.impact*100)+'% · 억울한 사망 후보 '+items.unfair+'/'+items.samples+'<br>'+items.rows.map(r=>r.label+' 성공 '+r.rate+'%').join(' · ')+'<br>동일구멍 최대 '+audit.maxStreak+'연속 · 유물 평균 생존 기여 +'+Math.round((ratio-1)*100)+'%<br><br>실제 인간 플레이를 대체하지 않으며 수치 이상과 무한생존 허점을 찾는 용도입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
 }
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg(),danger=boardDanger();
