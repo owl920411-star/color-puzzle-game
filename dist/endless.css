@@ -21,3 +21,11 @@ body[data-kind="normal"][data-desert="5"],body[data-kind="normal"][data-desert="
 body[data-kind="normal"][data-desert="7"],body[data-kind="normal"][data-desert="8"]{background:radial-gradient(circle at 50% 30%,#6d4b31 0,#251b18 45%,#080707 88%)}
 
 .item-force-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.item-force-grid button{padding:8px 4px;font-size:10px;min-height:38px}
+
+/* CONTROL 15 — enlarged hard-drop rail. Order remains HOLD → ROTATE → DROP. */
+body[data-kind="normal"] .hold-card{flex:.72 1 54px;max-height:72px}
+body[data-kind="normal"] .rotate-card{flex:.72 1 54px;max-height:72px}
+body[data-kind="normal"] .drop-card{flex:1.65 1 112px;max-height:142px;min-height:92px}
+body[data-kind="normal"] .drop-card b{font-size:38px;line-height:1}
+body[data-kind="normal"] .drop-card span{font-size:12px;font-weight:700}
+body[data-kind="normal"] .rotate-card b{font-size:30px}
