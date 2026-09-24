@@ -101,23 +101,34 @@ function patternAudit(samples=5000){
  const rng=E.random('pattern-audit');for(let i=0;i<samples;i++){let h=Math.floor(rng()*10);if(h===prev&&streak>=2)h=(h+1+Math.floor(rng()*8))%10;counts[h]++;if(h===0||h===9)edge++;streak=h===prev?streak+1:1;maxStreak=Math.max(maxStreak,streak);prev=h;}
  const avg=samples/10,maxDev=Math.max(...counts.map(n=>Math.abs(n-avg)/avg));return{samples,maxStreak,maxDev,edgeRate:edge/samples,pass:maxStreak<=3&&maxDev<.12};
 }
-function simOne(skill=2,minutes=30){
- const rng=E.random('desert-sim-'+skill+'-'+minutes),board=Array.from({length:20},()=>Array(10).fill(0));let lines=0,rises=0,death=minutes*60;
- const holes=()=>{let best=0,bh=-1;for(let x=0;x<10;x++){let h=0;for(let y=0;y<20;y++)h+=board[y][x];if(h>bh){bh=h;best=x;}}return best;};
- for(let sec=0;sec<minutes*60;sec++){const lv=Math.min(8,Math.max(0,Math.floor(sec/120)));const clearChance=[.10,.16,.22,.28,.34][Math.max(0,Math.min(4,skill))];if(rng()<clearChance){board.pop();board.unshift(Array(10).fill(0));lines++;}
-  const intervals=[99999,30,25,20,17,15,13,11,10],iv=intervals[lv];if(lv&&sec%iv===0){if(board[0].some(Boolean)){death=sec;break;}const gap=holes();board.shift();board.push(Array.from({length:10},(_,x)=>x===gap?0:1));rises++;}
-  if(rng()<.11){const x=Math.floor(rng()*10);for(let y=19;y>=0;y--)if(!board[y][x]){board[y][x]=1;break;}}
- }return{death,lines,rises};
+function simOne(skill=2,minutes=45,seedN=0){
+ const rng=E.random('desert-sim-'+skill+'-'+minutes+'-'+seedN),board=Array.from({length:20},()=>Array(10).fill(0));let lines=0,rises=0,death=minutes*60,maxLevel=0,escapes=0,collapses=0;
+ const clearChance=[.055,.085,.115,.145,.175][Math.max(0,Math.min(4,skill))],tetrisChance=[.015,.025,.04,.055,.07][Math.max(0,Math.min(4,skill))];
+ const height=()=>{for(let y=0;y<20;y++)if(board[y].some(Boolean))return 20-y;return 0;};
+ const bestGap=()=>{let best=0,bh=99;for(let x=0;x<10;x++){let h=0;for(let y=0;y<20;y++)if(board[y][x]){h=20-y;break;}if(h<bh){bh=h;best=x;}}return best;};
+ let nextRise=120,delay=0;
+ for(let sec=0;sec<minutes*60;sec++){
+  const lv=Math.min(8,Math.max(0,Math.floor(sec/120)));maxLevel=Math.max(maxLevel,lv);
+  if(rng()<clearChance){const rows=rng()<tetrisChance?4:1;for(let q=0;q<rows;q++){board.pop();board.unshift(Array(10).fill(0));lines++;}if(rows===4&&lv){delay=Math.min(10,delay+5);collapses++;}}
+  const intervals=[99999,30,25,20,17,15,13,11,10],iv=intervals[lv];
+  if(lv&&sec>=nextRise+delay){if(board[0].some(Boolean)){death=sec;break;}const gap=bestGap();board.shift();board.push(Array.from({length:10},(_,x)=>x===gap?0:1));rises++;nextRise=sec+iv;delay=0;}
+  const pressure=.065+.006*lv;if(rng()<pressure){const x=Math.floor(rng()*10);for(let y=19;y>=0;y--)if(!board[y][x]){board[y][x]=1;break;}}
+  if(lv&&nextRise+delay-sec<=3&&rng()<clearChance*.35)escapes++;
+  if(height()>=20){death=sec;break;}
+ }
+ return{death,lines,rises,maxLevel,escapes,collapses};
 }
-function relicBalanceAudit(samples=400){
- const modes=[['NONE',0],['NORMAL',1],['DOUBLE',2],['OPTIMAL',3]],rng=E.random('relic-balance');return modes.map(([name,power])=>{let sum=0,max=0,immortal=0;
-  for(let n=0;n<samples;n++){let life=900+Math.floor(rng()*420),rises=Math.floor(life/18);if(power===1)life+=Math.min(420,rises*4);if(power===2)life+=Math.min(720,rises*7);if(power===3)life+=Math.min(1050,rises*9);if(power>0&&rng()<.18*power)life+=120;if(life>=3600)immortal++;sum+=life;max=Math.max(max,life);}
-  return{name,avg:Math.round(sum/samples),max,immortal};});
+function relicBalanceAudit(samples=600){
+ const modes=[['NONE',0],['NORMAL',1],['DOUBLE',2],['OPTIMAL',3]],rng=E.random('relic-balance-v2');return modes.map(([name,power])=>{let vals=[],immortal=0;
+  for(let n=0;n<samples;n++){const base=simOne(2,60,n).death;let bonus=0;if(power===1)bonus=Math.min(360,Math.floor(base/150)*22);if(power===2)bonus=Math.min(600,Math.floor(base/120)*30);if(power===3)bonus=Math.min(900,Math.floor(base/100)*36);bonus+=power&&rng()<.16*power?90:0;const life=Math.min(3600,base+bonus);vals.push(life);if(life>=3600)immortal++;}
+  vals.sort((a,b)=>a-b);return{name,avg:Math.round(vals.reduce((a,b)=>a+b,0)/samples),median:vals[Math.floor(samples/2)],max:vals[vals.length-1],immortal};});
 }
 function runSim(){
- const audit=patternAudit(5000),relics=relicBalanceAudit(400),names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4],rows=skills.map((s,i)=>{let vals=[],best=0;for(let n=0;n<200;n++){const r=simOne(s,30);vals.push(r.death);best=Math.max(best,r.death);}vals.sort((a,b)=>a-b);const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length),median=vals[Math.floor(vals.length/2)],reach8=vals.filter(v=>v>=480).length,reach16=vals.filter(v=>v>=960).length;return{name:names[i],avg,median,best,reach8,reach16};});
- const normal=relics.find(r=>r.name==='NORMAL'),none=relics.find(r=>r.name==='NONE'),ratio=normal.avg/none.avg,relicPass=ratio<1.45&&normal.immortal===0;
- showPanel('<div class="kicker">DESERT SIMULATION</div><h2>자동 밸런스 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · LV4 ${r.reach8}/200 · MAX ${r.reach16}/200`).join('<br>')+'<br><br><b>유물 비교</b><br>'+relics.map(r=>`${r.name}: 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 60분 생존 ${r.immortal}/400`).join('<br>')+'</div><p class="storage-note">패턴 5,000회: '+(audit.pass?'PASS':'REVIEW')+' · 동일구멍 최대 '+audit.maxStreak+'연속 · 분포편차 '+Math.round(audit.maxDev*100)+'%<br>유물 과성능: '+(relicPass?'PASS':'REVIEW')+' · 정상 유물 생존 기여 +'+Math.round((ratio-1)*100)+'%<br><br>BOT은 재미 판정자가 아니라 허점 탐색용입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
+ const audit=patternAudit(5000),relics=relicBalanceAudit(600),names=['ROOKIE','NORMAL','EXPERT','MASTER','PERFECT'],skills=[0,1,2,3,4];
+ const rows=skills.map((s,i)=>{const vals=[];let lv4=0,max=0,post20=0;for(let n=0;n<300;n++){const r=simOne(s,45,n);vals.push(r.death);if(r.death>=480)lv4++;if(r.death>=960)max++;if(r.death>=1200)post20++;}vals.sort((a,b)=>a-b);return{name:names[i],avg:Math.round(vals.reduce((a,b)=>a+b,0)/vals.length),median:vals[150],p90:vals[269],lv4,max,post20};});
+ const normal=relics[1],none=relics[0],ratio=normal.avg/Math.max(1,none.avg),relicPass=ratio<1.35&&normal.immortal===0;
+ const curvePass=rows[0].median<=rows[1].median&&rows[1].median<=rows[2].median&&rows[2].median<=rows[3].median&&rows[3].median<=rows[4].median;
+ showPanel('<div class="kicker">DESERT BALANCE LAB</div><h2>7,500+ 자동 검증</h2><div class="rule-box">'+rows.map(r=>`<b>${r.name}</b> 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · P90 ${Math.floor(r.p90/60)}:${String(r.p90%60).padStart(2,'0')} · 8분 ${r.lv4}/300 · MAX ${r.max}/300 · 20분 ${r.post20}/300`).join('<br>')+'<br><br><b>유물 비교 2,400판</b><br>'+relics.map(r=>`${r.name}: 중앙 ${Math.floor(r.median/60)}:${String(r.median%60).padStart(2,'0')} · 평균 ${Math.floor(r.avg/60)}:${String(r.avg%60).padStart(2,'0')} · 60분 ${r.immortal}/600`).join('<br>')+'</div><p class="storage-note">난이도 곡선 '+(curvePass?'PASS':'REVIEW')+' · 패턴 '+(audit.pass?'PASS':'REVIEW')+' · 유물 '+(relicPass?'PASS':'REVIEW')+'<br>동일구멍 최대 '+audit.maxStreak+'연속 · 유물 평균 생존 기여 +'+Math.round((ratio-1)*100)+'%<br><br>실제 인간 플레이를 대체하지 않으며 수치 이상과 무한생존 허점을 찾는 용도입니다.</p><button class="primary" data-menu="back">DEV LAB</button>','sim');
 }
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg();
