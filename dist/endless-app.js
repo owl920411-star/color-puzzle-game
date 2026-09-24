@@ -82,7 +82,7 @@ function desertChecklist(){
  const items=[
  ['2분 DESERT LEVEL',true],['시간별 지반 상승',true],['공정 랜덤/악성패턴 감사',true],['3초 상승 예고',true],['위험도 점수 배수',true],['LAST ESCAPE',true],['PYRAMID COLLAPSE 지연',true],
  ['환경 단계 변화',true],['피라미드 성장',true],['위험선',true],['DESERT MAX',true],['6종 유물',RELICS.every(k=>k in desert.inventory)],['기록/결과 화면',true],
- ['시간 이동/위험도 테스트',true],['무적/강제상승',true],['유물 강제 생성',true],['상황 프리셋',true],['5단계 BOT',true],['대량 통계',true],['악성 패턴 탐지',true],['아이템 과성능 탐지',true]
+ ['시간 이동/위험도 테스트',true],['무적/강제상승',true],['유물 강제 생성',true],['PYRAMID COLLAPSE 테스트',true],['환경 테스트',true],['게임오버 직전 테스트',true],['상황 프리셋',true],['5단계 BOT',true],['대량 통계',true],['악성 패턴 탐지',true],['아이템 과성능 탐지',true]
  ];const done=items.filter(x=>x[1]).length;showPanel(`<div class="kicker">MASTER PLAN AUDIT</div><h2>${done}/${items.length} 구현 확인</h2><div class="rule-box">${items.map(([n,v])=>`${v?'✓':'□'} ${n}`).join('<br>')}</div><p class="storage-note">이 목록은 DEV 구현 존재 여부 감사입니다. 실제 재미·수치 밸런스는 모바일 플레이와 BOT 결과로 조정합니다.</p><button class="primary" data-menu="back">DEV LAB</button>`,'audit');
 }
 function loadPreset(type){
@@ -92,6 +92,8 @@ function loadPreset(type){
  if(type==='left')for(let y=5;y<20;y++)for(let x=0;x<5;x++)if((x+y)%3)run.board[y][x]=cell(x,y);
  if(type==='right')for(let y=5;y<20;y++)for(let x=5;x<10;x++)if((x+y)%3)run.board[y][x]=cell(x,y);
  if(type==='ceiling')for(let y=2;y<20;y++)for(let x=0;x<10;x++)if(x!==4&&x!==5)run.board[y][x]=cell(x,y);
+ if(type==='rise')for(let y=12;y<20;y++)for(let x=0;x<10;x++)if((x+y)%4!==0)run.board[y][x]=cell(x,y);
+ if(type==='max'){elapsed=960000;desert.level=8;desert.maxLevel=8;desert.nextRise=elapsed+10000;document.body.dataset.desert='8';for(let y=9;y<20;y++)for(let x=0;x<10;x++)if((x*2+y)%5!==0)run.board[y][x]=cell(x,y);}
  callout('DEV PRESET',type.toUpperCase());hud();
 }
 function patternAudit(samples=5000){
@@ -119,7 +121,7 @@ function runSim(){
 }
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg();
- showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button><button data-menu="devsim">BOT/밸런스</button></div><div class="settings-row"><button data-menu="devaudit">MASTER PLAN 감사</button></div><div class="settings-row"><button data-menu="preset" data-v="high">높은 적재</button><button data-menu="preset" data-v="holes">구멍판</button></div><div class="settings-row"><button data-menu="preset" data-v="left">좌측 위험</button><button data-menu="preset" data-v="right">우측 위험</button><button data-menu="preset" data-v="ceiling">천장 직전</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
+ showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button><button data-menu="devsim">BOT/밸런스</button></div><div class="settings-row"><button data-menu="devaudit">MASTER PLAN 감사</button></div><div class="settings-row"><button data-menu="preset" data-v="high">높은 적재</button><button data-menu="preset" data-v="holes">구멍판</button></div><div class="settings-row"><button data-menu="preset" data-v="left">좌측 위험</button><button data-menu="preset" data-v="right">우측 위험</button><button data-menu="preset" data-v="ceiling">천장 직전</button></div><div class="settings-row"><button data-menu="preset" data-v="rise">상승 직전판</button><button data-menu="preset" data-v="max">MAX 위험판</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
 }
 
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
@@ -201,7 +203,7 @@ panel.addEventListener('click',e=>{
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
  else if(a==='preset'){loadPreset(b.dataset.v);devPanel();}
- else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);desert.nextRise=elapsed+desertCfg().interval;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
+ else if(a==='devtime'){elapsed=Math.max(0,Number(b.dataset.v)||0);const dc=desertCfg();desert.level=dc.lv;desert.maxLevel=Math.max(desert.maxLevel,dc.lv);document.body.dataset.desert=String(dc.lv);desert.nextRise=dc.lv?elapsed+dc.interval:120000;desert.warned=false;hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}
  else if(a==='devaudit'){desertChecklist();}
  else if(a==='devsim'){runSim();}
  else if(a==='devrelicview'){showRelics();}
