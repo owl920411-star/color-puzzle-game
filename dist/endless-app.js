@@ -26,9 +26,9 @@ const DESERT_LEVELS=[
  {at:840000,lv:7,interval:11000,mult:2.15,label:'ETERNAL DESERT'},
  {at:960000,lv:8,interval:10000,mult:2.40,label:'DESERT MAX'}
 ];
-let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};
+let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
-function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};document.body.dataset.desert='0';}
+function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';}
 function desertRecord(final=false){
  if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
  writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
@@ -40,18 +40,18 @@ function fairHoles(){
  choices=choices.filter(x=>!desert.lastHoles.includes(x)).concat(choices.filter(x=>desert.lastHoles.includes(x)));
  const d=boardDanger();if(d.top<5)choices=choices.filter(x=>heights[x]>=7).concat(choices.filter(x=>heights[x]<7));
  const first=choices[0]??Math.floor(Math.random()*10),second=Math.max(0,Math.min(9,first+(first<5?1:-1)));
- const holes=desert.level<=3?[first,second]:[first];desert.lastHoles=holes;return holes;
+ const danger=d.top<6,holes=(desert.level<=3||danger)?[first,second]:[first];desert.lastHoles=holes;return holes;
 }
 
 const RELICS=['hourglass','sun','eye','hammer','scarab','ankh'];
 const RELIC_NAMES={hourglass:'시간의 모래시계',sun:'태양의 부적',eye:'호루스의 눈',hammer:'파라오의 망치',scarab:'황금 스카라베',ankh:'앙크'};
 function awardRelic(reason='SURVIVAL'){
- if(kind!=='normal'||desert.level===0)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];
- if(desert.inventory[key]>=2)return;desert.inventory[key]++;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();
+ if(kind!=='normal'||desert.level===0||elapsed-desert.lastRelicAt<45000)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];
+ if(desert.inventory[key]>=2)return;desert.inventory[key]++;desert.lastRelicAt=elapsed;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();
 }
 function useRelic(key){
  if(kind!=='normal'||!desert.inventory[key])return false;desert.inventory[key]--;
- if(key==='hourglass')desert.delay+=10000;
+ if(key==='hourglass')desert.delay=Math.min(15000,desert.delay+10000);
  else if(key==='sun'){run.board.pop();run.board.unshift(Array(10).fill(null));}
  else if(key==='eye'){desert.previewHoles=fairHoles();}
  else if(key==='hammer'){for(let y=16;y<20;y++)for(let x=4;x<=6;x++)run.board[y][x]=null;}
@@ -318,7 +318,7 @@ function emitNormal(plan,result){
  const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}if(desert.scarabUntil>elapsed){run.score+=result.gain;result.gain*=2;}
  const imminent=kind==='normal'&&cfg.lv>0&&(desert.nextRise+desert.delay-elapsed)<=3000;
  if(imminent){const bonus=250*cfg.lv;run.score+=bonus;desert.lastEscapeUntil=elapsed+1000;callout('LAST ESCAPE','+'+bonus.toLocaleString()+'점 · 상승 직전 탈출');}
- if(plan.rows.length===4&&cfg.lv>0){desert.delay+=5000;awardRelic('PYRAMID COLLAPSE');desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
+ if(plan.rows.length===4&&cfg.lv>0){desert.delay=Math.min(15000,desert.delay+5000);awardRelic('PYRAMID COLLAPSE');desert.warned=false;callout('PYRAMID COLLAPSE','다음 지반 상승 +5초 지연');}
  const title=plan.rows.length===4?'4 LINES!':plan.rows.length+' LINE'+(plan.rows.length>1?'S':'');if(!imminent&&plan.rows.length!==4)callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',plan.rows.length);vibrate(result.combo>1?[12,35,12]:12);
 }
 function sandEvents(){
