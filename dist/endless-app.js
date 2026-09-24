@@ -52,7 +52,7 @@ const DESERT_ITEMS={
  pharaoh:{kind:'good',unlock:5,label:'PHARAOH',icon:'P',color:'#f4c86b'},
  anubis:{kind:'bad',unlock:6,label:'ANUBIS',icon:'A',color:'#a48bbd'}
 };
-let itemSystem={enabled:true,goodStreak:0,badStreak:0,lastKind:null,serial:0,active:[],stats:{spawned:0,good:0,bad:0,cleared:0,failed:0}};
+let itemSystem={enabled:true,goodStreak:0,badStreak:0,lastKind:null,serial:0,active:[],purify:0,stats:{spawned:0,good:0,bad:0,cleared:0,failed:0}};
 function itemEligible(){return kind==='normal'&&desert.level>0&&itemSystem.enabled;}
 function directorPick(forceKind=null){
  if(!itemEligible())return null;const danger=boardDanger(),pool=Object.entries(DESERT_ITEMS).filter(([,v])=>v.unlock<=desert.level&&(forceKind? v.kind===forceKind:true));if(!pool.length)return null;
@@ -68,6 +68,9 @@ function attachItemToPiece(piece,type){
 function findSpecials(){const out=[];if(!run?.board)return out;for(let y=0;y<20;y++)for(let x=0;x<10;x++){const cell=run.board[y][x];if(cell?.special)out.push({x,y,cell,s:cell.special});}return out;}
 function clearAround(cx,cy,r=1){let n=0;for(let y=Math.max(0,cy-r);y<=Math.min(19,cy+r);y++)for(let x=Math.max(0,cx-r);x<=Math.min(9,cx+r);x++){if(run.board[y][x]){run.board[y][x]=null;n++;}}return n;}
 function safeCurseBlock(cx,cy){const opts=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const x=cx+dx,y=cy+dy;if(x>=0&&x<10&&y>=5&&y<20&&!run.board[y][x])opts.push({x,y});}if(!opts.length)return false;const p=opts[Math.floor(Math.random()*opts.length)];run.board[p.y][p.x]={type:'J',mask:0,id:++run.serial,desert:true,curseSpawn:true};return true;}
+function rewardPurification(){
+ itemSystem.purify++;if(itemSystem.purify<2)return;itemSystem.purify=0;const type=directorPick('good');if(type&&run?.queue?.[1]&&!run.queue[1].cells.some(c=>c.special)){attachItemToPiece(run.queue[1],type);callout('DESERT BLESSING','저주 정화 보상 · GOOD ITEM 예약');}
+}
 function itemClearEffects(plan){
  const cleared=plan.cells.filter(c=>c.cell?.special);if(!cleared.length)return;
  for(const c of cleared){const sp=c.cell.special,type=sp.type,it=DESERT_ITEMS[type];if(!it)continue;
@@ -76,9 +79,9 @@ function itemClearEffects(plan){
   if(type==='oasis'){desert.delay=Math.min(15000,desert.delay+8000);callout('OASIS','다음 지반 상승 +8초');}
   else if(type==='sunburst'){setTimeout(()=>{const n=clearAround(c.x,c.y,1);run.score+=n*25;},0);callout('SUN BURST','주변 사암 붕괴');}
   else if(type==='pharaoh'){desert.scarabUntil=Math.max(desert.scarabUntil,elapsed+10000);desert.previewHoles=fairHoles();callout("PHARAOH'S BLESSING",'10초 SCORE ×2 · 다음 지반 예고');}
-  else if(type==='scarabCurse'){run.score+=300;callout('CURSE BROKEN','SCARAB 정화 +300');}
-  else if(type==='anubis'){run.score+=500;callout('ANUBIS DEFEATED','심판 극복 +500');}
-  else if(type==='mummy'){run.score+=350;callout('MUMMY PURIFIED','저주 정화 +350');}
+  else if(type==='scarabCurse'){run.score+=300;rewardPurification();callout('CURSE BROKEN','SCARAB 정화 +300');}
+  else if(type==='anubis'){run.score+=500;rewardPurification();callout('ANUBIS DEFEATED','심판 극복 +500');}
+  else if(type==='mummy'){run.score+=350;rewardPurification();callout('MUMMY PURIFIED','저주 정화 +350');}
  }
 }
 function itemTick(){
@@ -181,7 +184,7 @@ function runSim(){
 }
 function devPanel(){
  if(kind!=='normal')return;const cfg=desertCfg(),danger=boardDanger();
- showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}<br>보드 높이 ${20-danger.top}/20 · 내부 구멍 ${danger.holes} · 표면 요철 ${danger.bump}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button><button data-menu="devsim">BOT/밸런스</button></div><div class="settings-row"><button data-menu="devaudit">MASTER PLAN 감사</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="forcegood">GOOD 강제</button><button data-menu="forcebad">BAD 강제</button></div><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="forceitem" data-v="${k}">${v.label}</button>`).join('')}</div><div class="rule-box" style="margin-top:8px">ITEM DIRECTOR · GOOD ${itemSystem.goodStreak}연속 / BAD ${itemSystem.badStreak}연속<br>생성 ${itemSystem.stats.spawned} · 성공 ${itemSystem.stats.cleared} · 실패 ${itemSystem.stats.failed}</div><div class="settings-row"><button data-menu="preset" data-v="high">높은 적재</button><button data-menu="preset" data-v="holes">구멍판</button></div><div class="settings-row"><button data-menu="preset" data-v="left">좌측 위험</button><button data-menu="preset" data-v="right">우측 위험</button><button data-menu="preset" data-v="ceiling">천장 직전</button></div><div class="settings-row"><button data-menu="preset" data-v="rise">상승 직전판</button><button data-menu="preset" data-v="max">MAX 위험판</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note"><b>모바일 확인 순서</b><br>① 2분 → 경고/첫 상승 ② 8분 → 속도/유물 ③ MAX → 위험선/회복성 ④ 천장 직전 → 앙크 ⑤ BOT/밸런스 → PASS 확인<br><br>DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
+ showPanel(`<div class="kicker">DEV LAB · DESERT SURVIVAL</div><h2>고수 구간 즉시 테스트</h2><div class="rule-box">현재 ${timeText()} · DESERT LV.${cfg.lv}<br>지반 상승 ${desert.rises}회 · 무적 ${desert.invincible?'ON':'OFF'}<br>보드 높이 ${20-danger.top}/20 · 내부 구멍 ${danger.holes} · 표면 요철 ${danger.bump}</div><div class="settings-row"><button data-menu="devtime" data-v="120000">2분</button><button data-menu="devtime" data-v="480000">8분</button><button data-menu="devtime" data-v="960000">MAX</button></div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devdanger">천장 직전</button><button data-menu="devinv">무적 ${desert.invincible?'끄기':'켜기'}</button></div><div class="settings-row"><button data-menu="devrelic">유물 전부 +1</button><button data-menu="devrelicview">유물함</button><button data-menu="devsim">BOT/밸런스</button></div><div class="settings-row"><button data-menu="devaudit">MASTER PLAN 감사</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="forcegood">GOOD 강제</button><button data-menu="forcebad">BAD 강제</button></div><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="forceitem" data-v="${k}">${v.label}</button>`).join('')}</div><div class="rule-box" style="margin-top:8px">ITEM DIRECTOR · GOOD ${itemSystem.goodStreak}연속 / BAD ${itemSystem.badStreak}연속<br>생성 ${itemSystem.stats.spawned} · 성공 ${itemSystem.stats.cleared} · 실패 ${itemSystem.stats.failed}<br>정화 게이지 ${itemSystem.purify}/2</div><div class="settings-row"><button data-menu="preset" data-v="high">높은 적재</button><button data-menu="preset" data-v="holes">구멍판</button></div><div class="settings-row"><button data-menu="preset" data-v="left">좌측 위험</button><button data-menu="preset" data-v="right">우측 위험</button><button data-menu="preset" data-v="ceiling">천장 직전</button></div><div class="settings-row"><button data-menu="preset" data-v="rise">상승 직전판</button><button data-menu="preset" data-v="max">MAX 위험판</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note"><b>모바일 확인 순서</b><br>① 2분 → 경고/첫 상승 ② 8분 → 속도/유물 ③ MAX → 위험선/회복성 ④ 천장 직전 → 앙크 ⑤ BOT/밸런스 → PASS 확인<br><br>DEV 전용 · CONTROL 14 입력 로직은 변경하지 않습니다.</p>`,'dev');
 }
 
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
