@@ -28,7 +28,7 @@ const DESERT_LEVELS=[
 ];
 let desert={level:0,nextRise:Infinity,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
-function resetDesert(){desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};document.body.dataset.desert='0';}
+function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:120000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,devTime:null,inventory:{hourglass:0,sun:0,eye:0,hammer:0,scarab:0,ankh:0},scarabUntil:0,previewHoles:null,relicMeter:0};document.body.dataset.desert='0';}
 function desertRecord(final=false){
  if(kind!=='normal')return;const sec=Math.floor(elapsed/1000);
  writeStore(s=>{s.desertSurvival=object(s.desertSurvival);const d=s.desertSurvival;d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});
@@ -52,9 +52,9 @@ function awardRelic(reason='SURVIVAL'){
 function useRelic(key){
  if(kind!=='normal'||!desert.inventory[key])return false;desert.inventory[key]--;
  if(key==='hourglass')desert.delay+=10000;
- else if(key==='sun'){run.board.shift();run.board.unshift(Array(10).fill(null));}
+ else if(key==='sun'){run.board.pop();run.board.unshift(Array(10).fill(null));}
  else if(key==='eye'){desert.previewHoles=fairHoles();}
- else if(key==='hammer'){for(let y=19;y>=0;y--)for(let x=0;x<10;x++)if(run.board[y][x]&&Math.abs(x-5)<=1){run.board[y][x]=null;if(--y<15)break;}}
+ else if(key==='hammer'){for(let y=16;y<20;y++)for(let x=4;x<=6;x++)run.board[y][x]=null;}
  else if(key==='scarab')desert.scarabUntil=elapsed+20000;
  else if(key==='ankh'){} // consumed automatically at lethal rise; manual use is intentionally disabled.
  callout(RELIC_NAMES[key],key==='scarab'?'20초 SCORE ×2':'유물 사용');hud();return true;
@@ -185,7 +185,7 @@ function pause(){if(!playing())return;beforePause=state;state='paused';clearInpu
 function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">점수 규칙 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">일반·모래 선택</button>`,'pause');}
 function resume(){if(state!=='paused')return;clearInput();state=beforePause;last=performance.now();hidePanel();hud();}
 function finish(){
- if(state==='over')return;state='over';clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
+ if(state==='over')return;state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
  const ds=object(readStore().desertSurvival);showPanel(`<div class="kicker">${run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>DESERT ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 DESERT LV.${finite(ds.maxLevel)}`:''}</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
 }
 function settings(){
