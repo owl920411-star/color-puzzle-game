@@ -60,8 +60,8 @@ function useRelic(key){
  callout(RELIC_NAMES[key],key==='scarab'?'20초 SCORE ×2':'유물 사용');hud();return true;
 }
 function relicHTML(){return RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'?'disabled':''}>${RELIC_NAMES[k]} ×${desert.inventory[k]}</button>`).join('');}
-function showRelics(){if(!run||kind!=='normal')return;beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">DESERT RELICS</div><h2>사막 유물</h2><div class="relic-grid">${relicHTML()}</div><p class="storage-note">앙크는 치명적인 지반 상승 순간 자동 발동합니다.</p><button class="primary" data-menu="back">게임으로 돌아가기</button>`,'relic');}
-panel.addEventListener('click',e=>{const b=e.target.closest('[data-relic]');if(!b||b.disabled)return;if(useRelic(b.dataset.relic)){hidePanel();state='playing';last=performance.now();}});
+function showRelics(){if(!run||kind!=='normal')return;if(state!=='paused')beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">DESERT RELICS</div><h2>사막 유물</h2><div class="relic-grid">${relicHTML()}</div><p class="storage-note">앙크는 치명적인 지반 상승 순간 자동 발동합니다.</p><button class="primary" data-menu="back">게임으로 돌아가기</button>`,'relic');}
+panel.addEventListener('click',e=>{const b=e.target.closest('[data-relic]');if(!b||b.disabled)return;if(useRelic(b.dataset.relic)){if(overlayView==='relic'&&beforePause==='paused'){devPanel();}else{hidePanel();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hud();}}});
 function riseGround(){
  if(kind!=='normal'||!run?.board)return;
  if(run.board[0].some(Boolean)&&!desert.invincible){if(desert.inventory.ankh>0){desert.inventory.ankh--;for(let y=0;y<4;y++)run.board[y]=Array(10).fill(null);callout('ANKH REVIVAL','위기 구조 · 상단 4줄 정화');}else{finish();return;}}
@@ -194,7 +194,7 @@ function start(retry=false){
  state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
  loadBest();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();
 }
-function pause(){if(!playing())return;beforePause=state;state='paused';clearInput();rememberScore();pausePanel();hud();}
+function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
 function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">점수 규칙 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">일반·모래 선택</button>`,'pause');}
 function resume(){if(state!=='paused')return;clearInput();state=beforePause;last=performance.now();hidePanel();hud();}
 function finish(){
@@ -222,7 +222,7 @@ panel.addEventListener('click',e=>{
  else if(a==='devinv'){desert.invincible=!desert.invincible;devPanel();}
  else if(a==='devrelic'){for(const k of RELICS)desert.inventory[k]=Math.max(1,desert.inventory[k]);devPanel();}
  else if(a==='devdanger'){for(let y=3;y<20;y++)for(let x=0;x<10;x++)if(y>13&&x!==4&&x!==5&&!run.board[y][x])run.board[y][x]={type:'J',mask:0,id:++run.serial,desert:true};hidePanel();state='playing';last=performance.now();hud();}
- else if(a==='back'){if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over'){state='paused';beforePause='playing';menu();}else showMenu();}
+ else if(a==='back'){if(['sim','audit','relic'].includes(overlayView)){devPanel();}else if(overlayView==='dev'){resume();}else if(overlayView==='preview'){if(previewReturn==='playing')resume();else if(previewReturn==='pause')pausePanel();else showMenu();}else if(state==='paused')resume();else if(state==='over'){state='paused';beforePause='playing';menu();}else showMenu();}
 });
 function hud(){
  if(!run)return;document.body.dataset.kind=kind;$('mode-label').textContent=name()+' · 무한 모드';
