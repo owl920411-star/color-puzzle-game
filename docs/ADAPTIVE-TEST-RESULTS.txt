@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: bridge measures actual lock, not next previews or button spam
+ok 1 - bridge measures actual lock, not next previews or button spam
+  ---
+  duration_ms: 4.356773
+  type: 'test'
+  ...
+# Subtest: observer leaves already scheduled deadline and base interval unchanged
+ok 2 - observer leaves already scheduled deadline and base interval unchanged
+  ---
+  duration_ms: 5.156685
+  type: 'test'
+  ...
+# Subtest: active mode alters only returned future interval, not board or current deadline
+ok 3 - active mode alters only returned future interval, not board or current deadline
+  ---
+  duration_ms: 4.743872
+  type: 'test'
+  ...
+# Subtest: configuration change is next-game-only
+ok 4 - configuration change is next-game-only
+  ---
+  duration_ms: 0.912388
+  type: 'test'
+  ...
+# Subtest: menu and clear animation frames are excluded
+ok 5 - menu and clear animation frames are excluded
+  ---
+  duration_ms: 0.70871
+  type: 'test'
+  ...
+# Subtest: system-only removal not credited as natural lines
+ok 6 - system-only removal not credited as natural lines
+  ---
+  duration_ms: 0.449921
+  type: 'test'
+  ...
+# Subtest: no board or curse scan in per-frame clock ticks
+ok 7 - no board or curse scan in per-frame clock ticks
+  ---
+  duration_ms: 0.438261
+  type: 'test'
+  ...
+# Subtest: normal completed session records bounded diagnostics separately
+ok 8 - normal completed session records bounded diagnostics separately
+  ---
+  duration_ms: 4.444638
+  type: 'test'
+  ...
+# Subtest: end callback cannot double-save/learn a completed session
+ok 9 - end callback cannot double-save/learn a completed session
+  ---
+  duration_ms: 6.385781
+  type: 'test'
+  ...
+# Subtest: temporary session keeps diagnosis in memory but does not persist
+ok 10 - temporary session keeps diagnosis in memory but does not persist
+  ---
+  duration_ms: 3.446696
+  type: 'test'
+  ...
+# Subtest: developer preset blocks real adaptation and training
+ok 11 - developer preset blocks real adaptation and training
+  ---
+  duration_ms: 3.345389
+  type: 'test'
+  ...
+# Subtest: pagehide checkpoint gets overwritten by final result, never treated as death
+ok 12 - pagehide checkpoint gets overwritten by final result, never treated as death
+  ---
+  duration_ms: 1.885866
+  type: 'test'
+  ...
+# Subtest: reset preserves game bests and excludes current run from training
+ok 13 - reset preserves game bests and excludes current run from training
+  ---
+  duration_ms: 0.762368
+  type: 'test'
+  ...
+# Subtest: blocked storage still supports in-memory play and informs user
+ok 14 - blocked storage still supports in-memory play and informs user
+  ---
+  duration_ms: 0.405324
+  type: 'test'
+  ...
+# Subtest: diagnostic export requires explicit click and includes ruleset
+ok 15 - diagnostic export requires explicit click and includes ruleset
+  ---
+  duration_ms: 0.350331
+  type: 'test'
+  ...
+# Subtest: history storage retains at most twenty outcomes
+ok 16 - history storage retains at most twenty outcomes
+  ---
+  duration_ms: 3.633183
+  type: 'test'
+  ...
+# Subtest: sand mode not observed or modified
+ok 17 - sand mode not observed or modified
+  ---
+  duration_ms: 0.402926
+  type: 'test'
+  ...
+# Subtest: settings panel returns to the exact source overlay
+ok 18 - settings panel returns to the exact source overlay
+  ---
+  duration_ms: 0.18502
+  type: 'test'
+  ...
+# Subtest: no session alters gravity, score, NEXT, game over target or curse timers
+ok 19 - no session alters gravity, score, NEXT, game over target or curse timers
+  ---
+  duration_ms: 2.415227
+  type: 'test'
+  ...
+# Subtest: default is observation, validated preferences
+ok 20 - default is observation, validated preferences
+  ---
+  duration_ms: 2.580963
+  type: 'test'
+  ...
+# Subtest: board metrics track holes, not just occupied count
+ok 21 - board metrics track holes, not just occupied count
+  ---
+  duration_ms: 0.370239
+  type: 'test'
+  ...
+# Subtest: natural row compaction does not mutate input
+ok 22 - natural row compaction does not mutate input
+  ---
+  duration_ms: 0.22422
+  type: 'test'
+  ...
+# Subtest: one combo never produces a difficulty increase
+ok 23 - one combo never produces a difficulty increase
+  ---
+  duration_ms: 1.040445
+  type: 'test'
+  ...
+# Subtest: fast stable productive sequence needs distinct windows then stages one step
+ok 24 - fast stable productive sequence needs distinct windows then stages one step
+  ---
+  duration_ms: 2.014923
+  type: 'test'
+  ...
+# Subtest: observation returns unchanged actual interval even with a pending proposal
+ok 25 - observation returns unchanged actual interval even with a pending proposal
+  ---
+  duration_ms: 1.899674
+  type: 'test'
+  ...
+# Subtest: adaptive applies only when scheduling next full interval
+ok 26 - adaptive applies only when scheduling next full interval
+  ---
+  duration_ms: 1.207162
+  type: 'test'
+  ...
+# Subtest: minimum fixed rules floor takes precedence at MAX
+ok 27 - minimum fixed rules floor takes precedence at MAX
+  ---
+  duration_ms: 0.521871
+  type: 'test'
+  ...
+# Subtest: score or combo totals cannot override growing holes
+ok 28 - score or combo totals cannot override growing holes
+  ---
+  duration_ms: 3.110888
+  type: 'test'
+  ...
+# Subtest: slow stable player is kept steady, not classified as novice
+ok 29 - slow stable player is kept steady, not classified as novice
+  ---
+  duration_ms: 0.808799
+  type: 'test'
+  ...
+# Subtest: waiting for a four-line preparation does not force a speed increase
+ok 30 - waiting for a four-line preparation does not force a speed increase
+  ---
+  duration_ms: 0.707922
+  type: 'test'
+  ...
+# Subtest: invalid presses and natural idle falls cannot farm skill or relief
+ok 31 - invalid presses and natural idle falls cannot farm skill or relief
+  ---
+  duration_ms: 0.324791
+  type: 'test'
+  ...
+# Subtest: active persistent danger can offer relief before high-skill sample minimum
+ok 32 - active persistent danger can offer relief before high-skill sample minimum
+  ---
+  duration_ms: 0.211406
+  type: 'test'
+  ...
+# Subtest: no multiple pending steps before one cycle is consumed
+ok 33 - no multiple pending steps before one cycle is consumed
+  ---
+  duration_ms: 2.704882
+  type: 'test'
+  ...
+# Subtest: cooldown and distinct placements block rapid alternation
+ok 34 - cooldown and distinct placements block rapid alternation
+  ---
+  duration_ms: 0.352191
+  type: 'test'
+  ...
+# Subtest: persistent risk has a finite per-recovery adjustment budget
+ok 35 - persistent risk has a finite per-recovery adjustment budget
+  ---
+  duration_ms: 3.09847
+  type: 'test'
+  ...
+# Subtest: chosen comfortable mode does not create faster-than-base challenge
+ok 36 - chosen comfortable mode does not create faster-than-base challenge
+  ---
+  duration_ms: 7.279164
+  type: 'test'
+  ...
+# Subtest: mode off collects no input profile and schedules base intervals
+ok 37 - mode off collects no input profile and schedules base intervals
+  ---
+  duration_ms: 0.356611
+  type: 'test'
+  ...
+# Subtest: menus, clear animations and pause frames do not inflate placement speed
+ok 38 - menus, clear animations and pause frames do not inflate placement speed
+  ---
+  duration_ms: 0.105319
+  type: 'test'
+  ...
+# Subtest: frame stalls exclude the affected placement and taint confidence
+ok 39 - frame stalls exclude the affected placement and taint confidence
+  ---
+  duration_ms: 0.346367
+  type: 'test'
+  ...
+# Subtest: hold time stays part of the same placement episode
+ok 40 - hold time stays part of the same placement episode
+  ---
+  duration_ms: 0.163178
+  type: 'test'
+  ...
+# Subtest: item clearing is measured separately, not instantly called skill
+ok 41 - item clearing is measured separately, not instantly called skill
+  ---
+  duration_ms: 0.527914
+  type: 'test'
+  ...
+# Subtest: ground event does not add a player placement or fake hole error
+ok 42 - ground event does not add a player placement or fake hole error
+  ---
+  duration_ms: 0.093032
+  type: 'test'
+  ...
+# Subtest: developer mutations exclude adaptation and learning
+ok 43 - developer mutations exclude adaptation and learning
+  ---
+  duration_ms: 0.881392
+  type: 'test'
+  ...
+# Subtest: past high profile never starts a new game already harder
+ok 44 - past high profile never starts a new game already harder
+  ---
+  duration_ms: 0.140176
+  type: 'test'
+  ...
+# Subtest: profiles compare matched context and smooth over completed sessions
+ok 45 - profiles compare matched context and smooth over completed sessions
+  ---
+  duration_ms: 0.472083
+  type: 'test'
+  ...
+# Subtest: guest, interrupted, stale-version or dev profiles do not learn
+ok 46 - guest, interrupted, stale-version or dev profiles do not learn
+  ---
+  duration_ms: 3.550072
+  type: 'test'
+  ...
+# Subtest: corrupt stored profile is bounded and invalid fields are dropped
+ok 47 - corrupt stored profile is bounded and invalid fields are dropped
+  ---
+  duration_ms: 0.126573
+  type: 'test'
+  ...
+# Subtest: time rewinds do not create negative latency or train old data
+ok 48 - time rewinds do not create negative latency or train old data
+  ---
+  duration_ms: 0.109166
+  type: 'test'
+  ...
+# Subtest: summary is bounded and records settings, versions and actual intervals
+ok 49 - summary is bounded and records settings, versions and actual intervals
+  ---
+  duration_ms: 4.164327
+  type: 'test'
+  ...
+# Subtest: negative/infinite ground intervals are rejected
+ok 50 - negative/infinite ground intervals are rejected
+  ---
+  duration_ms: 0.526547
+  type: 'test'
+  ...
+# Subtest: deteriorating placement cancels a previously queued challenge
+ok 51 - deteriorating placement cancels a previously queued challenge
+  ---
+  duration_ms: 0.716649
+  type: 'test'
+  ...
+# Subtest: frame stall cancels an outstanding speed-up before the next cycle
+ok 52 - frame stall cancels an outstanding speed-up before the next cycle
+  ---
+  duration_ms: 0.910243
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 125.719108
