@@ -27,7 +27,7 @@ const DESERT_LEVELS=[
 ];
 let desert, itemSystem=B.state('preview'),relicReturn='game';
 /* ADAPTIVE DIRECTOR V1 HOOKS */
-let adaptive=null;
+let adaptive=null,resultHTML='';
 function adaptiveRecordKey(){return kind==='normal'?(adaptive?.recordKey()||'normal'):kind;}
 
 const DESERT_ITEMS=B.ITEMS;
@@ -71,7 +71,7 @@ function useRelic(key){if(kind!=='normal'||!RELICS.includes(key)||key==='ankh'||
 function showRelics(){if(!run||kind!=='normal')return;relicReturn=overlayView==='dev'?'dev':'game';if(playing())beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">SUPPORT RELICS</div><h2>보조 유물</h2><div class="relic-grid">${RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'||beforePause==='clearing'?'disabled':''}>${RELIC_NAMES[k]} ×${desert.inventory[k]}</button>`).join('')}</div><p>점수 증가 유물은 삭제됐습니다.<br>앙크는 치명적인 지반 상승 때 자동 발동합니다.${beforePause==='clearing'?'<br>줄 제거 연출 후 사용할 수 있습니다.':''}</p><button class="primary" data-menu="back">${relicReturn==='dev'?'개발자 모드':'게임으로 돌아가기'}</button>`,'relic');}
 function riseGround(){if(kind!=='normal'||!run||state==='clearing'||state==='over')return false;const adaptiveBefore=adaptive?.board();const source=B.clone(run.board),holes=desert.previewHoles||fairHoles();const types=Object.keys(COLORS);let topOut=source[0].some(Boolean);const row=Array.from({length:10},(_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%7],mask:0,id:++run.serial,desert:true});source.shift();source.push(row);let p=run.active?{...run.active}:null;
  const locate=()=>{if(!p)return true;for(const dy of [0,-1,-2]){const q={...run.active,y:run.active.y+dy};if(B.fits(source,q)){p=q;return true;}}return false;};let safe=locate();
- if(topOut||!safe){if(desert.inventory.ankh>0||desert.invincible){if(!desert.invincible)desert.inventory.ankh--;for(let y=0;y<4;y++)source[y]=Array(10).fill(null);topOut=false;safe=locate();if(!safe&&desert.invincible){for(let y=0;y<20;y++)source[y]=Array(10).fill(null);p=run.active?{...run.active,y:0}:null;safe=true;}}if(topOut||!safe){finish();return false;}}
+ if(topOut||!safe){if(desert.inventory.ankh>0||desert.invincible){if(!desert.invincible)desert.inventory.ankh--;for(let y=0;y<4;y++)source[y]=Array(10).fill(null);topOut=false;safe=locate();if(!safe&&desert.invincible){for(let y=0;y<20;y++)source[y]=Array(10).fill(null);p=run.active?{...run.active,y:0}:null;safe=true;}}if(topOut||!safe){finish(topOut?'ground_overflow':'ground_active_blocked',{topOut,activeFits:safe,attemptedRows:source.map(r=>r.reduce((m,c,x)=>m|(c?1<<x:0),0))});return false;}}
  run.board=source;run.active=p;adaptive?.system('ground',adaptiveBefore);desert.previewHoles=null;desert.rises++;desert.warned=false;fallTime=lockTime=0;vibrate([18,28,24]);callout('GROUND RISING','사막 지반 +1');if(desert.rises%4===0)awardRelic('지반 생존');return true;
 }
 function desertTick(){if(kind!=='normal'||!playing())return;const cfg=desertCfg();if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv)callout(cfg.lv===8?'DESERT MAX':'DESERT LEVEL '+cfg.lv,cfg.label);}
@@ -124,7 +124,7 @@ function fit(){
  document.documentElement.style.setProperty('--rail',rail+'px');document.documentElement.style.setProperty('--board-width',bw+'px');document.documentElement.style.setProperty('--board-height',bw*2+'px');
  const ratio=Math.min(devicePixelRatio||1,2);canvas.width=360*ratio;canvas.height=720*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);
 }
-function showPanel(html,view){overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
+function showPanel(html,view){if(view==='over')resultHTML=html;overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
 function hidePanel(){$('overlay').hidden=true;$('app').inert=false;overlayView='';}
 function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 즉시 하강: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>저주를 제때 정화하면 좋은 블록 예약 게이지가 쌓입니다.<br>미라의 첫 붕대 파손은 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>즉시 하강: 미세 격자 6칸당 1점';}
 function menu(){
@@ -149,10 +149,10 @@ function start(retry=false){
 function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
 function pausePanel(){showPanel(`<div class="kicker">PAUSED</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}${practice()?' · 연습 기록':''}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">점수 규칙 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">일반·모래 선택</button>`,'pause');}
 function resume(){if(state!=='paused')return;clearInput();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hidePanel();hud();}
-function finish(){
- if(state!=='over')adaptive?.end('gameover');
+function finish(reason='unknown',detail=null){
+ if(state!=='over'){adaptive?.terminal(reason,detail);adaptive?.end('gameover');}
  if(state==='over')return;state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
- const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'PRACTICE':run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${!practice()&&run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>DESERT ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 DESERT LV.${finite(ds.maxLevel)}`:''}</div><button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
+ const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'PRACTICE':run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${!practice()&&run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>DESERT ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 DESERT LV.${finite(ds.maxLevel)}`:''}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">일반·모래 선택</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
@@ -213,7 +213,7 @@ function restore(){if(!drag||!drag.noRelease||!run.active)return;moveTo(drag.lan
 function nextNormal(){
  phase=null;pending=null;falls=[];state='playing';fallTime=lockTime=lockResets=0;
  desertTick();if(state==='over')return;
- if(!run.spawn()){finish();return;}maybeSeedNextItem();restore();hud();
+ if(!run.spawn()){finish('spawn_collision');return;}maybeSeedNextItem();restore();hud();
 }
 function lockNormal(keep=false){
  if(!run.active)return;adaptive?.beforeLock();if(!keep)clearInput();
@@ -256,7 +256,7 @@ function action(a){
   adaptive?.input('drop',true);run.move(0,d);run.score+=d*2;tone('drop');lockNormal(keep);hud();return true;
  }else if(a==='hold'){
   if(run.holdUsed)return false;const keep=carry();moved=run.hold();if(!keep)clearInput();
-  if(run.over){finish();return false;}fallTime=lockTime=lockResets=0;if(keep)restore();
+  if(run.over){finish('hold_collision');return false;}fallTime=lockTime=lockResets=0;if(keep)restore();
  }
  adaptive?.input(a,moved);if(moved&&grounded&&lockResets<12&&['left','right','rotate'].includes(a)){lockTime=0;lockResets++;}
  if(a!=='left'&&a!=='right')hud();return moved;
@@ -474,7 +474,7 @@ if(window.AdaptiveBridge&&window.AdaptiveDirector)adaptive=window.AdaptiveBridge
  curses:()=>kind==='normal'?findSpecials().filter(q=>DESERT_ITEMS[q.s.type].kind==='bad'&&!q.s.failed).length:0,
  show:showPanel,
  pauseForPanel:()=>{if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}document.body.classList.remove('ground-warning');},
- back:view=>{if(view==='dev')devPanel();else if(view==='settings')settings();else if(view==='pause')pausePanel();else if(view==='menu'||state==='menu')showMenu();else if(state==='paused')resume();else showMenu();},
+ back:view=>{if(view==='over'&&state==='over'){showPanel(resultHTML,'over');return;}if(view==='dev')devPanel();else if(view==='settings')settings();else if(view==='pause')pausePanel();else if(view==='menu'||state==='menu')showMenu();else if(state==='paused')resume();else showMenu();},
  download:(filename,text)=>{const blob=new Blob([text],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 });
 
