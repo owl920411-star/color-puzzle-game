@@ -126,7 +126,7 @@ function fit(){
 }
 function showPanel(html,view){if(view==='over')resultHTML=html;overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
 function hidePanel(){$('overlay').hidden=true;$('app').inert=false;overlayView='';}
-function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 즉시 하강: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>저주를 제때 정화하면 좋은 블록 예약 게이지가 쌓입니다.<br>미라의 첫 붕대 파손은 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>즉시 하강: 미세 격자 6칸당 1점';}
+function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 쏙 내려요: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>저주를 제때 정화하면 좋은 블록 예약 게이지가 쌓입니다.<br>미라의 첫 붕대 파손은 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>쏙 내려요: 미세 격자 6칸당 1점';}
 function menu(){
  adaptive?.end('menu');
  if(playing()||state==='paused')rememberScore();clearInput();shatterFX?.clear();state='menu';phase=null;pending=null;falls=[];fx=[];floaters=[];trail=null;impact=null;elapsed=0;calloutTime=0;$('callout').classList.remove('show');resetDesert();
@@ -333,36 +333,44 @@ function pyramidProgress(g){
  g.restore();
 }
 function drawPyramidBackground(g){
- const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#75aee8');sky.addColorStop(.58,'#a9d3ef');sky.addColorStop(1,'#dff0d3');g.fillStyle=sky;g.fillRect(0,0,360,720);
+ const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#72ace5');sky.addColorStop(.62,'#a9d2ed');sky.addColorStop(1,'#d9efd0');g.fillStyle=sky;g.fillRect(0,0,360,720);
  g.save();
- // quiet crayon clouds: low contrast so pieces stay dominant
- g.globalAlpha=.23;g.fillStyle='#fff';for(const q of [[55,90,27],[91,77,21],[276,136,30],[310,120,20]]){g.beginPath();g.arc(q[0],q[1],q[2],0,Math.PI*2);g.fill();}
- // distant garden
- g.globalAlpha=.55;g.fillStyle='#91cf83';g.beginPath();g.moveTo(0,575);g.quadraticCurveTo(82,530,165,582);g.quadraticCurveTo(260,625,360,552);g.lineTo(360,720);g.lineTo(0,720);g.closePath();g.fill();
- const flowers=['#f58db8','#ffd86e','#caa0ef','#77c9f4'];for(let i=0;i<18;i++){const x=8+(i*53)%348,y=615+(i*31)%90,r=2+(i%2);g.globalAlpha=.45;g.fillStyle=flowers[i%4];g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();}
- // tiny mascot doodles kept outside the main play-reading zone
- g.globalAlpha=.32;g.strokeStyle='#59453f';g.lineWidth=2.2;g.lineCap='round';g.lineJoin='round';
- // curly-haired child mascot peeking from lower-left garden
- g.beginPath();g.arc(31,626,13,0,Math.PI*2);g.stroke();for(let i=0;i<7;i++){const a=i*Math.PI/3.5;g.beginPath();g.arc(31+Math.cos(a)*13,615+Math.sin(a)*8,5,0,Math.PI*2);g.stroke();}
- g.beginPath();g.arc(27,626,1.2,0,Math.PI*2);g.arc(35,626,1.2,0,Math.PI*2);g.stroke();g.beginPath();g.arc(31,630,4,.2,Math.PI-.2);g.stroke();
- // cat and chick companions
- g.beginPath();g.arc(326,622,9,0,Math.PI*2);g.moveTo(319,616);g.lineTo(320,609);g.lineTo(324,615);g.moveTo(329,615);g.lineTo(333,609);g.lineTo(334,617);g.stroke();
- g.beginPath();g.arc(329,649,7,0,Math.PI*2);g.moveTo(336,649);g.lineTo(341,647);g.lineTo(336,652);g.stroke();
+ // Decorations stay faint and away from the stacking zone.
+ g.globalAlpha=.13;g.fillStyle='#fff';for(const q of [[62,96,25],[291,145,27]]){g.beginPath();g.arc(q[0],q[1],q[2],0,Math.PI*2);g.fill();}
+ g.globalAlpha=.22;g.fillStyle='#86c77e';g.beginPath();g.moveTo(0,635);g.quadraticCurveTo(95,590,185,642);g.quadraticCurveTo(270,678,360,616);g.lineTo(360,720);g.lineTo(0,720);g.closePath();g.fill();
+ const flowers=['#f58db8','#ffd86e','#caa0ef','#77c9f4'];for(let i=0;i<12;i++){const x=10+(i*67)%345,y=670+(i*19)%42;g.globalAlpha=.22;g.fillStyle=flowers[i%4];g.beginPath();g.arc(x,y,2+(i%2),0,Math.PI*2);g.fill();}
+ // Primary mascots: child + chick, tucked into the lower-left edge.
+ g.globalAlpha=.48;g.strokeStyle='#5d453f';g.fillStyle='#f3c4ae';g.lineWidth=2.1;g.lineCap='round';g.lineJoin='round';
+ g.beginPath();g.arc(31,684,13,0,Math.PI*2);g.fill();g.stroke();for(let i=0;i<7;i++){const aa=i*Math.PI/3.5;g.beginPath();g.arc(31+Math.cos(aa)*13,674+Math.sin(aa)*8,5,0,Math.PI*2);g.stroke();}
+ g.fillStyle='#5d453f';g.beginPath();g.arc(27,684,1.2,0,Math.PI*2);g.arc(35,684,1.2,0,Math.PI*2);g.fill();g.beginPath();g.arc(31,688,4,.2,Math.PI-.2);g.stroke();
+ g.fillStyle='#f4c84f';g.strokeStyle='#b8872d';g.beginPath();g.arc(58,691,9,0,Math.PI*2);g.fill();g.stroke();g.fillStyle='#5d453f';g.beginPath();g.arc(55,689,1,0,Math.PI*2);g.arc(61,689,1,0,Math.PI*2);g.fill();
+ // Cat is intentionally tiny and secondary.
+ g.globalAlpha=.20;g.strokeStyle='#5d453f';g.beginPath();g.arc(334,698,5,0,Math.PI*2);g.moveTo(330,695);g.lineTo(331,691);g.lineTo(333,695);g.moveTo(335,695);g.lineTo(338,691);g.lineTo(339,696);g.stroke();
  g.restore();
 }
 function pyramidTile(g,c,x,y,size){
- const pair=COLORS[c.type]||COLORS.I,light=pair[0],dark=pair[1],r=Math.max(3,size*.12),seed=(c.id??0);
- g.save();g.lineJoin='round';g.lineCap='round';g.fillStyle=light;g.beginPath();g.roundRect(x,y,size,size,r);g.fill();
- g.globalAlpha=.28;g.strokeStyle='#fff';g.lineWidth=Math.max(1,size*.045);for(let k=0;k<4;k++){const yy=y+size*(.2+k*.2);g.beginPath();g.moveTo(x+size*.12,yy+((seed+k)%3-1));g.lineTo(x+size*.88,yy+(((seed+k*2)%3)-1));g.stroke();}
- g.globalAlpha=.9;g.strokeStyle=dark;g.lineWidth=Math.max(1.5,size*.055);g.beginPath();g.roundRect(x+1,y+1,size-2,size-2,r);g.stroke();
- const mark=seed%5;g.globalAlpha=.72;g.strokeStyle=dark;g.lineWidth=Math.max(1.2,size*.055);g.beginPath();
- if(mark===0){for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?size*.13:size*.27,px=x+size*.5+Math.cos(a)*rr,py=y+size*.5+Math.sin(a)*rr;i?g.lineTo(px,py):g.moveTo(px,py);}g.closePath();}
- else if(mark===1){const cx=x+size*.5,cy=y+size*.53;g.moveTo(cx,cy+size*.2);g.bezierCurveTo(cx-size*.34,cy-size*.02,cx-size*.2,cy-size*.28,cx,cy-size*.08);g.bezierCurveTo(cx+size*.2,cy-size*.28,cx+size*.34,cy-size*.02,cx,cy+size*.2);}
- else if(mark===2){g.arc(x+size*.5,y+size*.5,size*.2,0,Math.PI*2);}
- else if(mark===3){g.moveTo(x+size*.3,y+size*.55);g.quadraticCurveTo(x+size*.5,y+size*.25,x+size*.7,y+size*.55);g.quadraticCurveTo(x+size*.5,y+size*.78,x+size*.3,y+size*.55);}
- else{g.moveTo(x+size*.28,y+size*.52);g.lineTo(x+size*.72,y+size*.52);g.moveTo(x+size*.5,y+size*.3);g.lineTo(x+size*.5,y+size*.74);}
- g.stroke();
- if(seed%3===0){g.globalAlpha=.82;g.fillStyle='#5b435f';g.beginPath();g.arc(x+size*.38,y+size*.64,Math.max(1.1,size*.035),0,Math.PI*2);g.arc(x+size*.62,y+size*.64,Math.max(1.1,size*.035),0,Math.PI*2);g.fill();g.strokeStyle='#5b435f';g.lineWidth=Math.max(1,size*.035);g.beginPath();g.arc(x+size*.5,y+size*.66,size*.09,.15,Math.PI-.15);g.stroke();g.fillStyle='rgba(255,120,150,.42)';g.beginPath();g.arc(x+size*.26,y+size*.69,size*.07,0,Math.PI*2);g.arc(x+size*.74,y+size*.69,size*.07,0,Math.PI*2);g.fill();}
+ const pair=COLORS[c.type]||COLORS.I,light=pair[0],dark=pair[1],r=Math.max(5,size*.17),seed=(c.id??0);
+ g.save();g.lineJoin='round';g.lineCap='round';
+ // soft crayon shadow + rounded candy/crayon body
+ g.globalAlpha=.22;g.fillStyle='#39466f';g.beginPath();g.roundRect(x+size*.055,y+size*.09,size*.94,size*.92,r);g.fill();
+ const grad=g.createLinearGradient(x,y,x,y+size);grad.addColorStop(0,'#fff7');grad.addColorStop(.18,light);grad.addColorStop(.78,light);grad.addColorStop(1,dark);g.globalAlpha=1;g.fillStyle=grad;g.beginPath();g.roundRect(x,y,size*.94,size*.94,r);g.fill();
+ // doubled hand-drawn edge
+ g.strokeStyle=dark;g.globalAlpha=.95;g.lineWidth=Math.max(1.7,size*.055);g.beginPath();g.roundRect(x+1,y+1,size*.94-2,size*.94-2,r);g.stroke();
+ g.strokeStyle='#fff';g.globalAlpha=.52;g.lineWidth=Math.max(1,size*.035);g.beginPath();g.roundRect(x+size*.08,y+size*.07,size*.78,size*.70,r*.72);g.stroke();
+ // visible crayon scribble strokes
+ g.globalAlpha=.16;g.strokeStyle=dark;g.lineWidth=Math.max(.8,size*.026);for(let k=0;k<4;k++){const yy=y+size*(.18+k*.17);g.beginPath();g.moveTo(x+size*.12,yy+((seed+k)%3-1));g.lineTo(x+size*.80,yy+(((seed+k*2)%3)-1));g.stroke();}
+ const mark=seed%5;g.globalAlpha=.92;g.strokeStyle=dark;g.fillStyle=dark;g.lineWidth=Math.max(1.4,size*.05);
+ if(mark===0){ // heart
+   const cx=x+size*.47,cy=y+size*.47;g.beginPath();g.moveTo(cx,cy+size*.16);g.bezierCurveTo(cx-size*.30,cy-size*.02,cx-size*.18,cy-size*.27,cx,cy-size*.08);g.bezierCurveTo(cx+size*.18,cy-size*.27,cx+size*.30,cy-size*.02,cx,cy+size*.16);g.stroke();
+ } else if(mark===1){ // friendly face
+   g.beginPath();g.arc(x+size*.36,y+size*.48,size*.035,0,Math.PI*2);g.arc(x+size*.58,y+size*.48,size*.035,0,Math.PI*2);g.fill();g.beginPath();g.arc(x+size*.47,y+size*.53,size*.10,.15,Math.PI-.15);g.stroke();g.fillStyle='rgba(235,72,112,.52)';g.beginPath();g.arc(x+size*.25,y+size*.55,size*.06,0,Math.PI*2);g.arc(x+size*.69,y+size*.55,size*.06,0,Math.PI*2);g.fill();
+ } else if(mark===2){ // flower
+   const cx=x+size*.47,cy=y+size*.48;for(let i=0;i<5;i++){const aa=i*Math.PI*2/5-Math.PI/2;g.beginPath();g.arc(cx+Math.cos(aa)*size*.13,cy+Math.sin(aa)*size*.13,size*.095,0,Math.PI*2);g.stroke();}g.beginPath();g.arc(cx,cy,size*.07,0,Math.PI*2);g.fill();
+ } else if(mark===3){ // star
+   const cx=x+size*.47,cy=y+size*.48;g.beginPath();for(let i=0;i<10;i++){const aa=-Math.PI/2+i*Math.PI/5,rr=i%2?size*.09:size*.21,px=cx+Math.cos(aa)*rr,py=cy+Math.sin(aa)*rr;i?g.lineTo(px,py):g.moveTo(px,py);}g.closePath();g.stroke();
+ } else { // leaf
+   g.beginPath();g.moveTo(x+size*.30,y+size*.59);g.quadraticCurveTo(x+size*.47,y+size*.25,x+size*.68,y+size*.35);g.quadraticCurveTo(x+size*.61,y+size*.62,x+size*.30,y+size*.59);g.stroke();g.beginPath();g.moveTo(x+size*.34,y+size*.57);g.lineTo(x+size*.61,y+size*.38);g.stroke();
+ }
  g.restore();return true;
 }
 function normalCell(g,c,x,y,size=36,alpha=1,ghostCell=false,hot=false){
