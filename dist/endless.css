@@ -114,3 +114,6 @@ body[data-mascot="encourage"] #game-area::before{transform:translateY(-3px);opac
  repeating-radial-gradient(circle at 50% 17%,#4b342f 0 3px,#2f2422 3.5px 5px,transparent 5.5px 8px)}
 body[data-mascot="encourage"] #game-area::after{content:"♡";font-size:14px}
 @media(max-width:390px){#game-area::before{left:-2px;width:42px;height:52px}#game-area::after{left:31px;width:23px;height:23px}}
+
+/* WORLD 2 HOTFIX — remove placeholder mascot from gameplay. */
+#game-area::before,#game-area::after{display:none!important;content:none!important}
