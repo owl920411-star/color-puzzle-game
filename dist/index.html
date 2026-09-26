@@ -2,13 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d1928"><meta name="description" content="일반 모드와 모래 모드로 즐기는 무한 점수 퍼즐">
-<title>GLASSFALL · 무한 점수제</title>
-<link rel="stylesheet" href="endless.css?v=control16">
+<meta name="theme-color" content="#fff7e8"><meta name="description" content="파스텔 크레용 손그림 세계에서 즐기는 귀여운 무한 블록 퍼즐">
+<title>크레용블룸 · CRAYON BLOOM</title>
+<link rel="stylesheet" href="endless.css?v=crayon-bloom-2">
 </head>
 <body>
 <main id="app">
- <header class="topbar"><div><strong>GLASSFALL</strong><span id="mode-label">일반 · 무한 모드</span></div><button id="pause" aria-label="일시정지" disabled>Ⅱ</button></header>
+ <header class="topbar"><div><strong>크레용블룸</strong><small class="brand-en">CRAYON BLOOM</small><span id="mode-label">일반 · 무한 모드</span></div><button id="pause" aria-label="일시정지" disabled>Ⅱ</button></header>
  <section class="scorebar" aria-label="게임 기록">
   <div class="current-score"><span>SCORE</span><strong id="score">0</strong></div>
   <div><span>BEST</span><strong id="best">0</strong></div>
@@ -25,7 +25,7 @@
   </aside>
   <div class="board-shell"><canvas id="board" width="360" height="720" aria-label="좌우 터치로 이동, 좌우 스와이프로 회전, 위 스와이프로 보관, 아래 스와이프로 즉시 하강하는 게임판" role="application"></canvas><div id="callout" role="status" aria-live="polite"></div></div>
  </section>
- <footer><span id="notice">좌우 터치 · 회전 · 즉시 하강</span><small id="build">PYRAMID 2 · CONTROL 16 · NOVICE 7 · BLOCK ITEMS V2</small></footer>
+ <footer><span id="notice">좌우 터치 · 회전 · 즉시 하강</span><small id="build">CRAYON BLOOM 2 · CONTROL 16 · NOVICE 7 · BLOCK ITEMS V2 · ADAPTIVE 1 STABLE</small></footer>
 </main>
 <div id="overlay" role="dialog" aria-modal="true" aria-label="게임 메뉴"><div id="panel" tabindex="-1"></div></div>
 <p id="boot" role="status">게임을 불러오고 있습니다.</p>
@@ -37,6 +37,9 @@
 <script src="glass-shatter-fx.js?v=shatter4"></script>
 <script src="sand-shatter-fx.js?v=pyramid1"></script>
 <script src="block-items.js?v=block-v2"></script>
-<script src="endless-app.js?v=block-v2"></script>
+<script src="adaptive-director.js?v=adaptive1"></script>
+<script src="adaptive-audit.js?v=stable1"></script>
+<script src="adaptive-bridge.js?v=stable1"></script>
+<script src="endless-app.js?v=crayon-bloom-2"></script>
 </body>
 </html>
