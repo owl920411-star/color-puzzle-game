@@ -12,7 +12,7 @@ function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
 function readStore(){try{return object(JSON.parse(localStorage.getItem(KEY)||'{}'));}catch{return{};}}
 let saved=readStore(),saveOK=true,kind=new URLSearchParams(location.search).get('mode')==='sand'?'sand':saved.material==='sand'?'sand':'normal';
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
-let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0,mascotMood='idle',mascotTime=0;
+let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
 const DESERT_LEVELS=[
  {at:0,lv:0,interval:Infinity,mult:1,label:'CALM'},
@@ -142,7 +142,7 @@ function start(retry=false){
  adaptive?.end('restart');
  if(playing()||state==='paused')rememberScore();clearInput();currentSeed=retry&&currentSeed?currentSeed:seed();
  run=kind==='normal'?new R.NormalGame(currentSeed):new M.Run({seed:currentSeed,colors:3,burst:12,gravity:26,gems:0});
- state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;mascot('idle',0);resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
+ state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
  adaptive?.begin();loadBest();if(kind==='normal')maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();
 }
 function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
@@ -150,7 +150,7 @@ function pausePanel(){showPanel(`<div class="kicker">잠깐 쉬는 시간 ♡</d
 function resume(){if(state!=='paused')return;clearInput();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hidePanel();hud();}
 function finish(reason='unknown',detail=null){
  if(state!=='over'){adaptive?.terminal(reason,detail);adaptive?.end('gameover');}
- if(state==='over')return;mascot(!practice()&&run.score>initialBest?'celebrate':'encourage',0);state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
+ if(state==='over')return;state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
  const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'PRACTICE':run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${!practice()&&run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">${kind==='normal'?`제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거`:`제거 ${Math.floor(run.removed/M.UNIT)} 모래량 · 최대 ${run.maxChain}연쇄`}<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점${kind==='normal'?`<br>BLOOM ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 BLOOM LV.${finite(ds.maxLevel)}`:''}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">놀이터 고르기</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'일반·모래 최고 점수는 따로 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');hud();
 }
 function settings(){
@@ -269,7 +269,6 @@ function tone(type,power=1){
  const voices=type==='clear'?3:1;for(let i=0;i<voices;i++){const osc=audio.createOscillator(),gain=audio.createGain(),when=start+i*.045,base=(type==='clear'?740:type==='drop'?311:444)*(1+i*.33)*Math.min(1.65,1+(power-1)*.1);osc.type='sine';osc.frequency.setValueAtTime(base,when);osc.frequency.exponentialRampToValueAtTime(base*.8,when+.32);gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(type==='clear'?.025:.015,when+.008);gain.gain.exponentialRampToValueAtTime(.001,when+.32);osc.connect(gain);gain.connect(audio.destination);osc.start(when);osc.stop(when+.34);}
  }catch{}
 }
-function mascot(mood='idle',ms=1200){mascotMood=mood;mascotTime=ms;document.body.dataset.mascot=mood;}
 function callout(title,sub){$('callout').innerHTML='<strong>'+title+'</strong><span>'+sub+'</span>';$('callout').classList.add('show');calloutTime=1000;}
 function emitNormal(plan,result){
  const n=plan.rows.length;
@@ -283,7 +282,7 @@ function emitNormal(plan,result){
  if(imminent){const bonus=250*cfg.lv;run.score+=bonus;desert.lastEscapeUntil=elapsed+1000;callout('LAST BLOOM','+'+bonus.toLocaleString()+'점 · 상승 직전 탈출');}
  if(n===4&&cfg.lv>0){adaptive?.system('relic');desert.delay=Math.min(15000,desert.delay+5000);awardRelic('BLOOM BURST');desert.warned=false;callout('BLOOM BURST','다음 지반 상승 +5초 지연');}
  const y=plan.rows.reduce((s,r)=>s+r+.5,0)/n*36;floaters.push({x:180,y,gain:result.gain,life:1000,total:1000,rows:plan.rows,color:'#b6f3e5',power:Math.min(3,n)});floaters=floaters.slice(-6);
- const title=n===4?'4 LINES!':n+' LINE'+(n>1?'S':'');if(!imminent&&(n!==4||cfg.lv===0))callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));if(n===4||result.combo>=4)mascot('celebrate',1800);else if(result.combo>=2)mascot('happy',1200);tone('clear',n);vibrate(result.combo>1?[12,35,12]:12);
+ const title=n===4?'4 LINES!':n+' LINE'+(n>1?'S':'');if(!imminent&&(n!==4||cfg.lv===0))callout(result.combo>1?result.combo+' COMBO!':title,'+'+result.gain.toLocaleString()+'점'+(result.bonus?' · 콤보 +'+result.bonus:''));tone('clear',n);vibrate(result.combo>1?[12,35,12]:12);
 }
 function sandEvents(){
  for(const e of run.events.splice(0)){
@@ -312,7 +311,7 @@ function update(raw){
  for(const p of fx){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=p.gravity*dt/1000;p.angle+=dt*.002;}fx=fx.filter(p=>p.life>0);
  for(const f of floaters)f.life-=dt;floaters=floaters.filter(f=>f.life>0);
  if(impact&&(impact.life-=dt)<=0)impact=null;if(trail&&(trail.life-=dt)<=0)trail=null;
- if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');if(mascotTime>0&&(mascotTime-=dt)<=0)mascot('idle',0);
+ if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');if(mascotTime>0&&(mascotTime-=dt)<=0)
  if(!practice())recordBest=Math.max(recordBest,run.score);
  if(!practice()&&initialBest>0&&run.score>initialBest&&!recordAnnounced){recordAnnounced=true;$('best').parentElement.classList.add('record');}
  if(run.score>0&&performance.now()-lastSave>1500){rememberScore();desertRecord();}if(kind==='normal'&&desert.level>0&&Math.floor(elapsed/60000)>desert.relicMeter){desert.relicMeter=Math.floor(elapsed/60000);awardRelic('장기 생존');}
@@ -321,7 +320,7 @@ function desertAtmosphere(g){
  if(kind!=='normal')return;const lv=desert.level,t=Math.min(1,lv/8);
  if(lv>=3){g.save();g.fillStyle=`rgba(92,38,20,${.035*lv})`;g.fillRect(0,0,360,720);g.restore();}
  if(lv>=6&&!reduced){g.save();g.globalAlpha=.10+.025*(lv-6);g.strokeStyle='#e8bd72';g.lineWidth=2;for(let i=0;i<14;i++){const y=(i*57+(elapsed/35)%57)%720;g.beginPath();g.moveTo(0,y);g.lineTo(360,y-55);g.stroke();}g.restore();}
- const danger=run?.board?run.board.slice(0,5).some(row=>row.some(Boolean)):false;if(danger&&mascotMood!=='danger')mascot('danger',900);
+ const danger=run?.board?run.board.slice(0,5).some(row=>row.some(Boolean)):false;
  if(danger){g.save();g.strokeStyle='rgba(255,91,53,.72)';g.setLineDash([10,7]);g.lineWidth=2;g.beginPath();g.moveTo(0,108);g.lineTo(360,108);g.stroke();g.restore();}
  if(desert.previewHoles){g.save();g.fillStyle='rgba(255,220,115,.22)';for(const x of desert.previewHoles)g.fillRect(x*36,684,36,36);g.restore();}
 }
