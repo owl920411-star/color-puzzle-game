@@ -424,22 +424,26 @@ function hiddenRepeat(d,now){
 function processSwipe(d,x,y,now){
  if(drag!==d||!playing())return;d.lastX=x;d.lastY=y;
  if(d.piece!==null&&d.piece!==pieceID()){clearInput();return;}
- const dx=x-d.startX,dy=y-d.startY;d.peakX=Math.max(d.peakX,Math.abs(dx));d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
+ const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);d.peakX=Math.max(d.peakX,ax);d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
  if(kind==='normal'){
-  // CONTROL 12: invisible left/right pad. Short touch = one cell. Hold = DAS/ARR.
-  // A deliberate downward swipe always wins and performs hard drop.
-  const swipe=Math.max(30,d.unit*.9);
-  // Vertical gestures: up = hold, down = hard drop.
-  if(!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&dy>swipe&&dy>Math.abs(dx)*1.25)d.dropIntent=true;
-  if(!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&dy<-swipe&&-dy>Math.abs(dx)*1.25){
+  // CONTROL 17: lock one gesture axis before assigning an action. Once a
+  // swipe becomes horizontal it cannot later turn into drop/hold, and a
+  // vertical swipe cannot later become rotation because of finger wobble.
+  const intent=Math.max(15,d.unit*.48),swipe=Math.max(26,d.unit*.78);
+  if(!d.gestureAxis&&!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&Math.max(ax,ay)>intent){
+   if(ax>ay*1.12)d.gestureAxis='x';
+   else if(ay>ax*1.12)d.gestureAxis='y';
+  }
+  if(d.gestureAxis==='y'&&!d.dropIntent&&!d.holdIntent&&dy>swipe){
+   d.dropIntent=true;d.mode='dropSwipe';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
+  }
+  if(d.gestureAxis==='y'&&!d.dropIntent&&!d.holdIntent&&dy<-swipe){
    d.holdIntent=true;d.mode='holdSwipe';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
   }
-  // Horizontal swipe is rotation: right=CW, left=CCW. It must be a real swipe,
-  // not the stationary left/right hidden pad hold.
-  if(!d.dropIntent&&!d.rotateIntent&&Math.abs(dx)>swipe&&Math.abs(dx)>Math.abs(dy)*1.35){
+  if(d.gestureAxis==='x'&&!d.rotateIntent&&ax>swipe){
    d.rotateIntent=dx>0?1:-1;d.mode='rotate';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
   }
-  if(d.dropIntent||d.rotateIntent||d.holdIntent)return;
+  if(d.dropIntent||d.rotateIntent||d.holdIntent||d.gestureAxis)return;
   hiddenRepeat(d,now);return;
  }
  if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
@@ -448,7 +452,7 @@ function processSwipe(d,x,y,now){
 }
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,dropIntent:false,rotateIntent:0,holdIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,gestureAxis:null,dropIntent:false,rotateIntent:0,holdIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
  if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{if(drag!==d||d.dropIntent||d.rotateIntent||d.holdIntent||d.peakDistance>16||!canAct())return;d.repeatStarted=true;d.mode='hold';hiddenMove(d,d.side);repeat={id:'hidden-'+d.id,action:d.side<0?'left':'right',time:38,hidden:true,drag:d};},92);}
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
@@ -466,7 +470,7 @@ canvas.addEventListener('pointerup',e=>{
 });
 for(const type of ['pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if(drag?.id===e.pointerId)clearInput();});
 for(const b of document.querySelectorAll('[data-action]')){
- b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);action(b.dataset.action);b.classList.add('pressed');});
+ b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);if(drag){drag.noRelease=true;drag.dropIntent=false;drag.rotateIntent=0;drag.holdIntent=false;drag.gestureAxis='button';if(drag.holdTimer){clearTimeout(drag.holdTimer);drag.holdTimer=null;}if(repeat?.hidden&&repeat.drag===drag)repeat=null;}action(b.dataset.action);b.classList.add('pressed');});
  for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>b.classList.remove('pressed'));
  b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)action(b.dataset.action);});
 }
