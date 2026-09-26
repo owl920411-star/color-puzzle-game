@@ -74,3 +74,43 @@ body[data-kind="normal"].ground-warning .board-shell{animation:bloomWarn .42s ea
 .bloom-menu{position:relative;overflow:hidden}.bloom-brand{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;margin:-4px 0 4px}.bloom-brand h1{margin:0!important;font-size:31px!important;color:#e85091;letter-spacing:1px;text-shadow:2px 2px 0 #fff,3px 3px 0 #ffd4e4}.bloom-brand .kicker{color:#4c83bd;letter-spacing:3px}.bloom-tagline{margin:3px 0 0!important;font-size:11px!important;color:#5b79a0!important}.bloom-flower{font-size:30px;color:#f4b82f;transform:rotate(-12deg)}.bloom-rainbow{font-size:42px;color:#7ab7eb;transform:rotate(-12deg);line-height:.7}.bloom-sky-doodles{position:absolute;inset:0;pointer-events:none;opacity:.22;color:#78b8e8}.bloom-sky-doodles i{position:absolute;font-style:normal;font-size:22px}.bloom-sky-doodles i:nth-child(1){left:2%;top:4%}.bloom-sky-doodles i:nth-child(2){right:5%;top:18%;color:#ed7eaa}.bloom-sky-doodles i:nth-child(3){left:3%;top:48%;color:#79c98d}.bloom-sky-doodles i:nth-child(4){right:3%;top:54%;color:#e7b733}
 .mascot-strip{display:flex;justify-content:center;gap:12px;align-items:flex-end;margin:8px auto 10px;padding:7px 12px;width:92%;border:2px dashed #b9d8e8;border-radius:18px;background:#ffffff88}.baby-doodle,.chick-doodle{display:flex;align-items:center;gap:5px;color:#654c48}.baby-doodle{font-weight:800}.baby-doodle .curl{font-size:25px;color:#4f3937}.baby-doodle .face{padding:4px 7px;border:2px solid #b9897d;border-radius:50%;background:#f7c9b8}.chick-doodle>span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#ffd85d;color:#b98227;border:2px solid #d8a437}.chick-doodle b{font-size:11px}.mascot-strip small{font-size:9px;color:#7187a0}
 #panel:has(.bloom-menu) .mode-card{background:#fffaf2!important;border-width:2px!important;box-shadow:2px 3px 0 #ead8c8!important}#panel:has(.bloom-menu) .mode-card:first-child{border-color:#ef9fbe!important}#panel:has(.bloom-menu) .mode-card:last-child{border-color:#e8c36b!important}#panel:has(.bloom-menu) .mode-card.selected{box-shadow:0 0 0 3px #fff,0 0 0 6px #86cdb8!important;transform:translateY(-1px)}#panel:has(.bloom-menu) .mode-card strong{color:#315e91}.bloom-start{background:linear-gradient(120deg,#f18bb6,#e7659d)!important;box-shadow:0 4px 0 #c94f85!important;border-radius:16px!important}.bloom-start:active{transform:translateY(2px);box-shadow:0 2px 0 #c94f85!important}
+
+/* CRAYON BLOOM MASCOT STATES V1 — mascots live outside the 10x20 playfield. */
+#game-area::before{content:"";position:absolute;pointer-events:none;z-index:6;left:max(-5px,calc((100% - (var(--board-width) + var(--rail) + 9px))/2));bottom:30px;width:48px;height:58px;opacity:.72;filter:drop-shadow(0 2px 0 #fff8);transition:transform .18s ease,opacity .18s ease}
+#game-area{position:relative}
+#game-area::after{content:"삐약";position:absolute;pointer-events:none;z-index:7;left:36px;bottom:25px;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#ffd95f;border:2px solid #c99731;color:#795321;font-size:7px;font-weight:900;box-shadow:0 2px 0 #fff8;opacity:.78;transition:transform .18s ease}
+body[data-kind="sand"] #game-area::before,body[data-kind="sand"] #game-area::after{opacity:.55}
+body[data-mascot="idle"] #game-area::before{background:
+ radial-gradient(circle at 40% 44%,#5a4039 0 2px,transparent 2.5px),
+ radial-gradient(circle at 61% 44%,#5a4039 0 2px,transparent 2.5px),
+ radial-gradient(ellipse at 50% 55%,#e9949d 0 4px,transparent 4.5px),
+ radial-gradient(circle at 50% 45%,#f5c7b5 0 18px,#6a4940 18.5px 21px,transparent 22px),
+ repeating-radial-gradient(circle at 50% 17%,#4b342f 0 3px,#2f2422 3.5px 5px,transparent 5.5px 8px)}
+body[data-mascot="happy"] #game-area::before{transform:translateY(-6px) rotate(-4deg);background:
+ radial-gradient(ellipse at 40% 45%,#4f3833 0 4px,transparent 4.5px),
+ radial-gradient(ellipse at 61% 45%,#4f3833 0 4px,transparent 4.5px),
+ radial-gradient(ellipse at 50% 58%,#b84f67 0 6px,transparent 6.5px),
+ radial-gradient(circle at 50% 45%,#f5c7b5 0 18px,#6a4940 18.5px 21px,transparent 22px),
+ repeating-radial-gradient(circle at 50% 17%,#4b342f 0 3px,#2f2422 3.5px 5px,transparent 5.5px 8px)}
+body[data-mascot="celebrate"] #game-area::before{transform:translateY(-10px) rotate(5deg) scale(1.08);background:
+ radial-gradient(circle at 40% 44%,#4f3833 0 2px,transparent 2.5px),
+ radial-gradient(circle at 61% 44%,#4f3833 0 2px,transparent 2.5px),
+ radial-gradient(ellipse at 50% 58%,#b84f67 0 7px,transparent 7.5px),
+ radial-gradient(circle at 50% 45%,#f5c7b5 0 18px,#6a4940 18.5px 21px,transparent 22px),
+ repeating-radial-gradient(circle at 50% 17%,#4b342f 0 3px,#2f2422 3.5px 5px,transparent 5.5px 8px)}
+body[data-mascot="celebrate"] #game-area::after{content:"★";transform:translateY(-8px) rotate(12deg) scale(1.15);font-size:14px}
+body[data-mascot="danger"] #game-area::before{opacity:.82;transform:rotate(-3deg);background:
+ radial-gradient(circle at 40% 44%,#4f3833 0 2px,transparent 2.5px),
+ radial-gradient(circle at 61% 44%,#4f3833 0 2px,transparent 2.5px),
+ radial-gradient(ellipse at 50% 58%,transparent 0 3px,#9b5e61 3.5px 4.5px,transparent 5px),
+ radial-gradient(circle at 50% 45%,#f5c7b5 0 18px,#6a4940 18.5px 21px,transparent 22px),
+ repeating-radial-gradient(circle at 50% 17%,#4b342f 0 3px,#2f2422 3.5px 5px,transparent 5.5px 8px)}
+body[data-mascot="danger"] #game-area::after{content:"!";background:#ffe486}
+body[data-mascot="encourage"] #game-area::before{transform:translateY(-3px);opacity:.85;background:
+ radial-gradient(circle at 40% 44%,#4f3833 0 2px,transparent 2.5px),
+ radial-gradient(circle at 61% 44%,#4f3833 0 2px,transparent 2.5px),
+ radial-gradient(ellipse at 50% 57%,#c66f79 0 4px,transparent 4.5px),
+ radial-gradient(circle at 50% 45%,#f5c7b5 0 18px,#6a4940 18.5px 21px,transparent 22px),
+ repeating-radial-gradient(circle at 50% 17%,#4b342f 0 3px,#2f2422 3.5px 5px,transparent 5.5px 8px)}
+body[data-mascot="encourage"] #game-area::after{content:"♡";font-size:14px}
+@media(max-width:390px){#game-area::before{left:-2px;width:42px;height:52px}#game-area::after{left:31px;width:23px;height:23px}}
