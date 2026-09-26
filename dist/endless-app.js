@@ -311,7 +311,7 @@ function update(raw){
  for(const p of fx){p.life-=dt;p.x+=p.vx*dt/1000;p.y+=p.vy*dt/1000;p.vy+=p.gravity*dt/1000;p.angle+=dt*.002;}fx=fx.filter(p=>p.life>0);
  for(const f of floaters)f.life-=dt;floaters=floaters.filter(f=>f.life>0);
  if(impact&&(impact.life-=dt)<=0)impact=null;if(trail&&(trail.life-=dt)<=0)trail=null;
- if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');if(mascotTime>0&&(mascotTime-=dt)<=0)
+ if(calloutTime>0&&(calloutTime-=dt)<=0)$('callout').classList.remove('show');
  if(!practice())recordBest=Math.max(recordBest,run.score);
  if(!practice()&&initialBest>0&&run.score>initialBest&&!recordAnnounced){recordAnnounced=true;$('best').parentElement.classList.add('record');}
  if(run.score>0&&performance.now()-lastSave>1500){rememberScore();desertRecord();}if(kind==='normal'&&desert.level>0&&Math.floor(elapsed/60000)>desert.relicMeter){desert.relicMeter=Math.floor(elapsed/60000);awardRelic('장기 생존');}
