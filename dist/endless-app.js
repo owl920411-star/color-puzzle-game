@@ -407,7 +407,7 @@ function draw(){
  for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='600 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f1fff9';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
 }
 function fastDown(d,x,y,now){const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);if(kind==='sand')return!d.noRelease&&d.axis==='y'&&!d.soft&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4;return!d.noRelease&&dy>=Math.max(48,d.unit*1.5)&&age<=380&&dy>Math.abs(dx)*1.35&&d.peakDown-dy<d.unit*.65;}
-// CONTROL 20: normal-board gestures own one state and one timer.
+// CONTROL 21: normal-board gestures own one state and one timer.
 // Sand keeps its established drag path below. Keyboard repeat remains in update().
 function normalTouchTick(d){
  d.timer=null;
@@ -417,18 +417,16 @@ function normalTouchTick(d){
  if(!action(d.side<0?'left':'right')){d.state='BLOCKED';return;}
  // Timer belongs to this pointer and this piece, not animation/gameplay dt.
  // No accumulated catch-up work after a main-thread stall.
- if(drag===d)d.timer=setTimeout(()=>normalTouchTick(d),38);
+ if(drag===d){const delay=d.steps===0?48:d.steps===1?42:36;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
 }
 function normalTouchMove(d,x,y){
  if(drag!==d)return;
  if(d.piece!==pieceID()||!canAct()){clearInput();return;}
  const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);
  if(Math.max(ax,ay)<d.swipe)return;
- // A committed repeat cannot also rotate/drop. A large excursion ends it.
- // Before commitment, a clear swipe wins and executes exactly once now.
- const pending=d.state==='PENDING';
+ // Explicit travel replaces the hold: retire its timer before one swipe action.
  clearInput();
- if(pending)action(ax>=ay?(dx>0?'rotate':'rotateCCW'):(dy<0?'hold':'drop'));
+ if(action(ax>=ay?(dx>0?'rotate':'rotateCCW'):(dy<0?'hold':'drop')))draw();
 }
 function processSwipe(d,x,y,now){
  if(drag!==d||!playing())return;if(kind==='normal'){normalTouchMove(d,x,y);return;}d.lastX=x;d.lastY=y;
@@ -441,8 +439,8 @@ function processSwipe(d,x,y,now){
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
  if(kind==='normal'){
-  const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',side,startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
-  d.timer=setTimeout(()=>normalTouchTick(d),170);return;
+  const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',steps:0,side,startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
+  d.timer=setTimeout(()=>normalTouchTick(d),165);return;
  }
  drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,side,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,peakDistance:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
 });
@@ -452,7 +450,7 @@ canvas.addEventListener('pointerup',e=>{
  if(kind==='normal'){
   normalTouchMove(d,e.clientX,e.clientY);if(drag!==d)return;
   const tap=d.state==='PENDING'&&d.piece===pieceID()&&canAct();clearInput();
-  if(tap)action(d.side<0?'left':'right');return;
+  if(tap&&action(d.side<0?'left':'right'))draw();return;
  }
  const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);if(drag!==d)return;drag=null;
  if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
