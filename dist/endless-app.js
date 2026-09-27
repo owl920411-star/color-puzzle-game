@@ -28,7 +28,7 @@ const DESERT_LEVELS=[
 let desert, itemSystem=B.state('preview'),relicReturn='game';
 /* ADAPTIVE DIRECTOR V1 HOOKS */
 let adaptive=null,resultHTML='';
-function adaptiveRecordKey(){return adaptive?.recordKey()||'normal';
+function adaptiveRecordKey(){return adaptive?.recordKey()||'normal';}
 
 const DESERT_ITEMS=B.ITEMS;
 // Golden Scarab score item was removed; non-score support relics stay available.
