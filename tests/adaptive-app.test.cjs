@@ -35,7 +35,7 @@ test('integrated pause freezes game and adaptive clocks and blocks drop',()=>{
 test('integrated settings apply auto/off only to the next game',()=>{
  const a=boot();a.q.start();a.menu('settings');a.adaptive('open');assert.match(a.nodes.get('panel').innerHTML,/현재: 관찰/);
  const deadline=a.q.desert.nextRise;a.adaptive('mode','adaptive');a.adaptive('style','calm');assert.equal(a.q.adaptive.info().mode,'observe');assert.equal(a.q.desert.nextRise,deadline);
- a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/HOW TO PLAY/);a.menu('back');assert.equal(a.q.state,'playing');
+ a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/CRAYON BLOOM GUIDE/);a.menu('back');assert.equal(a.q.state,'playing');
  a.q.start();assert.equal(a.q.adaptive.info().mode,'adaptive');assert.equal(a.q.adaptive.info().applied,1);assert.equal(a.q.adaptive.recordKey(),'normal-adaptive-v1-calm');
  a.menu('settings');a.adaptive('open');a.adaptive('mode','off');assert.equal(a.q.adaptive.info().mode,'adaptive');a.q.start();a.q.action('drop');assert.equal(a.q.adaptive.info().mode,'off');assert.equal(a.q.adaptive.info().placements,0);
 });
@@ -51,7 +51,7 @@ test('integrated normal to sand to normal uses the real sand engine without obse
  a.menu('menu');a.menu('normal');a.menu('start');assert.equal(a.q.adaptive.info().mode,'observe');assert.equal(a.q.adaptive.info().placements,0);
 });
 test('integrated DEV LAB returns correctly and excludes forced play from learning',()=>{
- const a=boot();a.q.start();a.q.pause();a.q.devPanel();a.adaptive('open');assert.match(a.nodes.get('panel').innerHTML,/ADAPTIVE DESERT/);a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/DEV LAB/);
+ const a=boot();a.q.start();a.q.pause();a.q.devPanel();a.adaptive('open');assert.match(a.nodes.get('panel').innerHTML,/ADAPTIVE BLOOM/);a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/DEV LAB/);
  const savedBefore=a.store['glassfall-v1'];a.menu('itemscenario','oasis');assert.equal(a.q.adaptive.info().practice,true);a.menu('back');a.q.action('drop');a.step(500);a.q.finish();assert.equal(a.q.adaptive.profile.completed,0);assert.equal(a.store['glassfall-v1'],savedBefore);
 });
 test('integrated temporary game does not save bests or adaptive history',()=>{

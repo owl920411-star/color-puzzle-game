@@ -7,7 +7,7 @@ window.CrayonHome={render({kind,best}){
  const normal=kind==='normal';
  return `<section class="cb-home" aria-label="크레용블룸 시작 화면">
   <div class="cb-paper-edge" aria-hidden="true"></div>
-  <header class="cb-heading"><p class="cb-eyebrow">A LITTLE WORLD OF COLOR</p><h1><img class="cb-logo" src="assets/bloom-home-logo.webp" width="900" height="320" alt="크레용블룸" fetchpriority="high"></h1><p class="cb-tagline">작은 블록이 피워내는 색색의 즐거움</p></header>
+  <header class="cb-heading"><p class="cb-eyebrow">CRAYON BLOOM</p><h1><img class="cb-logo" src="assets/bloom-home-logo.webp" width="900" height="320" alt="크레용블룸" fetchpriority="high"></h1><p class="cb-tagline">작은 블록이 피워내는 색색의 즐거움</p></header>
   <figure class="cb-scene"><img class="cb-hero" src="assets/bloom-home-hero.webp" width="1000" height="750" alt="풍성한 검은 곱슬머리와 분홍 후드티의 공식 아기가 크레용과 노란 병아리를 안고 있어요" fetchpriority="high" decoding="async"><figcaption>오늘도, 우리 같이 색칠할까?</figcaption></figure>
   <div class="cb-play"><div class="cb-mode-tabs" role="group" aria-label="게임 모드 선택">
    <button class="cb-mode ${normal?'is-selected':''}" data-menu="normal" aria-pressed="${normal}" aria-label="일반 모드"><span class="cb-mode-icon">${blockIcon}</span><span>일반 모드</span><span class="cb-check" aria-hidden="true">${normal?'✓':'○'}</span></button>

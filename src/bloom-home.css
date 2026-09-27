@@ -37,3 +37,5 @@
 #panel .cb-home .cb-colophon small{font-size:7px;letter-spacing:.4px}
 @media(max-height:700px){#panel .cb-home{padding-top:max(8px,env(safe-area-inset-top));padding-right:23px;padding-left:23px}#panel .cb-home .cb-eyebrow{font-size:8px;letter-spacing:2px}#panel .cb-home .cb-logo{max-height:88px;width:92%}#panel .cb-home .cb-tagline{font-size:11px}#panel .cb-home .cb-scene{margin-top:3px;margin-bottom:5px}#panel .cb-home .cb-mode{min-height:48px;font-size:13px}#panel .cb-home .cb-mode-hint{margin:7px 0 8px;font-size:11px}#panel .cb-home .cb-start{height:58px;font-size:23px}#panel .cb-home .cb-colophon{margin-top:3px}#panel .cb-home figcaption{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#panel .cb-home button{transition:none}}
+/* Review pass 2: keep the illustration and its caption together on taller phones. */
+@media(min-height:701px){#panel .cb-home .cb-hero{flex:0 1 auto;width:calc(100% + 56px);height:auto;max-height:360px}#panel .cb-home figcaption{margin-top:9px}#panel .cb-home .cb-scene{justify-content:center}}

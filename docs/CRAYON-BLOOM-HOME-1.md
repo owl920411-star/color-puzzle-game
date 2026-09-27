@@ -41,3 +41,11 @@ Home generated files match src. Normal start/home/settings cycle preserves store
 settings and unrelated fields. Actual browser/mobile-frame inspection is a separate gate.
 Public noindex QA surface: dist/qa/home-mobile.html (360×640, 390×844, 412×915).
 Physical Android touch latency, heat and sustained performance require user device testing.
+
+## First browser review and correction
+All three embedded mobile viewports load both images and show CTA within viewport.
+Measured CTA bottom: 558.7/640, 757.8/844, 828.9/915 pixels.
+First review rejected excess separation between portrait and caption on tall screens.
+Pass 2 enlarges the illustration slightly and groups the caption with it.
+Two stale adaptive UI string assertions updated to already-shipped BLOOM/guide names;
+19 related tests now pass. No adaptive rules changed.
