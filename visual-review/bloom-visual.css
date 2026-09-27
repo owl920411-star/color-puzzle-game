@@ -100,3 +100,6 @@ body[data-desert="6"] #pace-label::after,body[data-desert="7"] #pace-label::afte
 @media(max-height:700px){#panel .paper-options .storage-note{margin-top:6px}.paper-options .text-button{margin-top:5px}.paper-options h3{margin-top:7px}.paper-toggle{height:38px}}
 #game-area{position:relative}
 .relic-grid button{background:var(--paper);color:var(--ink);border-color:var(--outline)}
+/* Preserve measured RC1 HUD/rail boxes; typography must not resize the board. */
+@media(min-height:571px){.topbar{height:50px;min-height:50px}.scorebar{height:52.75px}}
+.rail button,body[data-kind="normal"] .rail button{border-width:2px!important}
