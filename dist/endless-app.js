@@ -204,7 +204,7 @@ function hud(){
 }
 function rebase(){if(!drag||!run.active)return;drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;drag.piece=pieceID();drag.downAnchor=drag.lastY;}
 function carry(){
- if(!drag||drag.axis==='y')return false;
+ if(!drag||kind==='normal'||drag.axis==='y')return false;
  // Commit the continuously tracked target before drop/hold. This prevents a
  // pointermove arriving one frame late from dropping in the previous column.
  if(kind==='normal'&&run.active&&Number.isFinite(drag.virtualX))moveTo(Math.round(drag.virtualX));
@@ -217,6 +217,7 @@ function moveTo(x){
 }
 function restore(){if(!drag||!drag.noRelease||!run.active)return;moveTo(drag.lane);rebase();}
 function nextNormal(){
+ clearInput();
  phase=null;pending=null;falls=[];state='playing';fallTime=lockTime=lockResets=0;
  desertTick();if(state==='over')return;
  if(!run.spawn()){finish('spawn_collision');return;}maybeSeedNextItem();restore();hud();
@@ -302,7 +303,7 @@ function sandEvents(){
  }
 }
 function update(raw){
- const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;adaptive?.tick(raw);
+ const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;if(drag?.repeatStarted)hiddenRepeat(drag,performance.now());elapsed+=dt;adaptive?.tick(raw);
  desertTick();if(!playing())return;itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
  if(kind==='sand'){run.step(Math.min(50,dt));sandEvents();}
  else if(state==='playing'){
@@ -412,11 +413,19 @@ function hiddenMove(d,dir){
  if(moved){d.translated=true;d.lane=run.active.x;d.virtualX=run.active.x;}
  return run.active.x!==before;
 }
+// CONTROL 19: one stationary hold clock; release never arms a repeat.
 function hiddenRepeat(d,now){
- if(kind!=='normal'||d.mode!=='tap'||!canAct())return;
- const held=now-d.started;if(held<115)return;
- if(!d.repeatStarted){d.repeatStarted=true;d.repeatNext=now;d.mode='hold';}
- let n=0;while(now>=d.repeatNext&&n++<4){hiddenMove(d,d.side);d.repeatNext+=42;}
+ if(!d||kind!=='normal'||drag!==d)return;
+ if(d.piece!==pieceID()){clearInput();return;}
+ if(!canAct()||d.noRelease||d.gestureAxis||d.dropIntent||d.rotateIntent||d.holdIntent||d.peakDistance>16)return;
+ if(!d.repeatStarted){
+  if(d.mode!=='tap'||now-d.started<170)return;
+  d.repeatStarted=true;d.mode='hold';d.repeatNext=now;
+ }
+ if(now<d.repeatNext)return;
+ hiddenMove(d,d.side);
+ // At most one collision-checked step per frame; discard overdue backlog.
+ d.repeatNext=Math.max(d.repeatNext+38,now+1);
 }
 function processSwipe(d,x,y,now){
  if(drag!==d||!playing())return;d.lastX=x;d.lastY=y;
@@ -445,7 +454,7 @@ function processSwipe(d,x,y,now){
    d.rotateIntent=dx>0?1:-1;d.mode='rotate';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
   }
   if(d.dropIntent||d.rotateIntent||d.holdIntent||d.gestureAxis)return;
-  hiddenRepeat(d,now);return;
+  return;
  }
  if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
  if(d.axis==='x'&&canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
@@ -454,7 +463,7 @@ function processSwipe(d,x,y,now){
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
  drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,gestureAxis:null,dropIntent:false,rotateIntent:0,holdIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
- if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{if(drag!==d||d.dropIntent||d.rotateIntent||d.holdIntent||d.peakDistance>16||!canAct())return;d.repeatStarted=true;d.mode='hold';/* First repeat movement is delayed: a normal tap can never become two cells because of a borderline long-press timer. */repeat={id:'hidden-'+d.id,action:d.side<0?'left':'right',time:150,hidden:true,drag:d};},170);}
+ if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{d.holdTimer=null;hiddenRepeat(d,performance.now());},170);}
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
@@ -464,7 +473,7 @@ canvas.addEventListener('pointerup',e=>{
   if(d.holdIntent){action('hold');return;}
   if(d.dropIntent||fastDown(d,e.clientX,e.clientY,now)){action('drop');return;}
   if(d.rotateIntent){action(d.rotateIntent>0?'rotate':'rotateCCW');return;}
-  if(!d.repeatStarted&&now-d.started<115&&d.peakDistance<18)hiddenMove(d,d.side);
+  if(!d.repeatStarted&&!d.gestureAxis&&d.peakDistance<18)hiddenMove(d,d.side);
   return;
  }
  if(fastDown(d,e.clientX,e.clientY,now))action('drop');

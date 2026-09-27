@@ -15,7 +15,7 @@ window.CrayonHome={render({kind,best}){
   </div><p class="cb-mode-hint" aria-live="polite">${normal?'차곡차곡 쌓고, 가로줄을 활짝!':'사르르 모으고, 색색의 모래를 와르르!'}</p>
   <button class="cb-start" data-menu="start" aria-label="${normal?'일반':'모래'} 모드 시작하기"><span>시작하기</span><svg viewBox="0 0 36 28" aria-hidden="true"><path d="M4 14q12-2 25 0M21 5l9 9-10 9"/></svg></button>
   <div class="cb-bottom"><p class="cb-best">${normal?'일반':'모래'} 최고점 <strong>${Number(best||0).toLocaleString()}<small>점</small></strong></p><button class="cb-settings" data-menu="settings" aria-label="놀이 방법 및 설정"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2.5"/><circle cx="16" cy="12" r="2.5"/><circle cx="10" cy="18" r="2.5"/></svg>놀이 방법 · 설정</button></div></div>
-  <footer class="cb-colophon"><span>CRAYON BLOOM</span><small>MAIN 7 · CONTROL 18 · HOME 1</small></footer>
+  <footer class="cb-colophon"><span>CRAYON BLOOM</span><small>MAIN 7 · CONTROL 19 · HOME 1</small></footer>
  </section>`;
 }};
 })();
