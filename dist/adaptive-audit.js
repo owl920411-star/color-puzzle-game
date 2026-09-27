@@ -11,12 +11,12 @@ const COPY=v=>v==null?v:JSON.parse(JSON.stringify(v));
 const LABELS=Object.freeze({
  no_input:'유효 입력 없음',too_short:'배치 조작시간 250ms 미만',too_long:'배치 조작시간 60초 초과',
  frame_in_placement:'배치 중 긴 프레임 발생',frame_recovery:'프레임 정체 후 보호 구간',
- item_relic_window:'아이템·유물 영향 구간',next_cycle:'다음 전체 지반 주기 예약 대기',
+ item_relic_window:'아이템·보조 도구 영향 구간',next_cycle:'다음 전체 지반 주기 예약 대기',
  cooldown:'직전 조절 후 30초 재관찰 대기',fresh_samples:'직전 조절 후 새 배치 6개 대기',
  risk_samples:'새 위험 배치 관찰 대기',episode_cap:'이번 회복 구간 완화 3단계 상한',
  style_bound:'선택한 성향의 조절 범위 상한',minimum_samples:'속도·안정성 판단 표본 부족',
  observation_time:'초기 60초 관찰 대기',sample_span:'유효 표본 사이 45초 관찰 대기',
- frame:'프레임 보호 구간',effect:'아이템·유물 영향 구간',recovery:'위기 회복 후 안정 구간',
+ frame:'프레임 보호 구간',effect:'아이템·보조 도구 영향 구간',recovery:'위기 회복 후 안정 구간',
  new_evidence:'새 배치 묶음 재관찰 대기',unstable:'판 안정성 부족',planning:'자연 줄 제거 근거 부족',
  candidate:'상승 후보 재확인 중',steady:'현재 속도 유지',observe_only:'관찰 모드: 실제 변경 없음',
  off:'조절 끄기',practice:'개발자 연습: 실제 조절·학습 제외'

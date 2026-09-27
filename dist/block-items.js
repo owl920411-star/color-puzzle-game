@@ -5,12 +5,12 @@
 'use strict';
 const W=10,H=20,LIMIT=2;
 const ITEMS=Object.freeze({
- oasis:{kind:'good',unlock:1,label:'오아시스 수로',icon:'≈',color:'#63e6d2',help:'줄 완성 후 남아 있는 가장 아래 적재 줄 하나를 씻어냅니다.'},
- mummy:{kind:'bad',unlock:2,label:'미라의 붕대',icon:'M',color:'#dbcbaa',help:'첫 줄 완성은 붕대만 벗깁니다. 미라가 남은 줄을 다시 채우면 제거됩니다.'},
- sunburst:{kind:'good',unlock:3,label:'태양 폭발',icon:'☀',color:'#ffd76b',help:'줄 완성 시 원래 위치 중심 3×3 영역의 고정 블록을 파괴합니다.'},
- scarabCurse:{kind:'bad',unlock:4,label:'스카라베 증식',icon:'S',color:'#b699d3',duration:12000,help:'착지 후 12초. 늦으면 안전한 인접 빈칸에 블록 하나가 생깁니다. 한 번만 발동합니다.'},
- spear:{kind:'good',unlock:5,label:'호루스의 창',icon:'↓',color:'#96dcff',help:'줄 완성 시 같은 열 아래쪽의 고정 블록을 최대 6개 파괴합니다.'},
- seal:{kind:'bad',unlock:6,label:'사암 봉인',icon:'▣',color:'#d08d9b',duration:15000,help:'착지 후 15초. 늦으면 인접 일반 블록 최대 2개가 두 번 제거하는 석화 블록으로 바뀝니다.'}
+ oasis:{kind:'good',unlock:1,label:'무지개 크레용',icon:'▰',color:'#70b9ce',help:'줄 완성 후 남아 있는 가장 아래 적재 줄 하나를 크레용 선으로 지웁니다.'},
+ mummy:{kind:'bad',unlock:2,label:'삐뚤빼뚤 스티커',icon:'▧',color:'#df9fbc',help:'첫 줄 완성은 스티커 한 겹만 벗깁니다. 남은 줄을 다시 채우면 제거됩니다.'},
+ sunburst:{kind:'good',unlock:3,label:'꽃송이 지우개',icon:'✿',color:'#ed98b5',help:'줄 완성 시 원래 위치 중심 3×3 영역의 고정 블록을 지웁니다.'},
+ scarabCurse:{kind:'bad',unlock:4,label:'엉킨 크레용',icon:'〰',color:'#a69ac9',duration:12000,help:'착지 후 12초. 늦으면 안전한 인접 빈칸에 블록 하나가 생깁니다. 한 번만 발동합니다.'},
+ spear:{kind:'good',unlock:5,label:'별빛 스티커',icon:'★',color:'#e4bf59',help:'줄 완성 시 같은 열 아래쪽의 고정 블록을 최대 6개 지웁니다.'},
+ seal:{kind:'bad',unlock:6,label:'먹구름 낙서',icon:'☁',color:'#9c9ebc',duration:15000,help:'착지 후 15초. 늦으면 인접 일반 블록 최대 2개가 두 번 줄을 완성해야 지워지는 스티커 블록으로 바뀝니다.'}
 });
 function assertBoard(b){if(!Array.isArray(b)||b.length!==H||b.some(r=>!Array.isArray(r)||r.length!==W))throw new TypeError('Expected a 10×20 board');}
 function clone(b){return b.map(r=>r.map(c=>c?{...c,...(c.special?{special:{...c.special}}:{})}:null));}

@@ -152,7 +152,7 @@ class Director {
       return decide('risk','현재 부담 높음 · 상승 동결 / 회복 조절 대기 또는 상한');
     }
     if(this.now<this.taintedUntil)return decide('frame','프레임 정체 감지 · 속도 판정 보류');
-    if(this.now<this.assistUntil)return decide('effect','아이템·유물 영향 구간 · 실력 상승 근거에서 분리');
+    if(this.now<this.assistUntil)return decide('effect','아이템·보조 도구 영향 구간 · 실력 상승 근거에서 분리');
     if(this.now<this.graceUntil)return decide('recovery','위기 회복 뒤 안정 구간 · 추가 상승 보류');
     if(this.pending?.direction==='up'&&(m.height>12||sum(recent,s=>s.addedHoles)>1||recent.some(s=>!s.reliable))){this.pending=null;this.upVotes=0;return decide('unstable','최근 배치 불안정 · 이전 상승 예약 취소');}
     if(this.pending)return decide(this.pending.direction==='up'?'up':'relief','판정 예약됨 · 현재 예고는 그대로, 다음 전체 주기부터');

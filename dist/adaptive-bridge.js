@@ -111,14 +111,14 @@ function create(port){
   const g=get(),running=active&&g.kind==='normal';
   const r=running?info():lastReport;
   const choice=(name,values,value)=>Object.entries(values).map(([k,v])=>`<button data-adaptive="${name}" data-v="${k}" aria-pressed="${value===k}">${value===k?'✓ ':''}${typeof v==='string'?v:v.label}</button>`).join('');
-  const content=`<div class="kicker">ADAPTIVE DESERT DIRECTOR V1 · STABLE</div><h2>개인 맞춤 난이도</h2>
+  const content=`<div class="kicker">ADAPTIVE BLOOM DIRECTOR V1 · STABLE</div><h2>개인 맞춤 난이도</h2>
    ${resultHTML(r,running,g)}
    <section data-section="next-settings"><h3>다음 판 설정</h3>
    <p>${running?'현재 판은 바뀌지 않습니다. 다음 새 판부터 적용됩니다.':'위의 지난 판 결과와 별개의 설정입니다.'}</p>
    <div class="settings-row">${choice('mode',MODES,next.mode)}</div>
    <p>자동 조절 범위</p><div class="settings-row">${choice('style',STYLES,next.style)}</div>
    <p><button data-adaptive="guest">${next.guest?'✓ ':''}다음 판 임시 플레이 ${next.guest?'ON':'OFF'}</button></p></section>
-   <p>관찰만은 실제 난이도를 바꾸지 않습니다. 자동 조절도 지반 주기만 바꿉니다. 낙하·NEXT·저주 타이머·터치 반응은 그대로입니다.</p>
+   <p>관찰만은 실제 난이도를 바꾸지 않습니다. 자동 조절도 지반 주기만 바꿉니다. 낙하·NEXT·방해 타이머·터치 반응은 그대로입니다.</p>
    <div class="rule-box">저장된 판 ${store.history.length}/20 · 프로필 반영 판 ${store.profile.completed}<br>
    ${r?.practice?'개발자 상태: 학습·정상 기록 제외<br>':''}${next.guest?'임시 플레이: 새 판의 기록·학습 저장 안 함<br>':''}
    ${savedOK?'이 브라우저에만 저장합니다. 서버 전송·나이 수집 없음.':'저장 실패: 메모리에서만 동작 중입니다.'}</div>

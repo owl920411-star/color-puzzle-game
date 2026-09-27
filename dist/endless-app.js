@@ -15,14 +15,14 @@ let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforeP
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
 const DESERT_LEVELS=[
- {at:0,lv:0,interval:Infinity,mult:1,label:'CALM'},
- {at:180000,lv:1,interval:45000,mult:1.10,label:'DAWN'},
- {at:300000,lv:2,interval:38000,mult:1.20,label:'SCORCH'},
- {at:420000,lv:3,interval:32000,mult:1.35,label:'SUNSET'},
- {at:540000,lv:4,interval:26000,mult:1.50,label:'DUSK'},
- {at:660000,lv:5,interval:21000,mult:1.70,label:'NIGHT'},
- {at:780000,lv:6,interval:17000,mult:1.90,label:'SANDSTORM'},
- {at:900000,lv:7,interval:13000,mult:2.15,label:'ETERNAL DESERT'},
+ {at:0,lv:0,interval:Infinity,mult:1,label:'새 도화지'},
+ {at:180000,lv:1,interval:45000,mult:1.10,label:'첫 낙서'},
+ {at:300000,lv:2,interval:38000,mult:1.20,label:'색칠 놀이'},
+ {at:420000,lv:3,interval:32000,mult:1.35,label:'꽃잎 그리기'},
+ {at:540000,lv:4,interval:26000,mult:1.50,label:'별 붙이기'},
+ {at:660000,lv:5,interval:21000,mult:1.70,label:'무지개 그림'},
+ {at:780000,lv:6,interval:17000,mult:1.90,label:'낙서 축제'},
+ {at:900000,lv:7,interval:13000,mult:2.15,label:'가득 핀 그림'},
  {at:1020000,lv:8,interval:11000,mult:2.40,label:'BLOOM MAX'}
 ];
 let desert, itemSystem=B.state('preview'),relicReturn='game';
@@ -33,7 +33,9 @@ function adaptiveRecordKey(){return kind==='normal'?(adaptive?.recordKey()||'nor
 const DESERT_ITEMS=B.ITEMS;
 // Golden Scarab score item was removed; non-score support relics stay available.
 const RELICS=['hourglass','sun','eye','hammer','ankh'];
-const RELIC_NAMES={hourglass:'시간의 모래시계',sun:'태양의 부적',eye:'호루스의 눈',hammer:'파라오의 망치',ankh:'앙크'};
+const RELIC_NAMES={hourglass:'쉬어가는 구름',sun:'쓱싹 지우개',eye:'미리보기 색연필',hammer:'톡톡 도장',ankh:'하트 반창고'};
+const RELIC_HELP={hourglass:'다음 꽃밭 상승을 10초 늦춰요. 지연은 최대 15초예요.',sun:'가장 아래 적재 줄 하나를 지워요.',eye:'다음 꽃밭 상승의 빈칸 위치를 미리 표시해요.',hammer:'아래 4줄의 가운데 3칸씩을 지워요.',ankh:'치명적인 꽃밭 상승 때 위쪽 4줄을 자동으로 비워요.'};
+const RELIC_ICONS={hourglass:'☁',sun:'▱',eye:'✎',hammer:'✿',ankh:'♡'};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
 function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:180000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,inventory:Object.fromEntries(RELICS.map(k=>[k,0])),previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';itemSystem=B.state(currentSeed+'/block-items-v2');}
 function practice(){return kind==='normal'&&itemSystem.practice;}
@@ -48,10 +50,10 @@ function attachItemToPiece(p,type){return B.attach(p,type,itemSystem);}
 function forceNextItem(type){if(kind!=='normal'||!DESERT_ITEMS[type]||!run?.queue[0])return false;markPractice();for(const c of run.queue[0].cells)delete c.special;return attachItemToPiece(run.queue[0],type);}
 function maybeSeedNextItem(){if(!itemEligible()||!run?.queue?.[0]||B.liveCount(run)>=B.LIMIT)return;
  // Keep earned rewards until a free slot exists; never discard them.
- if(itemSystem.purify>=2){const p=run.queue[1]||run.queue[0],t=directorPick('good');if(t&&attachItemToPiece(p,t)){itemSystem.purify-=2;callout('정화의 선물','다음 블록에 블록형 축복이 예약됐습니다');}return;}
+ if(itemSystem.purify>=2){const p=run.queue[1]||run.queue[0],t=directorPick('good');if(t&&attachItemToPiece(p,t)){itemSystem.purify-=2;callout('깔끔한 그림 선물','다음 블록에 도움 도구가 예약됐습니다');}return;}
  if(run.queue.some(p=>p.cells.some(c=>c.special)))return;const early=elapsed<420000?.55:1,chance=Math.min(.20,(.04+desert.level*.010)*early);if(itemSystem.random()<chance){const t=directorPick();if(t)attachItemToPiece(run.queue[0],t);}
 }
-function announceItems(events){if(!events.length)return;const names=events.map(e=>DESERT_ITEMS[e.type].label).join(' · '),text=events.map(e=>e.status==='wounded'?'붕대 파손 · 남은 줄을 한 번 더 완성':e.status==='purified'?'정화 성공 · 축복 게이지 +1':e.status==='failed'?`${e.blocks}칸 ${e.type==='seal'?'석화':'증식'}`:e.status==='blocked'?'안전한 대상 없음 · 추가 피해 없음':e.status==='removed'?'남은 저주 블록 제거':e.type==='oasis'?'아래 적재 줄 세척':e.type==='spear'?`아래쪽 ${e.blocks}칸 관통`:`주변 ${e.blocks}칸 파괴`).join(' / ');callout(names,text);}
+function announceItems(events){if(!events.length)return;if(!reduced)for(const e of events)shatterFX?.item?.(e,DESERT_ITEMS[e.type]);const names=events.map(e=>DESERT_ITEMS[e.type].label).join(' · '),text=events.map(e=>e.status==='wounded'?'스티커 한 겹 제거 · 남은 줄을 한 번 더 완성':e.status==='purified'?'낙서 정리 · 선물 게이지 +1':e.status==='failed'?`${e.blocks}칸 ${e.type==='seal'?'스티커 덧붙임':'낙서 추가'}`:e.status==='blocked'?'안전한 대상 없음 · 추가 피해 없음':e.status==='removed'?'남은 방해 낙서 제거':e.type==='oasis'?'아래 적재 줄 쓱싹':e.type==='spear'?`아래쪽 ${e.blocks}칸 별빛 지우기`:`주변 ${e.blocks}칸 꽃잎 지우기`).join(' / ');callout(names,text);}
 function resolveNormal(p){if(!p)return null;const tx=itemSystem.enabled?B.resolve(run.board,p.rows,p.itemAt??elapsed):{board:run.board,scoringRows:p.rows,events:[],purified:0,extraRemoved:0,falls:null};let result;
  if(itemSystem.enabled){run.board=tx.board;result=run.awardClear(tx.scoringRows.length);result.falls=tx.falls;if(!tx.scoringRows.length)run.noClear();}else result=run.resolve(p);
  itemSystem.purify+=tx.purified;itemSystem.stats.cleared+=tx.events.filter(e=>e.status==='activated'||e.status==='purified').length;itemSystem.stats.removed+=tx.extraRemoved;
@@ -63,12 +65,12 @@ function awardRelic(reason='SURVIVAL'){if(kind!=='normal'||desert.level===0||ela
 function useRelic(key){if(kind!=='normal'||!RELICS.includes(key)||key==='ankh'||!desert.inventory[key]||beforePause==='clearing')return false;
  const adaptiveBefore=adaptive?.board();
  if(key==='hourglass')desert.delay=Math.min(15000,desert.delay+10000);
- else if(key==='sun'){const b=B.removeBottom(run.board,run.active);if(!b){callout('태양의 부적','대상이 없거나 현재 블록과 겹쳐 사용하지 않았습니다');return false;}run.board=b;}
+ else if(key==='sun'){const b=B.removeBottom(run.board,run.active);if(!b){callout('쓱싹 지우개','대상이 없거나 현재 블록과 겹쳐 사용하지 않았습니다');return false;}run.board=b;}
  else if(key==='eye')desert.previewHoles ||= fairHoles();
  else if(key==='hammer')for(let y=16;y<20;y++)for(let x=4;x<=6;x++)run.board[y][x]=null;
- desert.inventory[key]--;adaptive?.system('relic',adaptiveBefore);callout(RELIC_NAMES[key],'유물 사용 · 아이템 추가 점수 없음');hud();return true;
+ desert.inventory[key]--;adaptive?.system('relic',adaptiveBefore);callout(RELIC_NAMES[key],'도구 사용 · 아이템 추가 점수 없음');hud();return true;
 }
-function showRelics(){if(!run||kind!=='normal')return;relicReturn=overlayView==='dev'?'dev':'game';if(playing())beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">SUPPORT RELICS</div><h2>보조 유물</h2><div class="relic-grid">${RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'||beforePause==='clearing'?'disabled':''}>${RELIC_NAMES[k]} ×${desert.inventory[k]}</button>`).join('')}</div><p>점수 증가 유물은 삭제됐습니다.<br>앙크는 치명적인 지반 상승 때 자동 발동합니다.${beforePause==='clearing'?'<br>줄 제거 연출 후 사용할 수 있습니다.':''}</p><button class="primary" data-menu="back">${relicReturn==='dev'?'개발자 모드':'게임으로 돌아가기'}</button>`,'relic');}
+function showRelics(){if(!run||kind!=='normal')return;relicReturn=overlayView==='dev'?'dev':'game';if(playing())beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">DOODLE TOOLBOX</div><h2>낙서 도구함</h2><div class="relic-grid">${RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'||beforePause==='clearing'?'disabled':''}><b>${RELIC_ICONS[k]} ${RELIC_NAMES[k]} ×${desert.inventory[k]}</b><small>${RELIC_HELP[k]}</small></button>`).join('')}</div><p>보조 도구는 추가 점수를 주지 않습니다.<br>하트 반창고는 치명적인 지반 상승 때 자동 발동합니다.${beforePause==='clearing'?'<br>줄 제거 연출 후 사용할 수 있습니다.':''}</p><button class="primary" data-menu="back">${relicReturn==='dev'?'개발자 모드':'게임으로 돌아가기'}</button>`,'relic');}
 function riseGround(){if(kind!=='normal'||!run||state==='clearing'||state==='over')return false;const adaptiveBefore=adaptive?.board();const source=B.clone(run.board),holes=desert.previewHoles||fairHoles();const types=Object.keys(COLORS);let topOut=source[0].some(Boolean);const row=Array.from({length:10},(_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%7],mask:0,id:++run.serial,desert:true});source.shift();source.push(row);let p=run.active?{...run.active}:null;
  const locate=()=>{if(!p)return true;for(const dy of [0,-1,-2]){const q={...run.active,y:run.active.y+dy};if(B.fits(source,q)){p=q;return true;}}return false;};let safe=locate();
  if(topOut||!safe){if(desert.inventory.ankh>0||desert.invincible){if(!desert.invincible)desert.inventory.ankh--;for(let y=0;y<4;y++)source[y]=Array(10).fill(null);topOut=false;safe=locate();if(!safe&&desert.invincible){for(let y=0;y<20;y++)source[y]=Array(10).fill(null);p=run.active?{...run.active,y:0}:null;safe=true;}}if(topOut||!safe){finish(topOut?'ground_overflow':'ground_active_blocked',{topOut,activeFits:safe,attemptedRows:source.map(r=>r.reduce((m,c,x)=>m|(c?1<<x:0),0))});return false;}}
@@ -83,9 +85,14 @@ function jumpTime(ms){markPractice();elapsed=Math.max(0,ms);const c=desertCfg();
 function freshPractice(){markPractice();clearInput();B.strip(run);run.board=B.blank();run.over=false;run.active=null;run.spawn();phase=pending=null;falls=[];fx=[];floaters=[];trail=impact=null;fallTime=lockTime=lockResets=0;beforePause='playing';state='paused';itemSystem.enabled=true;}
 function loadPreset(type){if(kind!=='normal')return;freshPractice();const cell=(x,y)=>({type:Object.keys(COLORS)[(x+y)%7],mask:0,id:++run.serial,desert:true});for(let y=0;y<20;y++)for(let x=0;x<10;x++){const put=type==='high'?y>=11&&(x+y)%5!==0:type==='holes'?y>=9&&(x*3+y)%4!==0:type==='left'?y>=5&&x<5&&(x+y)%3:type==='right'?y>=5&&x>=5&&(x+y)%3:type==='ceiling'?y>=2&&x!==4&&x!==5:type==='rise'?y>=12&&(x+y)%4!==0:type==='max'?y>=9&&(x*2+y)%5!==0:false;if(put)run.board[y][x]=cell(x,y);}if(type==='max')jumpTime(1020000);if(type==='rise'){jumpTime(180000);desert.nextRise=elapsed+3000;}hud();}
 function itemScenario(type){if(!DESERT_ITEMS[type])return;freshPractice();const cell=()=>({type:'J',mask:0,id:++run.serial});if(type==='spear'){for(let x=0;x<10;x++)if(x!==4)run.board[12][x]=cell();for(let y=13;y<20;y++)run.board[y][5]=cell();run.board[15][4]=cell();attachItemToPiece({cells:[run.board[12][5]]},type);B.arm(run.board,elapsed);run.active={type:'I',size:4,x:4,y:0,cells:[0,1,2,3].map(y=>({...cell(),type:'I',x:0,y}))};hud();return;}for(let x=0;x<10;x++)if(x!==4)run.board[18][x]=cell();for(const x of [1,2,5,6,7])run.board[19][x]=cell();for(const x of [3,5,6])run.board[17][x]=cell();const target=run.board[18][5];attachItemToPiece({cells:[target]},type);B.arm(run.board,elapsed);run.active={type:'I',size:4,x:4,y:0,cells:[0,1,2,3].map(y=>({...cell(),type:'I',x:0,y}))};hud();}
-function runSim(){const t=B.regression(300);showPanel(`<div class="kicker">REAL BOARD REGRESSION</div><h2>${t.cases}개 보드 연산 검사</h2><div class="rule-box">${t.pass?'통과':'실패'} · 오류 ${t.failures.length}<br>검사: 보드 크기·셀 ID 중복·원본 보드 보존·미라의 줄 판정</div><p>${t.scope}<br>이전 생존시간 근사 계산은 이번 아이템의 검증 근거로 사용하지 않습니다.</p><button class="primary" data-menu="back">개발자 모드</button>`,'sim');}
-function desertChecklist(){showPanel('<div class="kicker">PLAN TRACKER</div><h2>블록 아이템 V2</h2><div class="rule-box">구현: 6종 보드 효과 / 점수 아이템 제거 / NEXT 예고 / 착지 타이머 / 정화 보상 예약 / 연습 프리셋<br><br>남음: 실제 휴대폰 조작·연출 평가 / 초보 7분 목표 보정 / 실전 엔진을 사용하는 대량 BOT / 파라오의 거래</div><p>기획 원본과 교체 사유는 DESERT-BLOCK-ITEMS-V2.md에 보존합니다. 구현과 검증 완료는 구분합니다.</p><button class="primary" data-menu="back">개발자 모드</button>','audit');}
-function devPanel(){if(kind!=='normal')return;const d=boardDanger();showPanel(`<div class="kicker">DEV LAB · BLOCK ITEMS V2</div><h2>블록 아이템 테스트</h2>${adaptive?.button()||''}<div class="rule-box">${timeText()} · BLOOM ${desert.level} · 높이 ${20-d.top}/20 · 구멍 ${d.holes}<br>${practice()?'연습 기록 · 최고점 저장 제외':'정상 기록 · 상태를 바꾸면 연습으로 전환'}<br>생성 ${itemSystem.stats.spawned} / 성공 ${itemSystem.stats.cleared} / 실패 ${itemSystem.stats.failed}<br>정화 ${itemSystem.purify}/2 · 활성 ${B.liveCount(run)}/${B.LIMIT}</div><p>아래 아이템을 누르고 게임으로 돌아가 즉시하강하면 효과를 확인할 수 있습니다. 저주는 기다리면 실패 효과가 발생합니다.</p><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="itemscenario" data-v="${k}">${v.kind==='good'?'★':'⚠'} ${v.label}</button>`).join('')}</div><div class="settings-row"><button data-menu="forcegood">NEXT GOOD</button><button data-menu="forcebad">NEXT BAD</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="itemdeadline">저주 1초</button><button data-menu="itemcombo">MAX 복합판</button><button data-menu="devinv">무적 ${desert.invincible?'ON':'OFF'}</button></div><div class="item-force-grid">${[0,3,5,7,9,11,13,15,17,30].map(m=>`<button data-menu="devtime" data-v="${m*60000}">${m===17?'MAX 17분':m+'분'}</button>`).join('')}</div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devrelic">보조 유물 지급</button><button data-menu="devrelicview">유물함</button></div><div class="item-force-grid">${[['high','높은 적재'],['holes','구멍판'],['left','좌측 위험'],['right','우측 위험'],['ceiling','천장 직전'],['rise','상승 직전'],['max','MAX 위험']].map(([k,v])=>`<button data-menu="preset" data-v="${k}">${v}</button>`).join('')}</div><div class="settings-row"><button data-menu="devsim">보드 연산 검사</button><button data-menu="devaudit">기획 체크리스트</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">점수 추가·배수 아이템 없음. 조작 CONTROL 16 / 기본 난이도 NOVICE 7 유지.</p>`,'dev');}
+function instantItem(type){
+ if(!DESERT_ITEMS[type])return;itemScenario(type);if(type==='scarabCurse')run.board[17][5]=null;resume();
+ if(DESERT_ITEMS[type].duration){const q=findSpecials().find(q=>q.s.type===type);q.s.deadline=elapsed||1;announceItems(B.expire(run,itemSystem,q.s.deadline));hud();}
+ else action('drop');
+}
+function runSim(){const t=B.regression(300);showPanel(`<div class="kicker">REAL BOARD REGRESSION</div><h2>${t.cases}개 보드 연산 검사</h2><div class="rule-box">${t.pass?'통과':'실패'} · 오류 ${t.failures.length}<br>검사: 보드 크기·셀 ID 중복·원본 보드 보존·겹친 스티커의 줄 판정</div><p>${t.scope}<br>이전 생존시간 근사 계산은 이번 아이템의 검증 근거로 사용하지 않습니다.</p><button class="primary" data-menu="back">개발자 모드</button>`,'sim');}
+function desertChecklist(){showPanel('<div class="kicker">PLAN TRACKER</div><h2>블록 아이템 V2</h2><div class="rule-box">구현: 6종 보드 효과 / 점수 아이템 제거 / NEXT 예고 / 착지 타이머 / 낙서 정리 선물 예약 / 연습 프리셋<br><br>남음: 실제 휴대폰 조작·연출 평가 / 초보 7분 목표 보정 / 실전 엔진을 사용하는 대량 BOT</div><p>좋은 도구 3종과 방해 낙서 3종의 기존 보드 효과를 유지합니다. 구현과 검증 완료는 구분합니다.</p><button class="primary" data-menu="back">개발자 모드</button>','audit');}
+function devPanel(){if(kind!=='normal')return;const d=boardDanger();showPanel(`<div class="kicker">DEV LAB · BLOCK ITEMS V2</div><h2>블록 아이템 테스트</h2>${adaptive?.button()||''}<div class="rule-box">${timeText()} · BLOOM ${desert.level} · 높이 ${20-d.top}/20 · 구멍 ${d.holes}<br>${practice()?'연습 기록 · 최고점 저장 제외':'정상 기록 · 상태를 바꾸면 연습으로 전환'}<br>생성 ${itemSystem.stats.spawned} / 성공 ${itemSystem.stats.cleared} / 실패 ${itemSystem.stats.failed}<br>정리 ${itemSystem.purify}/2 · 활성 ${B.liveCount(run)}/${B.LIMIT}</div><p>이름을 누르면 연습판을 준비하고, 즉시 발동을 누르면 바로 효과를 보여줍니다. 방해 낙서는 시간이 지나면 방해 효과가 발생합니다.</p><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="itemscenario" data-v="${k}">${window.BloomItemArt?.html(k)||v.icon} ${v.label}</button><button data-menu="iteminstant" data-v="${k}" aria-label="${v.label} 즉시 발동">즉시 발동</button>`).join('')}</div><div class="settings-row"><button data-menu="forcegood">NEXT GOOD</button><button data-menu="forcebad">NEXT BAD</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="itemdeadline">방해까지 1초</button><button data-menu="itemcombo">MAX 복합판</button><button data-menu="devinv">무적 ${desert.invincible?'ON':'OFF'}</button></div><div class="item-force-grid">${[0,3,5,7,9,11,13,15,17,30].map(m=>`<button data-menu="devtime" data-v="${m*60000}">${m===17?'MAX 17분':m+'분'}</button>`).join('')}</div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devrelic">보조 도구 지급</button><button data-menu="devrelicview">도구함</button></div><div class="item-force-grid">${[['high','높은 적재'],['holes','구멍판'],['left','좌측 위험'],['right','우측 위험'],['ceiling','천장 직전'],['rise','상승 직전'],['max','MAX 위험']].map(([k,v])=>`<button data-menu="preset" data-v="${k}">${v}</button>`).join('')}</div><div class="settings-row"><button data-menu="devsim">보드 연산 검사</button><button data-menu="devaudit">기획 체크리스트</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">점수 추가·배수 아이템 없음. 조작 CONTROL 18 / 기본 난이도 NOVICE 7 유지.</p>`,'dev');}
 const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
 const bg=bitmap.getContext('2d'),pixels=bg.createImageData(M.W,M.H),sprites=new WeakMap();let ghost=null;
 const playing=()=>state==='playing'||state==='clearing';
@@ -126,7 +133,7 @@ function fit(){
 }
 function showPanel(html,view){if(view==='over')resultHTML=html;overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
 function hidePanel(){$('overlay').hidden=true;$('app').inert=false;overlayView='';}
-function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 쏙 내려요: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>저주를 제때 정화하면 좋은 블록 예약 게이지가 쌓입니다.<br>미라의 첫 붕대 파손은 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>쏙 내려요: 미세 격자 6칸당 1점';}
+function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 쏙 내려요: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>방해 낙서를 제때 정리하면 좋은 블록 예약 게이지가 쌓입니다.<br>스티커의 첫 겹 제거는 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>쏙 내려요: 미세 격자 6칸당 1점';}
 function menu(){
  adaptive?.end('menu');
  if(playing()||state==='paused')rememberScore();clearInput();shatterFX?.clear();state='menu';phase=null;pending=null;falls=[];fx=[];floaters=[];trail=null;impact=null;elapsed=0;calloutTime=0;$('callout').classList.remove('show');resetDesert();
@@ -168,6 +175,7 @@ panel.addEventListener('click',e=>{
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
  else if(a==='preset'){loadPreset(b.dataset.v);devPanel();}
  else if(a==='devtime'){jumpTime(Number(b.dataset.v)||0);resume();}
+ else if(a==='iteminstant'){instantItem(b.dataset.v);}
  else if(a==='itemscenario'){itemScenario(b.dataset.v);devPanel();}
  else if(a==='itemdeadline'){markPractice();let q=findSpecials().find(q=>DESERT_ITEMS[q.s.type].duration);if(!q){itemScenario('scarabCurse');q=findSpecials()[0];}q.s.deadline=elapsed+1000;q.s.failed=false;devPanel();}
  else if(a==='itemcombo'){loadPreset('max');B.strip(run);forceNextItem('sunburst');attachItemToPiece(run.queue[1],'seal');devPanel();}
@@ -191,7 +199,7 @@ function hud(){
  $('pace-label').textContent=kind==='normal'?(desert.level?'BLOOM '+(desert.level===8?'MAX':'LV.'+desert.level):'LEVEL '+run.level):'CHAIN '+run.maxChain;
  $('rotate').hidden=kind==='sand';for(const b of document.querySelectorAll('[data-action]'))b.disabled=!canAct()||(b.dataset.action==='hold'&&run.holdUsed);
  $('pause').disabled=!playing();$('notice').textContent=kind==='normal'?`제거 ${run.lines}줄 · 연속 ${run.combo||0}회`:`3색 · 12 모래량 연결 → 붕괴 · 최대 ${run.maxChain}연쇄`;
- if(kind==='normal'&&desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`지반 상승 ${left}초 · 정화 ${itemSystem.purify}/2${practice()?' · 연습':''}`;}
+ if(kind==='normal'&&desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`지반 상승 ${left}초 · 정리 ${itemSystem.purify}/2${practice()?' · 연습':''}`;}
  if(!saveOK)$('notice').textContent='기록 저장이 제한되어 있습니다.';
  for(const [id,p]of [['next',run.queue[0]],['next2',run.queue[1]],['held',run.held]]){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(p)(kind==='normal'?normalPreview:sandPreview)(g,p,c.width,c.height);}
 }
@@ -316,18 +324,11 @@ function update(raw){
 }
 function desertAtmosphere(g){
  if(kind!=='normal')return;const lv=desert.level,t=Math.min(1,lv/8);
- if(lv>=3){g.save();g.fillStyle=`rgba(92,38,20,${.035*lv})`;g.fillRect(0,0,360,720);g.restore();}
- if(lv>=6&&!reduced){g.save();g.globalAlpha=.10+.025*(lv-6);g.strokeStyle='#e8bd72';g.lineWidth=2;for(let i=0;i<14;i++){const y=(i*57+(elapsed/35)%57)%720;g.beginPath();g.moveTo(0,y);g.lineTo(360,y-55);g.stroke();}g.restore();}
+ if(lv>=3){g.save();g.fillStyle=`rgba(174,147,209,${.008*lv})`;g.fillRect(0,0,360,720);g.restore();}
+ if(lv>=6&&!reduced){g.save();g.globalAlpha=.10+.025*(lv-6);g.strokeStyle='#ccb1df';g.lineWidth=2;for(let i=0;i<14;i++){const y=(i*57+(elapsed/35)%57)%720;g.beginPath();g.moveTo(0,y);g.lineTo(360,y-55);g.stroke();}g.restore();}
  const danger=run?.board?run.board.slice(0,5).some(row=>row.some(Boolean)):false;
  if(danger){g.save();g.strokeStyle='rgba(255,91,53,.72)';g.setLineDash([10,7]);g.lineWidth=2;g.beginPath();g.moveTo(0,108);g.lineTo(360,108);g.stroke();g.restore();}
- if(desert.previewHoles){g.save();g.fillStyle='rgba(255,220,115,.22)';for(const x of desert.previewHoles)g.fillRect(x*36,684,36,36);g.restore();}
-}
-function pyramidProgress(g){
- if(kind!=='normal')return;const step=Math.min(8,Math.floor(elapsed/120000)),baseY=640,cx=180;
- g.save();g.globalAlpha=.18+.055*step;for(let layer=0;layer<=step;layer++){const w=55+layer*22,h=18,y=baseY-layer*18;g.fillStyle=layer===step?'#e9c36f':'#9d6a35';g.beginPath();g.moveTo(cx-w/2,y);g.lineTo(cx+w/2,y);g.lineTo(cx+w/2-9,y+h);g.lineTo(cx-w/2+9,y+h);g.closePath();g.fill();}
- if(step>=5){g.globalAlpha=.65;g.fillStyle='#f3d781';g.fillRect(cx-4,baseY-(step+1)*18-14,8,14);}
- if(step>=7){g.strokeStyle='#e6b95f';g.lineWidth=3;for(const x of [92,268]){g.beginPath();g.moveTo(x,620);g.lineTo(x,540);g.stroke();g.beginPath();g.moveTo(x-7,548);g.lineTo(x,532);g.lineTo(x+7,548);g.stroke();}}
- g.restore();
+ if(desert.previewHoles){g.save();g.fillStyle='rgba(152,136,221,.30)';for(const x of desert.previewHoles)g.fillRect(x*36,684,36,36);g.restore();}
 }
 function drawPyramidBackground(g){
  const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#72ace5');sky.addColorStop(.62,'#a9d2ed');sky.addColorStop(1,'#d9efd0');g.fillStyle=sky;g.fillRect(0,0,360,720);
@@ -374,7 +375,7 @@ function normalCell(g,c,x,y,size=36,alpha=1,ghostCell=false,hot=false){
  const [light,dark]=COLORS[c.type]||COLORS.I;g.save();g.globalAlpha=alpha;const m=Math.max(1.4,size*.055),r=Math.max(2,size*.08),px=x+m,py=y+m,s=size-m*2;
  if(ghostCell){g.fillStyle='rgba(70,83,166,.20)';g.fillRect(px+2,py+2,s-4,s-4);g.setLineDash([5,4]);g.strokeStyle='#ffffff';g.lineWidth=Math.max(3,size*.10);g.strokeRect(px+2,py+2,s-4,s-4);g.strokeStyle='#3545a5';g.lineWidth=Math.max(2,size*.065);g.strokeRect(px+2,py+2,s-4,s-4);g.setLineDash([]);g.restore();return;}
  if(!pyramidTile(g,c,px,py,s)){const fill=g.createLinearGradient(px,py,px+s,py+s);fill.addColorStop(0,light+'a8');fill.addColorStop(.35,dark+'ba');fill.addColorStop(1,dark+'58');g.fillStyle=fill;g.beginPath();g.roundRect(px,py,s,s,r);g.fill();g.strokeStyle=light+'a0';g.lineWidth=.8;g.stroke();g.beginPath();g.moveTo(px+3,py+s-3);g.lineTo(px+3,py+3);g.lineTo(px+s-3,py+3);g.strokeStyle='#ffffff80';g.stroke();g.beginPath();g.moveTo(px+2,py+s*.53);g.lineTo(px+s*.55,py+2);g.lineTo(px+s*.78,py+2);g.lineTo(px+2,py+s*.78);g.closePath();g.fillStyle='#ffffff0e';g.fill();}
- if(c.special&&DESERT_ITEMS[c.special.type]){const it=DESERT_ITEMS[c.special.type],sp=c.special;g.save();g.globalAlpha=sp.failed?.48:.96;g.strokeStyle=it.color;g.lineWidth=2;g.strokeRect(px+1,py+1,s-2,s-2);g.fillStyle=it.color;g.beginPath();g.arc(px+s*.69,py+s*.30,Math.max(5,s*.21),0,Math.PI*2);g.fill();g.fillStyle='#17120e';g.font=`700 ${Math.max(8,s*.24)}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.icon,px+s*.69,py+s*.30);g.fillStyle='#fff';g.font=`700 ${Math.max(7,s*.22)}px sans-serif`;if(sp.deadline&&!sp.failed)g.fillText(String(Math.max(0,Math.ceil((sp.deadline-elapsed)/1000))),px+s*.27,py+s*.75);if(sp.type==='mummy')g.fillText(String(sp.hp),px+s*.27,py+s*.75);g.restore();}
+ if(c.special&&DESERT_ITEMS[c.special.type]){const it=DESERT_ITEMS[c.special.type],sp=c.special;g.save();g.globalAlpha=sp.failed?.48:.96;g.strokeStyle=it.color;g.lineWidth=2;g.strokeRect(px+1,py+1,s-2,s-2);if(window.BloomItemArt)window.BloomItemArt.draw(g,sp.type,px+s*.69,py+s*.30,Math.max(13,s*.51));else{g.fillStyle='#594766';g.font=`700 ${Math.max(8,s*.24)}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.icon,px+s*.69,py+s*.30);}g.textAlign='center';g.textBaseline='middle';g.fillStyle='#433d63';g.font=`700 ${Math.max(7,s*.22)}px sans-serif`;if(sp.deadline&&!sp.failed)g.fillText(String(Math.max(0,Math.ceil((sp.deadline-elapsed)/1000))),px+s*.27,py+s*.75);if(sp.type==='mummy')g.fillText(String(sp.hp),px+s*.27,py+s*.75);g.restore();}
  if(hot){g.fillStyle='#dbfff588';g.fillRect(px,py,s,s);}g.restore();
 }
 function previewItemLabel(g,p,w,h){const sp=p?.cells?.find(c=>c.special)?.special;if(!sp)return;const it=DESERT_ITEMS[sp.type];if(!it)return;g.save();g.fillStyle=it.color;g.globalAlpha=.96;g.font=`700 ${Math.max(9,w*.075)}px sans-serif`;g.textAlign='center';g.textBaseline='bottom';g.fillText((it.kind==='good'?'★ ':'⚠ ')+it.label,w/2,h-2,w-6);g.restore();}
@@ -477,7 +478,7 @@ for(const b of document.querySelectorAll('[data-action]')){
 }
 for(const b of document.querySelectorAll('[data-preview]'))b.addEventListener('click',()=>{
  if(!run||!playing())return;const p=run.queue[Number(b.dataset.preview)];previewReturn='playing';beforePause=state;state='paused';clearInput();rememberScore();const sp=p?.cells?.find(c=>c.special)?.special,it=sp&&DESERT_ITEMS[sp.type];
- showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas>'+(it?'<p>'+it.help+'<br>추가 점수 없음 · NEXT/보관 중 저주 시간 정지</p>':'')+'<button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
+ showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas>'+(it?'<p>'+it.help+'<br>추가 점수 없음 · NEXT/보관 중 방해 시간 정지</p>':'')+'<button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
 });
 $('pause').addEventListener('click',pause);
 $('mode-label')?.addEventListener('click',()=>{if(kind==='normal'&&run&&state!=='menu'&&state!=='over')showRelics();});
