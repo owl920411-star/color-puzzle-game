@@ -1,0 +1,75 @@
+/* HOME ONLY. All visual rules require the home subtree; gameplay sizing is untouched. */
+#overlay:has(.cb-home){padding:0;background:#faf1df;backdrop-filter:none;display:block}
+#panel:has(>.cb-home){width:100%;max-width:none;height:100%;max-height:none;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;overflow:auto}
+#panel .cb-home{--ink:#665048;--pink:#de7595;box-sizing:border-box;position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;width:100%;max-width:520px;height:100svh;min-height:580px;max-height:1050px;margin:auto;padding:max(15px,env(safe-area-inset-top)) 25px max(9px,env(safe-area-inset-bottom));color:var(--ink);background:#fff7e8;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;overflow:hidden}
+#panel .cb-home::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.23;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.56' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%238a6b43' opacity='.38' filter='url(%23paper)' d='M0 0h160v160H0z'/%3E%3C/svg%3E")}
+#panel .cb-home .cb-paper-edge{position:absolute;inset:9px 8px;z-index:-1;pointer-events:none;border:1px solid #dcc6a54a;border-radius:46% 1% 42% 1%/1% 45% 1% 43%;outline:1px solid #dcc6a52a;outline-offset:3px}
+#panel .cb-home .cb-heading{text-align:center;flex:none;width:100%}
+#panel .cb-home .cb-eyebrow{margin:1px 0 0;font-size:9px;letter-spacing:3.2px;font-weight:700;color:#a18a72;line-height:1.4}
+#panel .cb-home h1{margin:4px 0 0;line-height:0;font-size:32px}
+#panel .cb-home .cb-logo{display:block;width:96%;height:auto;max-height:120px;object-fit:contain;margin:auto}
+#panel .cb-home .cb-tagline{margin:1px 0 0;font-size:12px;font-weight:500;letter-spacing:-.3px;color:#796455;line-height:1.5}
+#panel .cb-home .cb-scene{position:relative;flex:1 1 auto;min-height:180px;width:calc(100% + 24px);margin:6px -12px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#panel .cb-home .cb-hero{display:block;min-height:0;width:100%;height:calc(100% - 24px);max-height:400px;object-fit:contain;flex:1 1 0}
+#panel .cb-home figcaption{flex:none;transform:rotate(-2deg);padding:1px 0 3px;font-size:12px;color:#956655;line-height:20px;letter-spacing:.4px}
+#panel .cb-home .cb-play{flex:none;width:100%;max-width:410px}
+#panel .cb-home .cb-mode-tabs{display:flex;gap:12px;padding:0 3px}
+#panel .cb-home button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;font-family:inherit;box-shadow:none}
+#panel .cb-home .cb-mode{position:relative;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:53px;padding:8px 6px;border:1.7px solid #bcae9980;border-radius:5px 9px 4px 8px;background:#fffaf0;color:#7b7062;font-size:14px;font-weight:650;transform:rotate(1deg)}
+#panel .cb-home .cb-mode:first-child{transform:rotate(-1.5deg)}
+#panel .cb-home .cb-mode.is-selected{background:#f8e3e6;border:2px solid #b8758e;color:#6a3f54;outline:1px dashed #c58b9f;outline-offset:-5px;box-shadow:2px 3px 0 #d9c4ae66}
+#panel .cb-home .cb-mode[data-menu="sand"].is-selected{background:#f9edc9;border-color:#aa8e52;color:#6f5835;outline-color:#bba26a}
+#panel .cb-home .cb-mode-icon{width:26px;height:26px;flex:none}.cb-home .cb-mode-icon svg{width:100%;height:100%}
+#panel .cb-home .cb-check{font-size:17px;line-height:1;font-weight:800;margin-left:1px}
+#panel .cb-home .cb-mode-hint{margin:10px 0 11px;min-height:20px;text-align:center;color:#7e685b;font-size:12px;line-height:20px}
+#panel .cb-home .cb-start{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;gap:27px;width:100%;height:65px;padding:8px 20px;background:#e688a4;color:#fffaf0;border:2px solid #a96077;border-radius:11px 7px 13px 8px/8px 13px 7px 11px;box-shadow:0 4px 0 #b66c8055;outline:1px solid #fff4e77a;outline-offset:-6px;transform:rotate(-.6deg);font-size:24px;font-weight:800;letter-spacing:2px;transition:transform .1s}
+#panel .cb-home .cb-start::before{content:"";position:absolute;inset:3px;z-index:-1;pointer-events:none;opacity:.38;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='60'%3E%3Cfilter id='c'%3E%3CfeTurbulence baseFrequency='.7 .25' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23c)' fill='white' d='M0 0h100v60H0z'/%3E%3Cpath d='M0 19l100-8M0 40l100-9M0 58l100-8' stroke='%23fff4e5' stroke-width='1' opacity='.5'/%3E%3C/svg%3E")}
+#panel .cb-home .cb-start svg{width:32px;height:26px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#panel .cb-home button:active{transform:translateY(2px) rotate(0);filter:none}
+#panel .cb-home button:focus-visible{outline:3px solid #58788c;outline-offset:4px}
+#panel .cb-home .cb-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:51px;padding-top:8px}
+#panel .cb-home .cb-best{margin:0;font-size:11px;color:#866f5a;line-height:1.4}
+#panel .cb-home .cb-best strong{display:block;font-size:18px;color:#745345;font-weight:750;line-height:1.4;font-variant-numeric:tabular-nums}
+#panel .cb-home .cb-best small{font-size:11px;padding-left:3px;font-weight:500}
+#panel .cb-home .cb-settings{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;margin:0;padding:4px 0 4px 9px;background:transparent;border:0;border-radius:4px;color:#796353;font-size:12px;font-weight:600}
+#panel .cb-home .cb-settings svg{width:19px;height:19px;fill:#fff7e8;stroke:currentColor;stroke-width:1.4;stroke-linecap:round}
+#panel .cb-home .cb-colophon{flex:none;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:8px;width:100%;max-width:410px;height:19px;margin:8px 0 0;color:#a28e77;letter-spacing:1.4px;font-size:8px}
+#panel .cb-home .cb-colophon small{font-size:7px;letter-spacing:.4px}
+@media(max-height:700px){#panel .cb-home{padding-top:max(8px,env(safe-area-inset-top));padding-right:23px;padding-left:23px}#panel .cb-home .cb-eyebrow{font-size:8px;letter-spacing:2px}#panel .cb-home .cb-logo{max-height:88px;width:92%}#panel .cb-home .cb-tagline{font-size:11px}#panel .cb-home .cb-scene{margin-top:3px;margin-bottom:5px}#panel .cb-home .cb-mode{min-height:48px;font-size:13px}#panel .cb-home .cb-mode-hint{margin:7px 0 8px;font-size:11px}#panel .cb-home .cb-start{height:58px;font-size:23px}#panel .cb-home .cb-colophon{margin-top:3px}#panel .cb-home figcaption{font-size:11px}}
+@media(prefers-reduced-motion:reduce){#panel .cb-home button{transition:none}}
+/* Review pass 2: keep the illustration and its caption together on taller phones. */
+@media(min-height:701px){#panel .cb-home .cb-hero{flex:0 1 auto;width:calc(100% + 56px);height:auto;max-height:360px}#panel .cb-home figcaption{margin-top:9px}#panel .cb-home .cb-scene{justify-content:center}}
+
+/* RC storybook entrance: finite composited motion; no timers, input locks or layout animation. */
+#panel .cb-home[data-home-intro]{--home-speed:1}
+#panel .cb-home[data-home-intro="return"]{--home-speed:.4}
+#panel .cb-home[data-home-intro] .cb-heading,
+#panel .cb-home[data-home-intro] .cb-hero,
+#panel .cb-home[data-home-intro] figcaption,
+#panel .cb-home[data-home-intro] .cb-mode-hint,
+#panel .cb-home[data-home-intro] .cb-bottom,
+#panel .cb-home[data-home-intro] .cb-colophon,
+#panel .cb-home[data-home-intro] .cb-start{animation-duration:calc(220ms * var(--home-speed));animation-delay:calc(var(--home-delay,0ms) * var(--home-speed));animation-timing-function:cubic-bezier(.2,.7,.25,1);animation-iteration-count:1;animation-fill-mode:backwards;animation-name:cb-home-reveal}
+#panel .cb-home[data-home-intro] .cb-heading{--home-delay:100ms}
+#panel .cb-home[data-home-intro] .cb-hero{--home-delay:250ms;animation-duration:calc(300ms * var(--home-speed));animation-name:cb-home-friends}
+#panel .cb-home[data-home-intro] figcaption{--home-delay:450ms;animation-name:cb-home-caption}
+#panel .cb-home[data-home-intro] .cb-mode-hint{--home-delay:550ms}
+#panel .cb-home[data-home-intro] .cb-bottom,
+#panel .cb-home[data-home-intro] .cb-colophon{--home-delay:650ms}
+#panel .cb-home[data-home-intro] .cb-start{--home-delay:750ms;animation-name:cb-home-start}
+/* The real CTA is touchable immediately. Focus reveals it early for keyboard users. */
+#panel .cb-home[data-home-intro] .cb-start:focus-visible,
+#panel .cb-home[data-home-intro] .cb-start:active{animation:none}
+@keyframes cb-home-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cb-home-friends{from{opacity:0;transform:scale(.96) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes cb-home-caption{from{opacity:0;transform:translateY(4px) rotate(-2deg)}to{opacity:1;transform:translateY(0) rotate(-2deg)}}
+@keyframes cb-home-start{from{opacity:0;transform:translateY(5px) rotate(-.6deg)}to{opacity:1;transform:translateY(0) rotate(-.6deg)}}
+@media(prefers-reduced-motion:reduce){
+ #panel .cb-home[data-home-intro] .cb-heading,
+ #panel .cb-home[data-home-intro] .cb-hero,
+ #panel .cb-home[data-home-intro] figcaption,
+ #panel .cb-home[data-home-intro] .cb-mode-hint,
+ #panel .cb-home[data-home-intro] .cb-bottom,
+ #panel .cb-home[data-home-intro] .cb-colophon,
+ #panel .cb-home[data-home-intro] .cb-start{animation:none}
+}

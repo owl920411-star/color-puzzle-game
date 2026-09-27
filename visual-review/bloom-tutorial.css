@@ -1,0 +1,22 @@
+/* The lesson observes the board. Only its Skip/Start controls receive pointers. */
+#game-area > .bloom-tutorial{position:absolute;inset:0;z-index:10;pointer-events:none;color:#705366}
+.bloom-tutorial *{box-sizing:border-box;pointer-events:none}
+.bloom-tutorial-note{position:absolute;top:5px;left:7px;right:calc(var(--rail,70px) + 17px);padding:7px 10px 6px;background:#fff8e9;border:1.5px dashed #d6b597;border-radius:9px 13px 8px 12px;box-shadow:1px 2px 0 #d7bba966;transform:rotate(-.6deg)}
+.bloom-tutorial-progress{display:block;min-height:22px;font-size:9px;font-weight:700;line-height:1.1;color:#aa7f79;letter-spacing:.04em}
+.bloom-tutorial-note h2{font-size:clamp(13px,3.9vw,16px);line-height:1.25;margin:3px 0 2px;font-weight:850;letter-spacing:-.03em}
+.bloom-tutorial-note p{font-size:clamp(10px,2.8vw,12px);line-height:1.3;margin:0;color:#806b73;letter-spacing:-.04em}
+.bloom-tutorial-feedback{display:block;color:#589b85;font-size:11px;font-weight:800;line-height:1.3;min-height:0}
+.bloom-tutorial-feedback:empty{display:none}
+.bloom-tutorial-chick{position:absolute;right:8px;bottom:1px;width:30px;height:30px;object-fit:contain;transform:rotate(6deg)}
+.bloom-tutorial.is-success .bloom-tutorial-chick{animation:bloomLessonCheer 330ms ease-out both}
+.bloom-tutorial-hero{display:block;width:min(160px,90%);height:auto;margin:10px auto 5px}
+.bloom-tutorial button.bloom-tutorial-skip,.bloom-tutorial button.bloom-tutorial-start{pointer-events:auto;touch-action:manipulation;color:#765d70;font:inherit;font-weight:750;cursor:pointer}
+.bloom-tutorial button.bloom-tutorial-skip{position:absolute;right:calc(var(--rail,70px) + 22px);top:8px;padding:5px 7px;background:#fff8ebed;border:1px dashed #d3b7a5;border-radius:9px;font-size:10px;line-height:1.3;min-height:28px}
+.bloom-tutorial button.bloom-tutorial-start{display:block;margin:12px auto 4px;padding:12px 24px;min-height:44px;background:#f8bfd4;border:2px solid #ba7d9a;border-radius:12px 10px 13px 9px;box-shadow:2px 3px 0 #e9c7b8;font-size:17px}
+.bloom-tutorial button:focus-visible{outline:3px solid #77b7d7;outline-offset:2px}
+.bloom-tutorial[data-step="9"] .bloom-tutorial-note{top:17%;padding:15px 10px;text-align:center;transform:rotate(-.5deg);background:#fff8e9}
+.bloom-tutorial[data-step="9"] .bloom-tutorial-progress{min-height:0}
+.bloom-tutorial[data-step="9"] .bloom-tutorial-note h2{font-size:20px;margin-top:8px}
+#game-area[data-bloom-tutorial-target="hold"] #hold,#game-area[data-bloom-tutorial-target="drop"] #drop{outline:3px dashed #e997bc;outline-offset:3px}
+@keyframes bloomLessonCheer{0%{transform:translateY(3px) rotate(-4deg)}50%{transform:translateY(-5px) rotate(7deg)}100%{transform:translateY(0) rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.bloom-tutorial.is-success .bloom-tutorial-chick{animation:none}}
