@@ -65,6 +65,24 @@ An actual production-page reload retained best score 36 and the changed sound, B
 
 ## Pending release gates
 
+### Real-time combined run (in progress)
+
+Started 2026-09-27 13:57:36 UTC on candidate `a0d2c04`, with the game foreground,
+BGM/SFX enabled, repeated actual drop/rotate/HOLD results, item scenarios,
+cutins and home/restart cycles. This is wall-clock browser execution, distinct
+from the accelerated model tests. It uses synthetic actions and isolated storage.
+
+At 600,113.8 ms: DOM 130, one AudioContext, one active tracked timer (peak 2),
+6.55 MB reported JS heap, zero errors/broken images, zero hidden-frame samples.
+The cloud RAF average was 23.07 FPS (recent median 33.3 ms / p95 50.0 ms).
+This is **not evidence of 60 FPS on Android**. Seven long-task entries were
+observed (maximum 221 ms); no frame-rate or perceptual smoothness PASS is inferred.
+At 1,200,548.6 ms: DOM 130, one AudioContext, one tracked timer, 7.56 MB heap,
+zero errors/broken images/hidden-frame samples. Cloud RAF average 23.19 FPS,
+recent median 33.3 ms / p95 50.0 ms. Twelve long-task entries, maximum still
+221 ms. Thirty-minute and shutdown samples still pending; these heap samples
+alone cannot establish either a leak or its absence.
+
 | Gate | Current status |
 |---|---|
 | Exact 360 / 390 / 412 viewport screen inspection | NOT VERIFIED — in progress |

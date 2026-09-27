@@ -3,7 +3,7 @@
 <style>*{box-sizing:border-box}body{margin:20px;background:#f4f1e9;color:#383247;font:15px/1.5 system-ui,sans-serif}h1{font-size:21px}p{max-width:940px}button,select{font:inherit;border:1px solid #8c7892;border-radius:8px;padding:10px 13px;background:#fff;min-height:44px}button:disabled{opacity:.45}.tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.layout{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}iframe{display:block;border:0;outline:1px solid #c4b8b2;background:#fff;width:390px;height:844px;flex:none}pre{font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;padding:12px;background:#fff;max-width:920px;max-height:650px;overflow:auto}.results{flex:1;min-width:320px}summary{cursor:pointer;font-weight:700}.status{font-weight:700}label{display:flex;align-items:center;gap:8px}</style></head>
 <body><h1>CRAYON BLOOM RC · 개발 검수</h1>
 <p>실제 게임 iframe에서 합성 PointerEvent를 실행합니다. Android 손맛·물리 포인터 캡처·실기기 오디오 검사가 아닙니다. 테스트 저장은 메모리 사본에만 기록합니다. 정식 게임 UI에는 이 페이지가 표시되지 않습니다.</p>
-<div class="tools"><label>화면 크기 <select id="viewport" aria-label="검수 화면 크기"><option value="360,640">360 × 640</option><option value="390,844" selected>390 × 844</option><option value="412,915">412 × 915</option></select></label><button id="reload">검수 게임 새로고침</button><button id="home">홈 화면</button><button id="game">게임 화면</button><button id="over">게임오버 화면</button><button id="snapshot">상태 기록</button></div>
+<div class="tools"><label>화면 크기 <select id="viewport" aria-label="검수 화면 크기"><option value="360,640">360 × 640</option><option value="390,844" selected>390 × 844</option><option value="412,915">412 × 915</option></select></label><button id="fresh-load">완전 신규 사용자 불러오기</button><button id="reload">검수 게임 새로고침</button><button id="home">홈 화면</button><button id="game">게임 화면</button><button id="over">게임오버 화면</button><button id="snapshot">상태 기록</button></div>
 <div class="tools"><button id="regression">CONTROL 전체 합성 검사</button><button id="lifecycle">라이프사이클 10회 검사</button><button id="effects">콤보·오디오 중 입력 검사</button><button id="tutorial-flow">첫 사용자·튜토리얼 전체 검사</button><button id="tutorial-screen">튜토리얼 화면</button><button id="loading-screen">실제 로딩 화면 검사</button><button id="geometry">모바일 3크기 화면 영역 검사</button><button id="soak">실시간 30분 검사 시작</button><button id="stop" disabled>검사 중지</button></div>
 <p id="status" class="status" role="status">게임 로딩 중</p>
 <div class="layout"><iframe id="game-frame" title="RC 검수 게임 390 × 844" src="../index.html?qa=1&amp;rc_review=1"></iframe><div class="results"><details open><summary>검사 결과</summary><pre id="report">준비 중</pre></details><details open><summary>실시간 10 / 20 / 30분 샘플</summary><pre id="soak-report">미실행 — 자동 가속 시간이 아닌 실제 경과 시간을 기록합니다.</pre></details></div></div>
@@ -11,12 +11,12 @@
 'use strict';
 const frame=document.getElementById('game-frame'),out=document.getElementById('report'),statusEl=document.getElementById('status'),soakOut=document.getElementById('soak-report');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-let w,q,ready=false,busy=false,monitor=null,stopRequested=false,soakTimer=null,soakData=null;
+let w,q,ready=false,busy=false,monitor=null,stopRequested=false,soakTimer=null,soakData=null,firstInstallBoot=null;
 function assert(ok,message){if(!ok)throw Error(message);}
 function rounded(v){return Number.isFinite(v)?Math.round(v*100)/100:v;}
 function setStatus(s){statusEl.textContent=s;}
 function write(data){out.textContent=JSON.stringify(data,null,2);}
-function controls(lock){busy=lock;for(const id of ['regression','lifecycle','effects','soak','reload','home','game','over','tutorial-flow','tutorial-screen','loading-screen','geometry'])document.getElementById(id).disabled=lock;document.getElementById('stop').disabled=!lock;}
+function controls(lock){busy=lock;for(const id of ['regression','lifecycle','effects','soak','reload','home','game','over','tutorial-flow','tutorial-screen','loading-screen','geometry','fresh-load'])document.getElementById(id).disabled=lock;document.getElementById('stop').disabled=!lock;}
 function sandboxStorage(win){
  const source=win.localStorage,copy=new Map();for(let i=0;i<source.length;i++){const key=source.key(i);copy.set(key,source.getItem(key));}
  const memory={get length(){return copy.size;},key:i=>[...copy.keys()][i]??null,getItem:k=>copy.has(String(k))?copy.get(String(k)):null,setItem:(k,v)=>copy.set(String(k),String(v)),removeItem:k=>copy.delete(String(k)),clear(){throw Error('QA never clears storage');}};
@@ -39,7 +39,7 @@ function instrument(win){
 function snapshot(){
  const ring=[...(monitor?.frameRing||[])].sort((a,b)=>a-b),doc=w.document,memory=w.performance.memory;
  const broken=[...doc.images].filter(i=>i.complete&&!i.naturalWidth).map(i=>i.currentSrc||i.src);
- return {version:doc.getElementById('build')?.textContent,state:q.state,viewport:{width:frame.clientWidth,height:frame.clientHeight},visibility:doc.visibilityState,storage:'isolated in-memory copy',
+ return {version:doc.getElementById('build')?.textContent,state:q.state,viewport:{width:frame.clientWidth,height:frame.clientHeight},visibility:doc.visibilityState,storage:firstInstallBoot?'empty-memory before application boot':'isolated in-memory copy',firstInstallBoot,
   pointer:q.drag?{state:q.drag.state,side:q.drag.side,steps:q.drag.steps,timer:q.drag.timer!=null}:null,
   DOM:doc.querySelectorAll('*').length,homeAnimations:doc.getAnimations().filter(a=>a.effect?.target?.closest?.('.cb-home')).length,
   audio:w.BloomAudio?.stats?.()||'unavailable',celebration:q.celebration?.stats?.()||'unavailable',tutorial:q.tutorial?.stats?.()||'unavailable',training:q.training,loading:q.loading?.stats?.()||'unavailable',
@@ -78,10 +78,11 @@ async function waitFor(predicate,label,timeout=5000){const start=performance.now
 function tutorialStep(){const s=q.tutorial?.stats?.();return Number.isInteger(s?.index)?s.index:Number.isInteger(s?.step)?s.step:-1;}
 function clickUI(selector){const el=w.document.querySelector(selector);assert(el,'실제 UI가 없습니다: '+selector);assert(!el.disabled,'UI 비활성: '+selector);el.click();}
 async function tutorialFlow(){
- assert(q.tutorial&&q.loading,'튜토리얼/로딩 모듈이 없습니다');q.menu();
- const key='glassfall-v1',fixture=JSON.parse(w.localStorage.getItem(key)||'{}');fixture.tutorialCompleted=false;fixture.sound=!!w.BloomAudio?.stats?.().sound;fixture.endlessV1=fixture.endlessV1||{};fixture.endlessV1.normal={...fixture.endlessV1.normal,best:Math.max(54321,Number(fixture.endlessV1.normal?.best)||0)};fixture.qaPreservedField='keep';w.localStorage.setItem(key,JSON.stringify(fixture));
- clickUI('[data-menu="settings"]');clickUI('[data-menu="sound"]');clickUI('[data-menu="sound"]');clickUI('[data-menu="back"]');
- const before=JSON.parse(w.localStorage.getItem(key)),adaptiveBefore=w.localStorage.getItem('glassfall-adaptive-v1');assert(before.tutorialCompleted===false,'첫 사용자 메모리 fixture');
+ assert(q.tutorial&&q.loading,'튜토리얼/로딩 모듈이 없습니다');
+ const key='glassfall-v1',fresh=!!w.document.querySelector('meta[name="rc-first-install"]');
+ if(fresh){assert(firstInstallBoot?.initialEntries===0&&firstInstallBoot?.entries===0&&firstInstallBoot?.writes===0,'앱 최초 부팅 저장이 비어 있지 않았음');assert(q.state==='menu'&&w.localStorage.length===0,'완전 신규 사용자 불러오기를 다시 눌러 주세요');assert(firstInstallBoot.homeBest===0&&firstInstallBoot.tutorialCompleted===false,'신규 홈 최고점/튜토리얼 상태');}
+ else{q.menu();const fixture=JSON.parse(w.localStorage.getItem(key)||'{}');fixture.tutorialCompleted=false;fixture.sound=!!w.BloomAudio?.stats?.().sound;fixture.endlessV1=fixture.endlessV1||{};fixture.endlessV1.normal={...fixture.endlessV1.normal,best:Math.max(54321,Number(fixture.endlessV1.normal?.best)||0)};fixture.qaPreservedField='keep';w.localStorage.setItem(key,JSON.stringify(fixture));clickUI('[data-menu="settings"]');clickUI('[data-menu="sound"]');clickUI('[data-menu="sound"]');clickUI('[data-menu="back"]');}
+ const before=JSON.parse(w.localStorage.getItem(key)||'{}'),adaptiveBefore=w.localStorage.getItem('glassfall-adaptive-v1');assert(before.tutorialCompleted!==true,'첫 사용자 상태여야 함');
  const start=performance.now();clickUI('[data-menu="start"]');assert(q.state==='loading','시작 버튼에서 로딩을 건너뜀');assert(w.document.querySelector('.cb-loading'),'실제 로딩 화면 없음');
  await waitFor(()=>q.training&&tutorialStep()===0,'첫 사용자 튜토리얼');const firstLoading={actualTransitionMs:rounded(performance.now()-start),...q.loading.stats().last};
  const steps=[];const perform=async(index,name,fn)=>{await waitFor(()=>tutorialStep()===index,name+' 준비');setStatus('튜토리얼 '+(index+1)+' · '+name);await fn();await waitFor(()=>tutorialStep()===index+1,name+' 성공');steps.push({step:index+1,name,result:'PASS'});};
@@ -96,12 +97,12 @@ async function tutorialFlow(){
  await perform(6,'실제 쏙 버튼',async()=>{const b=w.document.querySelector('[data-action="drop"]'),r=b.getBoundingClientRect();emit(b,'pointerdown',r.x+r.width/2,r.y+r.height/2,702);emit(b,'pointerup',r.x+r.width/2,r.y+r.height/2,702);});
  await perform(7,'직접 한 줄 완성',async()=>{tap(1);swipe(0,70);});
  await waitFor(()=>tutorialStep()===9,'콤보 예시 종료',7000);steps.push({step:9,name:'실제 콤보 자산 예시',result:'PASS'});
- const completedBeforeClick=JSON.parse(w.localStorage.getItem(key));assert(completedBeforeClick.tutorialCompleted===false,'완료 버튼 전 완료 저장');assert(JSON.stringify(completedBeforeClick.endlessV1)===JSON.stringify(before.endlessV1),'튜토리얼 점수가 최고점을 변경');assert(w.localStorage.getItem('glassfall-adaptive-v1')===adaptiveBefore,'튜토리얼이 Adaptive 저장 변경');
+ const completedBeforeClick=JSON.parse(w.localStorage.getItem(key)||'{}');assert(completedBeforeClick.tutorialCompleted!==true,'완료 버튼 전 완료 저장');assert(JSON.stringify(completedBeforeClick.endlessV1)===JSON.stringify(before.endlessV1),'튜토리얼 점수가 최고점을 변경');assert(w.localStorage.getItem('glassfall-adaptive-v1')===adaptiveBefore,'튜토리얼이 Adaptive 저장 변경');
  clickUI('.bloom-tutorial-start');await waitFor(()=>!q.training&&q.state==='playing','튜토리얼 후 새 게임');assert(q.run.score===0&&q.run.lines===0&&!q.drag,'새 게임에 튜토리얼 상태가 남음');
  const after=JSON.parse(w.localStorage.getItem(key));assert(after.tutorialCompleted===true,'완료 저장 없음');for(const key of ['sound','bgm','sfx','haptics','effects','qaPreservedField'])assert(after[key]===before[key],'설정 변형: '+key);steps.push({step:10,name:'완료 → 깨끗한 정상 게임',result:'PASS'});
  q.pause();clickUI('[data-menu="settings"]');clickUI('[data-menu="tutorial"]');await waitFor(()=>q.training&&tutorialStep()===0,'설정에서 다시 보기');clickUI('.bloom-tutorial-skip');await waitFor(()=>!q.training&&q.state==='playing','SKIP 후 새 게임');assert(JSON.parse(w.localStorage.getItem('glassfall-v1')).tutorialCompleted===true,'SKIP 저장 정책');assert(q.run.score===0&&!q.drag,'SKIP 후 이전 상태');
  q.menu();const warm=performance.now();clickUI('[data-menu="start"]');await waitFor(()=>q.state==='playing'&&!q.training,'완료 사용자 바로 게임');
- return{firstLoading,warmLoading:{actualTransitionMs:rounded(performance.now()-warm),...q.loading.stats().last},steps,wrongInput:'PASS',pauseResume:'PASS',skip:'PASS',replay:'PASS',existingBestSettingsAdaptive:'PASS',snapshot:snapshot()};
+ return{firstInstallation:fresh?{...firstInstallBoot,strictEmptyBoot:true,testBest:0}:false,firstLoading,warmLoading:{actualTransitionMs:rounded(performance.now()-warm),...q.loading.stats().last},steps,wrongInput:'PASS',pauseResume:'PASS',skip:'PASS',replay:'PASS',existingBestSettingsAdaptive:'PASS',snapshot:snapshot()};
 }
 function bounds(el){const r=el.getBoundingClientRect();return{x:rounded(r.x),y:rounded(r.y),width:rounded(r.width),height:rounded(r.height),right:rounded(r.right),bottom:rounded(r.bottom)};}
 function visible(el){if(!el||el.closest('[hidden]')||!el.getClientRects().length)return false;for(let node=el;node;node=node.parentElement){const css=w.getComputedStyle(node);if(css.display==='none'||css.visibility==='hidden'||Number(css.opacity)===0)return false;}return true;}
@@ -156,8 +157,9 @@ async function startSoak(){if(busy)return;controls(true);stopRequested=false;pre
   soakData.actualElapsedMs=rounded(age);soakData.current=snapshot();soakOut.textContent=JSON.stringify(soakData,null,2);setStatus(`실시간 검사 ${minutes.toFixed(2)} / 30분 · ${soakData.drops} DROP`);tick++;
   if(minutes>=30){stopSoak('30분 완료');return;}soakTimer=setTimeout(loop,1000);
  }catch(e){soakData.error=String(e);stopSoak('오류');}};loop();}
-frame.addEventListener('load',()=>{try{monitor?.stop();w=frame.contentWindow;q=w.__GLASSFALL_QA__;assert(q,'qa=1 API가 없습니다');sandboxStorage(w);monitor=instrument(w);ready=true;controls(false);setStatus('준비됨 · 저장은 메모리 사본으로 격리');write(snapshot());}catch(e){ready=false;write({result:'FAIL',error:String(e)});setStatus('검수 페이지 준비 실패');}});
+frame.addEventListener('load',()=>{try{monitor?.stop();w=frame.contentWindow;q=w.__GLASSFALL_QA__;assert(q,'qa=1 API가 없습니다');firstInstallBoot=null;if(w.document.querySelector('meta[name="rc-first-install"]')){const boot=w.__BLOOM_FIRST_INSTALL_QA__?.stats();assert(boot,'신규 설치 shim 없음');firstInstallBoot={...boot,homeBest:Number((w.document.querySelector('.cb-best strong')?.textContent||'').replace(/[^0-9]/g,'')),tutorialCompleted:JSON.parse(w.localStorage.getItem('glassfall-v1')||'{}').tutorialCompleted===true,state:q.state};}else sandboxStorage(w);monitor=instrument(w);ready=true;controls(false);setStatus(firstInstallBoot?'완전 신규 사용자 준비 · 앱 부팅 전 빈 메모리 저장':'준비됨 · 저장은 메모리 사본으로 격리');write(snapshot());}catch(e){ready=false;write({result:'FAIL',error:String(e)});setStatus('검수 페이지 준비 실패');}});
 document.getElementById('viewport').onchange=e=>{const [width,height]=e.target.value.split(',').map(Number);frame.style.width=width+'px';frame.style.height=height+'px';frame.title=`RC 검수 게임 ${width} × ${height}`;};
+document.getElementById('fresh-load').onclick=()=>{ready=false;frame.src='first-install.html?qa=1&rc_review='+Date.now();};
 document.getElementById('reload').onclick=()=>{ready=false;frame.src='../index.html?qa=1&rc_review='+Date.now();};
 document.getElementById('home').onclick=()=>{q.menu();write(snapshot());};document.getElementById('game').onclick=()=>{prepare();write(snapshot());};document.getElementById('over').onclick=()=>{prepare();q.finish('qa_screen');write(snapshot());};document.getElementById('snapshot').onclick=()=>write(snapshot());
 document.getElementById('loading-screen').onclick=()=>runTask('실제 로딩 화면·취소',loadingPreview);document.getElementById('geometry').onclick=()=>runTask('모바일 화면 영역',mobileGeometry);

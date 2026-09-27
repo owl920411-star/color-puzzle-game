@@ -14,3 +14,17 @@ test('home and game screen versions agree',()=>{
 test('published presentation modules match their editable source',()=>{
  for(const file of fs.readdirSync(path.join(root,'src')).filter(f=>/^bloom-.*\.(?:js|css)$/.test(f)))assert.equal(read('dist/'+file),read('src/'+file),file);
 });
+test('first-install fixture embeds the identical canonical app and asset cache keys',()=>{
+ const canonical=read('dist/index.html'),fixture=read('dist/qa/first-install.html');
+ const injected=/\n<base href="\.\.\/">\n<meta name="robots" content="noindex,nofollow">\n<meta name="rc-first-install" content="empty-memory-before-app">\n<script id="qa-first-install-storage">[\s\S]*?<\/script>/;
+ assert.match(fixture,injected);assert.equal(fixture.replace(injected,''),canonical);
+ assert.ok(fixture.indexOf('id="qa-first-install-storage"')<fixture.search(/<script[^>]+src=/),'storage isolation must run before application scripts');
+ const urls=s=>[...s.matchAll(/(?:src|href)="([^"?]+\.(?:js|css))\?v=([^"&]+)"/g)].map(m=>[m[1],m[2]]);
+ assert.deepEqual(urls(fixture),urls(canonical));
+});
+test('first-install shim starts empty without reading writing or clearing native storage',()=>{
+ const vm=require('node:vm'),fixture=read('dist/qa/first-install.html'),code=fixture.match(/<script id="qa-first-install-storage">([\s\S]*?)<\/script>/)[1];
+ let nativeTouches=0;const window={};Object.defineProperty(window,'localStorage',{configurable:true,get(){nativeTouches++;throw Error('native storage read');},set(){nativeTouches++;throw Error('native storage write');}});
+ vm.runInNewContext(code,{window});assert.equal(nativeTouches,0);assert.equal(window.localStorage.length,0);assert.equal(window.__BLOOM_FIRST_INSTALL_QA__.stats().initialEntries,0);assert.equal(window.__BLOOM_FIRST_INSTALL_QA__.stats().writes,0);
+ window.localStorage.setItem('glassfall-v1','{"tutorialCompleted":true}');assert.equal(window.localStorage.length,1);assert.equal(window.localStorage.getItem('glassfall-v1'),'{"tutorialCompleted":true}');window.localStorage.clear();assert.equal(window.localStorage.length,0);assert.equal(nativeTouches,0);
+});

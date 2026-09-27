@@ -19,6 +19,11 @@ It uses the existing QA API and real installed board pointer handlers.
  The memory fixture sets tutorialCompleted=false, then actual Settings toggles refresh
  the runtime saved object and restore sound before the first Start.
 - Tutorial screen button starts the actual tutorial fixture for viewport screenshots.
+- Complete-new-user loader opens a generated copy of canonical HTML with an empty
+ in-memory Storage property installed before application boot. It never touches
+ native Storage. The same full tutorial button then verifies initial zero entries,
+ zero writes, best zero and incomplete status, without inserting score/preferences.
+ Asset URLs and cache keys remain byte-identical to the canonical entry.
 - Actual loading screen/cancel button temporarily wraps the real celebration preload
  with a1000ms preparation promise, restores it afterwards and checks that cancellation
  cannot start a late game. It uses the actual bounded loading module and UI.
