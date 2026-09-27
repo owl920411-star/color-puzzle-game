@@ -1,6 +1,6 @@
 'use strict';
-// Real controller, normal/sand engines, Director and Bridge. DOM/canvas and scheduling are stand-ins.
-// This is not a physical-phone render, input-latency, or sand-physics test.
+// Real controller, normal engine, Director and Bridge. DOM/canvas and scheduling are stand-ins.
+// This is not a physical-phone render or input-latency test.
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const E=require('../dist/engine.js'),R=require('../dist/endless-rules.js'),B=require('../dist/block-items.js');
 function boot(){
@@ -9,7 +9,7 @@ function boot(){
  function node(id=''){if(nodes.has(id))return nodes.get(id);const events={};const n={id,dataset:{},style:{setProperty(){}},classList:{add(){},remove(){},toggle(){}},parentElement:{classList:{add(){},remove(){}}},clientWidth:390,clientHeight:740,offsetHeight:35,width:120,height:100,disabled:false,hidden:false,events,getContext:()=>draw,querySelectorAll:()=>[],addEventListener(t,f){(events[t]||=[]).push(f);},focus(){},getBoundingClientRect:()=>({left:0,top:0,width:270,height:540}),setPointerCapture(){},hasPointerCapture:()=>false,releasePointerCapture(){}};nodes.set(id,n);return n;}
  const actions=['hold','rotate','drop'].map(x=>{const n=node(x);n.dataset.action=x;return n;});
  const doc={body:{dataset:{},classList:{add(){},remove(){},toggle(){}}},documentElement:{style:{setProperty(){}}},getElementById:node,querySelector:node,createElement:()=>node('new'+nodes.size),querySelectorAll:s=>s==='[data-action]'?actions:[],addEventListener(){},hidden:false};
- const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:1,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(){},crypto:{getRandomValues(a){a.fill(1);}},GlassEngine:E,EndlessRules:R,BlockItems:B,MicroSand:require('../dist/sand-micro.js'),AdaptiveDirector:require('../dist/adaptive-director.js'),AdaptiveBridge:require('../dist/adaptive-bridge.js')};env.window=env;
+ const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:1,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(){},crypto:{getRandomValues(a){a.fill(1);}},GlassEngine:E,EndlessRules:R,BlockItems:B,AdaptiveDirector:require('../dist/adaptive-director.js'),AdaptiveBridge:require('../dist/adaptive-bridge.js')};env.window=env;
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/bloom-home.js'),'utf8'),env);
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/endless-app.js'),'utf8'),env,{timeout:3000});
  function menu(a,v){const b={dataset:{menu:a,v:String(v??'')},disabled:false};const e={target:{closest:s=>s==='button[data-menu]'?b:null}};for(const f of node('panel').events.click||[])f(e);}
@@ -45,11 +45,12 @@ test('integrated gameover persists fixed/adaptive bests separately and only one 
  a.menu('menu');a.menu('settings');a.adaptive('open');a.adaptive('mode','adaptive');a.adaptive('style','calm');a.q.start();a.step(500);a.q.action('drop');const adaptiveScore=a.q.run.score;a.q.finish();
  store=JSON.parse(a.store['glassfall-v1']);assert.equal(store.endlessV1.normal.best,score);assert.equal(store.endlessV1['normal-adaptive-v1-calm'].best,adaptiveScore);assert.ok(store['desertSurvival-normal-adaptive-v1-calm']);
 });
-test('integrated normal to sand to normal uses the real sand engine without observation',()=>{
- const a=boot();a.q.start();a.q.action('drop');a.q.pause();a.menu('menu');a.menu('sand');a.menu('start');assert.equal(a.q.kind,'sand');assert.equal(a.q.adaptive.info(),null);
- assert.equal(a.q.action('hold'),true);assert.equal(a.q.action('drop'),true);a.step(1000);assert.equal(a.q.adaptive.info(),null);a.q.finish();assert.ok(JSON.parse(a.store['glassfall-v1']).endlessV1.sand);
- a.menu('menu');a.menu('normal');a.menu('start');assert.equal(a.q.adaptive.info().mode,'observe');assert.equal(a.q.adaptive.info().placements,0);
+test('integrated home return and restart retains the sole normal engine and resets observation',()=>{
+ const a=boot();a.q.start();a.q.action('drop');a.q.pause();a.menu('menu');a.menu('start');assert.equal(a.q.kind,'normal');assert.equal(a.q.adaptive.info().mode,'observe');assert.equal(a.q.adaptive.info().placements,0);
+ assert.equal(a.q.action('hold'),true);assert.equal(a.q.action('drop'),true);a.step(1000);a.q.finish();assert.ok(JSON.parse(a.store['glassfall-v1']).endlessV1.normal);
+ a.menu('menu');a.menu('start');assert.equal(a.q.adaptive.info().mode,'observe');assert.equal(a.q.adaptive.info().placements,0);
 });
+
 test('integrated DEV LAB returns correctly and excludes forced play from learning',()=>{
  const a=boot();a.q.start();a.q.pause();a.q.devPanel();a.adaptive('open');assert.match(a.nodes.get('panel').innerHTML,/ADAPTIVE BLOOM/);a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/DEV LAB/);
  const savedBefore=a.store['glassfall-v1'];a.menu('itemscenario','oasis');assert.equal(a.q.adaptive.info().practice,true);a.menu('back');a.q.action('drop');a.step(500);a.q.finish();assert.equal(a.q.adaptive.profile.completed,0);assert.equal(a.store['glassfall-v1'],savedBefore);

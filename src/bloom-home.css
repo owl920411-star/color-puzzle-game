@@ -39,3 +39,37 @@
 @media(prefers-reduced-motion:reduce){#panel .cb-home button{transition:none}}
 /* Review pass 2: keep the illustration and its caption together on taller phones. */
 @media(min-height:701px){#panel .cb-home .cb-hero{flex:0 1 auto;width:calc(100% + 56px);height:auto;max-height:360px}#panel .cb-home figcaption{margin-top:9px}#panel .cb-home .cb-scene{justify-content:center}}
+
+/* RC storybook entrance: finite composited motion; no timers, input locks or layout animation. */
+#panel .cb-home[data-home-intro]{--home-speed:1}
+#panel .cb-home[data-home-intro="return"]{--home-speed:.4}
+#panel .cb-home[data-home-intro] .cb-heading,
+#panel .cb-home[data-home-intro] .cb-hero,
+#panel .cb-home[data-home-intro] figcaption,
+#panel .cb-home[data-home-intro] .cb-mode-hint,
+#panel .cb-home[data-home-intro] .cb-bottom,
+#panel .cb-home[data-home-intro] .cb-colophon,
+#panel .cb-home[data-home-intro] .cb-start{animation-duration:calc(220ms * var(--home-speed));animation-delay:calc(var(--home-delay,0ms) * var(--home-speed));animation-timing-function:cubic-bezier(.2,.7,.25,1);animation-iteration-count:1;animation-fill-mode:backwards;animation-name:cb-home-reveal}
+#panel .cb-home[data-home-intro] .cb-heading{--home-delay:100ms}
+#panel .cb-home[data-home-intro] .cb-hero{--home-delay:250ms;animation-duration:calc(300ms * var(--home-speed));animation-name:cb-home-friends}
+#panel .cb-home[data-home-intro] figcaption{--home-delay:450ms;animation-name:cb-home-caption}
+#panel .cb-home[data-home-intro] .cb-mode-hint{--home-delay:550ms}
+#panel .cb-home[data-home-intro] .cb-bottom,
+#panel .cb-home[data-home-intro] .cb-colophon{--home-delay:650ms}
+#panel .cb-home[data-home-intro] .cb-start{--home-delay:750ms;animation-name:cb-home-start}
+/* The real CTA is touchable immediately. Focus reveals it early for keyboard users. */
+#panel .cb-home[data-home-intro] .cb-start:focus-visible,
+#panel .cb-home[data-home-intro] .cb-start:active{animation:none}
+@keyframes cb-home-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cb-home-friends{from{opacity:0;transform:scale(.96) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes cb-home-caption{from{opacity:0;transform:translateY(4px) rotate(-2deg)}to{opacity:1;transform:translateY(0) rotate(-2deg)}}
+@keyframes cb-home-start{from{opacity:0;transform:translateY(5px) rotate(-.6deg)}to{opacity:1;transform:translateY(0) rotate(-.6deg)}}
+@media(prefers-reduced-motion:reduce){
+ #panel .cb-home[data-home-intro] .cb-heading,
+ #panel .cb-home[data-home-intro] .cb-hero,
+ #panel .cb-home[data-home-intro] figcaption,
+ #panel .cb-home[data-home-intro] .cb-mode-hint,
+ #panel .cb-home[data-home-intro] .cb-bottom,
+ #panel .cb-home[data-home-intro] .cb-colophon,
+ #panel .cb-home[data-home-intro] .cb-start{animation:none}
+}

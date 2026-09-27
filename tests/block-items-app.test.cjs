@@ -1,6 +1,6 @@
 'use strict';
 // Real controller + real normal engine. DOM/canvas and scheduling are stand-ins.
-// This is not a physical-phone render, input-latency, or sand-physics test.
+// This is not a physical-phone render or input-latency test.
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const E=require('../dist/engine.js'),R=require('../dist/endless-rules.js'),B=require('../dist/block-items.js');
 function boot(){
@@ -9,7 +9,7 @@ function boot(){
  function node(id=''){if(nodes.has(id))return nodes.get(id);const events={};const n={id,dataset:{},style:{setProperty(){}},classList:{add(){},remove(){},toggle(){}},parentElement:{classList:{add(){},remove(){}}},clientWidth:390,clientHeight:740,offsetHeight:35,width:120,height:100,disabled:false,hidden:false,events,getContext:()=>draw,querySelectorAll:()=>[],addEventListener(t,f){(events[t]||=[]).push(f);},focus(){},getBoundingClientRect:()=>({left:0,top:0,width:270,height:540}),setPointerCapture(){},hasPointerCapture:()=>false,releasePointerCapture(){}};nodes.set(id,n);return n;}
  const actions=['hold','rotate','drop'].map(x=>{const n=node(x);n.dataset.action=x;return n;});
  const doc={body:{dataset:{},classList:{add(){},remove(){},toggle(){}}},documentElement:{style:{setProperty(){}}},getElementById:node,querySelector:node,createElement:()=>node('new'+nodes.size),querySelectorAll:s=>s==='[data-action]'?actions:[],addEventListener(){},hidden:false};
- const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:1,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(){},crypto:{getRandomValues(a){a.fill(1);}},GlassEngine:E,EndlessRules:R,BlockItems:B,MicroSand:{W:120,H:240}};env.window=env;
+ const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:1,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(){},crypto:{getRandomValues(a){a.fill(1);}},GlassEngine:E,EndlessRules:R,BlockItems:B};env.window=env;
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/bloom-home.js'),'utf8'),env);
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/endless-app.js'),'utf8'),env,{timeout:3000});
  function menu(a,v){const b={dataset:{menu:a,v:String(v??'')},disabled:false};const e={target:{closest:s=>s==='button[data-menu]'?b:null}};for(const f of node('panel').events.click||[])f(e);}

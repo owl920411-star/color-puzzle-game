@@ -1,11 +1,11 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const {boot}=require('./helpers/adaptive-stable-harness.cjs');
-test('home uses real illustrated assets, real mode buttons and correct saved best',()=>{
+test('home uses real illustrated assets, a real single-mode start button and correct saved best',()=>{
  const saved={sound:true,haptics:false,touchSensitivity10:5,material:'glass',endlessV1:{normal:{best:4321}},otherUnrelated:{preserved:true}};
  const a=boot({initial:{'glassfall-v1':JSON.stringify(saved)}});const html=a.panel();
  assert.match(html,/bloom-home-hero.webp/);assert.match(html,/bloom-home-logo.webp/);assert.match(html,/4,321/);
- assert.match(html,/data-menu="normal" aria-pressed="true"/);assert.match(html,/data-menu="sand" aria-pressed="false"/);
+ assert.match(html,/data-menu="start" aria-label="게임 시작하기"/);assert.doesNotMatch(html,/data-menu="(?:normal|sand)"|모래/);
  assert.doesNotMatch(html,/mascot-strip|baby-doodle|mode-art|glass|crystal/);
  a.menu('start');assert.equal(a.q.state,'playing');a.q.pause();a.menu('menu');assert.equal(a.q.state,'menu');assert.match(a.panel(),/cb-home/);
  a.menu('settings');assert.doesNotMatch(a.panel(),/cb-home/);a.menu('back');assert.match(a.panel(),/cb-home/);
@@ -13,4 +13,13 @@ test('home uses real illustrated assets, real mode buttons and correct saved bes
 });
 test('home generated files equal maintained source',()=>{
  for(const f of ['bloom-home.js','bloom-home.css','assets/bloom-home-hero.webp','assets/bloom-home-logo.webp'])assert.deepEqual(fs.readFileSync('src/'+f),fs.readFileSync('dist/'+f));
+});
+test('first entrance and short return never lock the real start action',()=>{
+ const a=boot();assert.match(a.panel(),/data-home-intro="first"/);
+ const button=a.panel().match(/<button class="cb-start"[^>]*>/)[0];assert.doesNotMatch(button,/disabled|aria-disabled/);
+ assert.equal(a.now,0);a.menu('start');assert.equal(a.q.state,'playing');assert.equal(a.now,0);
+ a.q.pause();a.menu('menu');assert.match(a.panel(),/data-home-intro="return"/);
+ const before=a.timers.size;a.menu('settings');a.menu('back');assert.match(a.panel(),/data-home-intro="return"/);
+ assert.equal(a.timers.size,before,'home presentation must not create persistent timers');
+ a.menu('start');assert.equal(a.q.state,'playing');
 });

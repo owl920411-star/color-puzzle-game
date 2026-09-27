@@ -139,7 +139,7 @@ function create(port){
   else if(a==='reset-question')port.show('<h2>개인 난이도 프로필을 지울까요?</h2><p>개인 관찰 이력과 학습 요약만 지웁니다. 기존 게임 최고점은 삭제하지 않습니다. 현재 판은 초기화 후 학습에 저장하지 않습니다.</p><button class="primary" data-adaptive="reset-confirm">프로필과 관찰 이력 지우기</button><button class="secondary" data-adaptive="cancel-reset">취소</button>','adaptive');
   else if(a==='reset-confirm'){store.profile=D.newProfile();store.history=[];lastReport=null;lastCheckpoint=null;profileReset=true;if(session)session.profile=D.newProfile();save();panel();}
   else if(a==='cancel-reset')panel();
-  else if(a==='export')port.download('glassfall-adaptive-diagnostic.json',JSON.stringify({version:D.VERSION,
+  else if(a==='export')port.download('crayon-bloom-adaptive-diagnostic.json',JSON.stringify({version:D.VERSION,
     diagnosticVersion:A.VERSION,note:'로컬 규칙 판정 진단. 사람 평균·실력 정답 데이터가 아님.',
     profile:store.profile,history:store.history,current:active?info():null,lastResult:lastReport,
     lastCheckpoint,nextSettings:{...next},
