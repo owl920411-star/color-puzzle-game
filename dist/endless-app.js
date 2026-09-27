@@ -407,7 +407,7 @@ function draw(){
  for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='600 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f1fff9';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
 }
 function fastDown(d,x,y,now){const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);if(kind==='sand')return!d.noRelease&&d.axis==='y'&&!d.soft&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4;return!d.noRelease&&dy>=Math.max(48,d.unit*1.5)&&age<=380&&dy>Math.abs(dx)*1.35&&d.peakDown-dy<d.unit*.65;}
-// CONTROL 22: normal-board gestures own one state and one timer.
+// CONTROL 23: normal-board gestures own one state and one timer.
 // Sand keeps its established drag path below. Keyboard repeat remains in update().
 function normalTouchTick(d){
  d.timer=null;
@@ -417,7 +417,7 @@ function normalTouchTick(d){
  if(!action(d.side<0?'left':'right')){d.state='BLOCKED';return;}
  // Timer belongs to this pointer and this piece, not animation/gameplay dt.
  // No accumulated catch-up work after a main-thread stall.
- if(drag===d){const delay=d.steps===0?42:d.steps===1?38:34;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
+ if(drag===d){const delay=d.steps===0?38:d.steps===1?33:29;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
 }
 function normalTouchMove(d,x,y){
  if(drag!==d)return;
