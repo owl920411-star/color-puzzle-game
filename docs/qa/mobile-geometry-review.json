@@ -1,0 +1,2058 @@
+{
+  "test": "모바일 화면 영역",
+  "input": "browser synthetic PointerEvent; native capture not tested",
+  "result": "NOT VERIFIED",
+  "scope": "실제 화면 DOM 경계/중앙 포인터 대상 측정; 이미지 투명 여백은 별도 시각 검수",
+  "screens": 15,
+  "failed": 0,
+  "notVerified": 1,
+  "imageReview": 1,
+  "reports": [
+    {
+      "screen": "HOME",
+      "actualViewport": {
+        "width": 360,
+        "height": 640
+      },
+      "iframeCSS": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "panelScroll": {
+        "height": 640,
+        "scrollHeight": 640
+      },
+      "rows": [
+        {
+          "selector": ".cb-start",
+          "visible": true,
+          "bounds": {
+            "x": 22.7,
+            "y": 497.36,
+            "width": 314.59,
+            "height": 61.28,
+            "right": 337.3,
+            "bottom": 558.64
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-settings",
+          "visible": true,
+          "bounds": {
+            "x": 223.97,
+            "y": 565,
+            "width": 113.03,
+            "height": 44,
+            "right": 337,
+            "bottom": 609
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-logo",
+          "visible": true,
+          "bounds": {
+            "x": 35.56,
+            "y": 24.19,
+            "width": 288.88,
+            "height": 88,
+            "right": 324.44,
+            "bottom": 112.19
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 900,
+            "naturalHeight": 320
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-hero",
+          "visible": true,
+          "bounds": {
+            "x": 11,
+            "y": 132.69,
+            "width": 338,
+            "height": 302.31,
+            "right": 349,
+            "bottom": 435
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 1000,
+            "naturalHeight": 750
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-tagline",
+          "visible": true,
+          "bounds": {
+            "x": 23,
+            "y": 113.19,
+            "width": 314,
+            "height": 16.5,
+            "right": 337,
+            "bottom": 129.69
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS",
+      "entrance": {
+        "complete": true,
+        "elapsedMs": 450.5,
+        "animations": [
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 128
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 220
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 268
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 308
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 388
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 348
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 348
+          }
+        ]
+      }
+    },
+    {
+      "screen": "LOADING",
+      "actualViewport": {
+        "width": 360,
+        "height": 640
+      },
+      "iframeCSS": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "panelScroll": {
+        "height": 640,
+        "scrollHeight": 640
+      },
+      "rows": [
+        {
+          "selector": ".cb-load-logo",
+          "visible": true,
+          "bounds": {
+            "x": 60,
+            "y": 113.28,
+            "width": 240,
+            "height": 85.33,
+            "right": 300,
+            "bottom": 198.61
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 900,
+            "naturalHeight": 320
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-friends",
+          "visible": true,
+          "bounds": {
+            "x": 28,
+            "y": 206.61,
+            "width": 304,
+            "height": 220,
+            "right": 332,
+            "bottom": 426.61
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 1000,
+            "naturalHeight": 750
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-status",
+          "visible": true,
+          "bounds": {
+            "x": 126.22,
+            "y": 460.61,
+            "width": 107.56,
+            "height": 27,
+            "right": 233.78,
+            "bottom": 487.61
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-tip",
+          "visible": true,
+          "bounds": {
+            "x": 68.72,
+            "y": 502.61,
+            "width": 222.56,
+            "height": 45.8,
+            "right": 291.28,
+            "bottom": 548.41
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "GAME",
+      "actualViewport": {
+        "width": 360,
+        "height": 640
+      },
+      "iframeCSS": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "panelScroll": {
+        "height": 0,
+        "scrollHeight": 0
+      },
+      "rows": [
+        {
+          "selector": "#board",
+          "visible": true,
+          "bounds": {
+            "x": 24.5,
+            "y": 126.75,
+            "width": 234,
+            "height": 474,
+            "right": 258.5,
+            "bottom": 600.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#pause",
+          "visible": true,
+          "bounds": {
+            "x": 300.5,
+            "y": 14,
+            "width": 38,
+            "height": 36,
+            "right": 338.5,
+            "bottom": 50
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#hold",
+          "visible": true,
+          "bounds": {
+            "x": 270.5,
+            "y": 326.08,
+            "width": 68,
+            "height": 64.64,
+            "right": 338.5,
+            "bottom": 390.72
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#drop",
+          "visible": true,
+          "bounds": {
+            "x": 270.5,
+            "y": 467.36,
+            "width": 68,
+            "height": 136.39,
+            "right": 338.5,
+            "bottom": 603.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "[data-preview=\"0\"]",
+          "visible": true,
+          "bounds": {
+            "x": 270.5,
+            "y": 123.75,
+            "width": 68,
+            "height": 84.77,
+            "right": 338.5,
+            "bottom": 208.52
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "[data-preview=\"1\"]",
+          "visible": true,
+          "bounds": {
+            "x": 270.5,
+            "y": 214.52,
+            "width": 68,
+            "height": 84.78,
+            "right": 338.5,
+            "bottom": 299.3
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "TUTORIAL",
+      "actualViewport": {
+        "width": 360,
+        "height": 640
+      },
+      "iframeCSS": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "panelScroll": {
+        "height": 0,
+        "scrollHeight": 0
+      },
+      "rows": [
+        {
+          "selector": "#board",
+          "visible": true,
+          "bounds": {
+            "x": 24.5,
+            "y": 126.75,
+            "width": 234,
+            "height": 474,
+            "right": 258.5,
+            "bottom": 600.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#pause",
+          "visible": true,
+          "bounds": {
+            "x": 300.5,
+            "y": 14,
+            "width": 38,
+            "height": 36,
+            "right": 338.5,
+            "bottom": 50
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#hold",
+          "visible": true,
+          "bounds": {
+            "x": 270.5,
+            "y": 326.08,
+            "width": 68,
+            "height": 64.64,
+            "right": 338.5,
+            "bottom": 390.72
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#drop",
+          "visible": true,
+          "bounds": {
+            "x": 270.5,
+            "y": 467.36,
+            "width": 68,
+            "height": 136.39,
+            "right": 338.5,
+            "bottom": 603.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".bloom-tutorial-note",
+          "visible": true,
+          "bounds": {
+            "x": 28.13,
+            "y": 127.57,
+            "width": 225.75,
+            "height": 74.99,
+            "right": 253.87,
+            "bottom": 202.57
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".bloom-tutorial-skip",
+          "visible": true,
+          "bounds": {
+            "x": 195.69,
+            "y": 131.75,
+            "width": 52.81,
+            "height": 28,
+            "right": 248.5,
+            "bottom": 159.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "OVER",
+      "actualViewport": {
+        "width": 360,
+        "height": 640
+      },
+      "iframeCSS": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "panelScroll": {
+        "height": 528,
+        "scrollHeight": 528
+      },
+      "rows": [
+        {
+          "selector": "#panel h2",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 98.84,
+            "width": 286,
+            "height": 39,
+            "right": 323,
+            "bottom": 137.84
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".result-score",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 146.84,
+            "width": 286,
+            "height": 54.59,
+            "right": 323,
+            "bottom": 201.44
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"new\"]",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 370,
+            "width": 286,
+            "height": 48,
+            "right": 323,
+            "bottom": 418
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"retry\"]",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 427,
+            "width": 286,
+            "height": 48,
+            "right": 323,
+            "bottom": 475
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"menu\"]",
+          "visible": true,
+          "bounds": {
+            "x": 139.31,
+            "y": 488,
+            "width": 81.38,
+            "height": 30,
+            "right": 220.69,
+            "bottom": 518
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "HOME",
+      "actualViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "iframeCSS": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "panelScroll": {
+        "height": 844,
+        "scrollHeight": 844
+      },
+      "rows": [
+        {
+          "selector": ".cb-start",
+          "visible": true,
+          "bounds": {
+            "x": 24.67,
+            "y": 689.22,
+            "width": 340.66,
+            "height": 68.56,
+            "right": 365.33,
+            "bottom": 757.78
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-settings",
+          "visible": true,
+          "bounds": {
+            "x": 251.97,
+            "y": 764,
+            "width": 113.03,
+            "height": 44,
+            "right": 365,
+            "bottom": 808
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-logo",
+          "visible": true,
+          "bounds": {
+            "x": 31.8,
+            "y": 32.59,
+            "width": 326.39,
+            "height": 116.05,
+            "right": 358.19,
+            "bottom": 148.64
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 900,
+            "naturalHeight": 320
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-hero",
+          "visible": true,
+          "bounds": {
+            "x": -15,
+            "y": 233.81,
+            "width": 420,
+            "height": 315,
+            "right": 405,
+            "bottom": 548.81
+          },
+          "insideViewport": false,
+          "clippedBy": [
+            "cb-home",
+            "panel"
+          ],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 1000,
+            "naturalHeight": 750
+          },
+          "result": "VISUAL REVIEW"
+        },
+        {
+          "selector": ".cb-tagline",
+          "visible": true,
+          "bounds": {
+            "x": 25,
+            "y": 149.64,
+            "width": 340,
+            "height": 18,
+            "right": 365,
+            "bottom": 167.64
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "NOT VERIFIED",
+      "entrance": {
+        "complete": false,
+        "elapsedMs": 2371.7,
+        "animations": [
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 128
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 220
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 268
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 308
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 388
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 348
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 348
+          }
+        ]
+      }
+    },
+    {
+      "screen": "LOADING",
+      "actualViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "iframeCSS": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "panelScroll": {
+        "height": 844,
+        "scrollHeight": 844
+      },
+      "rows": [
+        {
+          "selector": ".cb-load-logo",
+          "visible": true,
+          "bounds": {
+            "x": 75,
+            "y": 196.53,
+            "width": 240,
+            "height": 85.33,
+            "right": 315,
+            "bottom": 281.86
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 900,
+            "naturalHeight": 320
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-friends",
+          "visible": true,
+          "bounds": {
+            "x": 28,
+            "y": 289.86,
+            "width": 334,
+            "height": 250.5,
+            "right": 362,
+            "bottom": 540.36
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 1000,
+            "naturalHeight": 750
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-status",
+          "visible": true,
+          "bounds": {
+            "x": 141.22,
+            "y": 574.36,
+            "width": 107.56,
+            "height": 27,
+            "right": 248.78,
+            "bottom": 601.36
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-tip",
+          "visible": true,
+          "bounds": {
+            "x": 116.81,
+            "y": 623.36,
+            "width": 156.38,
+            "height": 45.8,
+            "right": 273.19,
+            "bottom": 669.16
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "GAME",
+      "actualViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "iframeCSS": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "panelScroll": {
+        "height": 0,
+        "scrollHeight": 0
+      },
+      "rows": [
+        {
+          "selector": "#board",
+          "visible": true,
+          "bounds": {
+            "x": 13,
+            "y": 126.75,
+            "width": 283,
+            "height": 572,
+            "right": 296,
+            "bottom": 698.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#pause",
+          "visible": true,
+          "bounds": {
+            "x": 342,
+            "y": 14,
+            "width": 38,
+            "height": 36,
+            "right": 380,
+            "bottom": 50
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#hold",
+          "visible": true,
+          "bounds": {
+            "x": 308,
+            "y": 403.75,
+            "width": 72,
+            "height": 72,
+            "right": 380,
+            "bottom": 475.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#drop",
+          "visible": true,
+          "bounds": {
+            "x": 308,
+            "y": 559.75,
+            "width": 72,
+            "height": 142,
+            "right": 380,
+            "bottom": 701.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "[data-preview=\"0\"]",
+          "visible": true,
+          "bounds": {
+            "x": 308,
+            "y": 123.75,
+            "width": 72,
+            "height": 94,
+            "right": 380,
+            "bottom": 217.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "[data-preview=\"1\"]",
+          "visible": true,
+          "bounds": {
+            "x": 308,
+            "y": 223.75,
+            "width": 72,
+            "height": 94,
+            "right": 380,
+            "bottom": 317.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "TUTORIAL",
+      "actualViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "iframeCSS": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "panelScroll": {
+        "height": 0,
+        "scrollHeight": 0
+      },
+      "rows": [
+        {
+          "selector": "#board",
+          "visible": true,
+          "bounds": {
+            "x": 13,
+            "y": 126.75,
+            "width": 283,
+            "height": 572,
+            "right": 296,
+            "bottom": 698.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#pause",
+          "visible": true,
+          "bounds": {
+            "x": 342,
+            "y": 14,
+            "width": 38,
+            "height": 36,
+            "right": 380,
+            "bottom": 50
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#hold",
+          "visible": true,
+          "bounds": {
+            "x": 308,
+            "y": 403.75,
+            "width": 72,
+            "height": 72,
+            "right": 380,
+            "bottom": 475.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#drop",
+          "visible": true,
+          "bounds": {
+            "x": 308,
+            "y": 559.75,
+            "width": 72,
+            "height": 142,
+            "right": 380,
+            "bottom": 701.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".bloom-tutorial-note",
+          "visible": true,
+          "bounds": {
+            "x": 16.61,
+            "y": 127.32,
+            "width": 274.77,
+            "height": 78.05,
+            "right": 291.39,
+            "bottom": 205.37
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".bloom-tutorial-skip",
+          "visible": true,
+          "bounds": {
+            "x": 233.19,
+            "y": 131.75,
+            "width": 52.81,
+            "height": 28,
+            "right": 286,
+            "bottom": 159.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "OVER",
+      "actualViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "iframeCSS": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "panelScroll": {
+        "height": 528,
+        "scrollHeight": 528
+      },
+      "rows": [
+        {
+          "selector": "#panel h2",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 200.84,
+            "width": 316,
+            "height": 39,
+            "right": 353,
+            "bottom": 239.84
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".result-score",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 248.84,
+            "width": 316,
+            "height": 54.59,
+            "right": 353,
+            "bottom": 303.44
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"new\"]",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 472,
+            "width": 316,
+            "height": 48,
+            "right": 353,
+            "bottom": 520
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"retry\"]",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 529,
+            "width": 316,
+            "height": 48,
+            "right": 353,
+            "bottom": 577
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"menu\"]",
+          "visible": true,
+          "bounds": {
+            "x": 154.31,
+            "y": 590,
+            "width": 81.38,
+            "height": 30,
+            "right": 235.69,
+            "bottom": 620
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "HOME",
+      "actualViewport": {
+        "width": 412,
+        "height": 915
+      },
+      "iframeCSS": {
+        "width": 412,
+        "height": 915
+      },
+      "documentWidth": 412,
+      "panelScroll": {
+        "height": 915,
+        "scrollHeight": 915
+      },
+      "rows": [
+        {
+          "selector": ".cb-start",
+          "visible": true,
+          "bounds": {
+            "x": 24.67,
+            "y": 760.11,
+            "width": 362.66,
+            "height": 68.79,
+            "right": 387.33,
+            "bottom": 828.89
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-settings",
+          "visible": true,
+          "bounds": {
+            "x": 273.97,
+            "y": 835,
+            "width": 113.03,
+            "height": 44,
+            "right": 387,
+            "bottom": 879
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-logo",
+          "visible": true,
+          "bounds": {
+            "x": 32.23,
+            "y": 32.59,
+            "width": 347.52,
+            "height": 120,
+            "right": 379.75,
+            "bottom": 152.59
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 900,
+            "naturalHeight": 320
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-hero",
+          "visible": true,
+          "bounds": {
+            "x": -15,
+            "y": 263.05,
+            "width": 442,
+            "height": 331.5,
+            "right": 427,
+            "bottom": 594.55
+          },
+          "insideViewport": false,
+          "clippedBy": [
+            "cb-home",
+            "panel"
+          ],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 1000,
+            "naturalHeight": 750
+          },
+          "result": "VISUAL REVIEW"
+        },
+        {
+          "selector": ".cb-tagline",
+          "visible": true,
+          "bounds": {
+            "x": 25,
+            "y": 153.59,
+            "width": 362,
+            "height": 18,
+            "right": 387,
+            "bottom": 171.59
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "VISUAL REVIEW",
+      "entrance": {
+        "complete": true,
+        "elapsedMs": 1701.9,
+        "animations": [
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 128
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 220
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 268
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 308
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 388
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 348
+          },
+          {
+            "state": "finished",
+            "pending": false,
+            "currentTime": 348
+          }
+        ]
+      }
+    },
+    {
+      "screen": "LOADING",
+      "actualViewport": {
+        "width": 412,
+        "height": 915
+      },
+      "iframeCSS": {
+        "width": 412,
+        "height": 915
+      },
+      "documentWidth": 412,
+      "panelScroll": {
+        "height": 915,
+        "scrollHeight": 915
+      },
+      "rows": [
+        {
+          "selector": ".cb-load-logo",
+          "visible": true,
+          "bounds": {
+            "x": 86,
+            "y": 223.78,
+            "width": 240,
+            "height": 85.33,
+            "right": 326,
+            "bottom": 309.11
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 900,
+            "naturalHeight": 320
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-friends",
+          "visible": true,
+          "bounds": {
+            "x": 28,
+            "y": 317.11,
+            "width": 356,
+            "height": 267,
+            "right": 384,
+            "bottom": 584.11
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "image": {
+            "complete": true,
+            "naturalWidth": 1000,
+            "naturalHeight": 750
+          },
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-status",
+          "visible": true,
+          "bounds": {
+            "x": 152.22,
+            "y": 618.11,
+            "width": 107.56,
+            "height": 27,
+            "right": 259.78,
+            "bottom": 645.11
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".cb-load-tip",
+          "visible": true,
+          "bounds": {
+            "x": 100.23,
+            "y": 667.11,
+            "width": 211.52,
+            "height": 45.8,
+            "right": 311.75,
+            "bottom": 712.91
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "GAME",
+      "actualViewport": {
+        "width": 412,
+        "height": 915
+      },
+      "iframeCSS": {
+        "width": 412,
+        "height": 915
+      },
+      "documentWidth": 412,
+      "panelScroll": {
+        "height": 0,
+        "scrollHeight": 0
+      },
+      "rows": [
+        {
+          "selector": "#board",
+          "visible": true,
+          "bounds": {
+            "x": 13,
+            "y": 126.75,
+            "width": 305,
+            "height": 616,
+            "right": 318,
+            "bottom": 742.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#pause",
+          "visible": true,
+          "bounds": {
+            "x": 364,
+            "y": 14,
+            "width": 38,
+            "height": 36,
+            "right": 402,
+            "bottom": 50
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#hold",
+          "visible": true,
+          "bounds": {
+            "x": 330,
+            "y": 447.75,
+            "width": 72,
+            "height": 72,
+            "right": 402,
+            "bottom": 519.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#drop",
+          "visible": true,
+          "bounds": {
+            "x": 330,
+            "y": 603.75,
+            "width": 72,
+            "height": 142,
+            "right": 402,
+            "bottom": 745.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "[data-preview=\"0\"]",
+          "visible": true,
+          "bounds": {
+            "x": 330,
+            "y": 123.75,
+            "width": 72,
+            "height": 94,
+            "right": 402,
+            "bottom": 217.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "[data-preview=\"1\"]",
+          "visible": true,
+          "bounds": {
+            "x": 330,
+            "y": 223.75,
+            "width": 72,
+            "height": 94,
+            "right": 402,
+            "bottom": 317.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "TUTORIAL",
+      "actualViewport": {
+        "width": 412,
+        "height": 915
+      },
+      "iframeCSS": {
+        "width": 412,
+        "height": 915
+      },
+      "documentWidth": 412,
+      "panelScroll": {
+        "height": 0,
+        "scrollHeight": 0
+      },
+      "rows": [
+        {
+          "selector": "#board",
+          "visible": true,
+          "bounds": {
+            "x": 13,
+            "y": 126.75,
+            "width": 305,
+            "height": 616,
+            "right": 318,
+            "bottom": 742.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#pause",
+          "visible": true,
+          "bounds": {
+            "x": 364,
+            "y": 14,
+            "width": 38,
+            "height": 36,
+            "right": 402,
+            "bottom": 50
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#hold",
+          "visible": true,
+          "bounds": {
+            "x": 330,
+            "y": 447.75,
+            "width": 72,
+            "height": 72,
+            "right": 402,
+            "bottom": 519.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#drop",
+          "visible": true,
+          "bounds": {
+            "x": 330,
+            "y": 603.75,
+            "width": 72,
+            "height": 142,
+            "right": 402,
+            "bottom": 745.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".bloom-tutorial-note",
+          "visible": true,
+          "bounds": {
+            "x": 16.61,
+            "y": 127.2,
+            "width": 296.79,
+            "height": 80.08,
+            "right": 313.39,
+            "bottom": 207.28
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".bloom-tutorial-skip",
+          "visible": true,
+          "bounds": {
+            "x": 255.19,
+            "y": 131.75,
+            "width": 52.81,
+            "height": 28,
+            "right": 308,
+            "bottom": 159.75
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "screen": "OVER",
+      "actualViewport": {
+        "width": 412,
+        "height": 915
+      },
+      "iframeCSS": {
+        "width": 412,
+        "height": 915
+      },
+      "documentWidth": 412,
+      "panelScroll": {
+        "height": 528,
+        "scrollHeight": 528
+      },
+      "rows": [
+        {
+          "selector": "#panel h2",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 236.34,
+            "width": 338,
+            "height": 39,
+            "right": 375,
+            "bottom": 275.34
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": ".result-score",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 284.34,
+            "width": 338,
+            "height": 54.59,
+            "right": 375,
+            "bottom": 338.94
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": false,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"new\"]",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 507.5,
+            "width": 338,
+            "height": 48,
+            "right": 375,
+            "bottom": 555.5
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"retry\"]",
+          "visible": true,
+          "bounds": {
+            "x": 37,
+            "y": 564.5,
+            "width": 338,
+            "height": 48,
+            "right": 375,
+            "bottom": 612.5
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": false,
+          "textOverflowX": false,
+          "result": "PASS"
+        },
+        {
+          "selector": "#panel [data-menu=\"menu\"]",
+          "visible": true,
+          "bounds": {
+            "x": 165.31,
+            "y": 625.5,
+            "width": 81.38,
+            "height": 30,
+            "right": 246.69,
+            "bottom": 655.5
+          },
+          "insideViewport": true,
+          "clippedBy": [],
+          "interactive": true,
+          "centerReceivesPointer": true,
+          "smallTouchTarget": true,
+          "textOverflowX": false,
+          "result": "PASS"
+        }
+      ],
+      "result": "PASS"
+    }
+  ],
+  "snapshot": {
+    "version": "CRAYON BLOOM · RC 검수 2 · CONTROL 23 · HOME RC",
+    "state": "over",
+    "viewport": {
+      "width": 412,
+      "height": 915
+    },
+    "visibility": "visible",
+    "storage": "isolated in-memory copy",
+    "firstInstallBoot": null,
+    "pointer": null,
+    "DOM": 141,
+    "homeAnimations": 0,
+    "audio": {
+      "scene": "over",
+      "contextsCreated": 0,
+      "contextState": "unavailable",
+      "voices": 0,
+      "peakVoices": 0,
+      "timers": 0,
+      "scheduled": 0,
+      "dropped": 0,
+      "beat": 0,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": false,
+      "destroyed": false,
+      "sound": false,
+      "bgm": true,
+      "sfx": true
+    },
+    "celebration": {
+      "active": false,
+      "prepared": true,
+      "heroReady": true,
+      "chickReady": true,
+      "timers": 0,
+      "particles": 12,
+      "children": 14,
+      "shown": 0,
+      "skipped": 0,
+      "lastEvent": null,
+      "destroyed": false
+    },
+    "tutorial": {
+      "active": false,
+      "paused": false,
+      "step": 0,
+      "success": false,
+      "completed": 0,
+      "wrong": 0,
+      "timers": 0,
+      "pending": null,
+      "repeatMoves": 0,
+      "destroyed": false
+    },
+    "training": false,
+    "loading": {
+      "active": false,
+      "timers": 0,
+      "completed": 3,
+      "cancelled": 0,
+      "last": {
+        "elapsed": 1000.8000000007451,
+        "ready": true,
+        "cancelled": false
+      }
+    },
+    "timers": {
+      "tracked": 0,
+      "peak": 1,
+      "scope": "post-load timers only; module stats cover preexisting ownership"
+    },
+    "frames": {
+      "count": 188,
+      "averageFPS": 4.95,
+      "recentMedianMs": 33.3,
+      "recentP95Ms": 1016.5,
+      "maxMs": 1016.5,
+      "over50": 37,
+      "hiddenFrameSamples": 0
+    },
+    "mainThread": {
+      "longTasks": 0,
+      "maxLongTaskMs": 0
+    },
+    "heapBytes": 10439201,
+    "errors": [],
+    "brokenImages": []
+  }
+}

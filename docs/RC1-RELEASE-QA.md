@@ -63,30 +63,62 @@ These are cloud-browser synthetic PointerEvent results, not physical Android tou
 
 An actual production-page reload retained best score 36 and the changed sound, BGM, SFX, haptic and effects settings. Original preference values were restored. SKIP completion survived reload, and the subsequent Start entered normal play without the tutorial. No localStorage clear/remove was used.
 
+The strict first-install fixture also passed in the browser: storage was empty
+before application boot (entries 0, writes 0, best 0, no tutorial completion).
+Real Start, all ten tutorial steps, wrong-input rejection, pause/resume, finish,
+SKIP, replay and returning-user Start passed without a seeded best/preferences.
+Its prepared loading measured 180.1 ms (193.1 ms end-to-end). Evidence is
+`docs/qa/first-install-review.json`.
+
+Mobile geometry checked all 15 combinations of HOME/LOADING/GAME/TUTORIAL/OVER
+and 360×640, 390×844, 412×915. No essential controls or text were clipped.
+Two enlarged hero image boxes extend 15 px past the paper edges by design;
+manual screenshots confirm only decorative bleed, with baby/chick faces and
+the complete Start button visible. The 390 iframe entrance exceeded the QA
+2-second wall-clock deadline, although all seven animation states were finished
+by inspection. It remains a cloud animation-timing limitation, not a claim of
+verified phone timing. No animation was forcibly finished to pass the check.
+
+Visual review found an actual preexisting result-screen contrast defect: pale
+legacy score/meta text on the warm paper panel. Only result/meta/storage-note
+ink colors were corrected; scoring, layout and controls were unchanged.
+Post-deployment visual confirmation of that correction is still pending.
+
 ## Pending release gates
 
-### Real-time combined run (in progress)
+### Real-time combined run — completed
 
-Started 2026-09-27 13:57:36 UTC on candidate `a0d2c04`, with the game foreground,
-BGM/SFX enabled, repeated actual drop/rotate/HOLD results, item scenarios,
-cutins and home/restart cycles. This is wall-clock browser execution, distinct
-from the accelerated model tests. It uses synthetic actions and isolated storage.
+Started 2026-09-27 13:57:36 UTC on candidate `a0d2c04`. Actual duration
+1,801,058.9 ms, with 1,650 drops, 152 restart cycles and 118 forced item scenarios.
+BGM/SFX, cutins and actual controller actions ran together in foreground, using
+isolated memory storage. This is not accelerated time and not an Android test.
 
-At 600,113.8 ms: DOM 130, one AudioContext, one active tracked timer (peak 2),
-6.55 MB reported JS heap, zero errors/broken images, zero hidden-frame samples.
-The cloud RAF average was 23.07 FPS (recent median 33.3 ms / p95 50.0 ms).
-This is **not evidence of 60 FPS on Android**. Seven long-task entries were
-observed (maximum 221 ms); no frame-rate or perceptual smoothness PASS is inferred.
-At 1,200,548.6 ms: DOM 130, one AudioContext, one tracked timer, 7.56 MB heap,
-zero errors/broken images/hidden-frame samples. Cloud RAF average 23.19 FPS,
-recent median 33.3 ms / p95 50.0 ms. Twelve long-task entries, maximum still
-221 ms. Thirty-minute and shutdown samples still pending; these heap samples
-alone cannot establish either a leak or its absence.
+| Actual milestone | DOM | JS heap | Contexts | Tracked timers | Cloud average FPS |
+|---|---:|---:|---:|---:|---:|
+| 10 min (600,113.8 ms) | 130 | 6.55 MB | 1 | 1 | 23.07 |
+| 20 min (1,200,548.6 ms) | 130 | 7.56 MB | 1 | 1 | 23.19 |
+| 30 min (1,800,790.3 ms) | 130 | 7.52 MB | 1 | 1 | 23.13 |
+
+All three milestones: errors 0, broken images 0, hidden-frame samples 0 and home
+animations 0. Timer peak 2; audio voice peak 15 of the allowed 28. Heap samples
+between milestones rose and fell (for example 6.96 MB at 25 minutes), without
+steadily increasing DOM/context/timer ownership. A heap snapshot investigation
+was not performed; this does not prove that every possible leak is absent.
+
+After stop: paused, pointer null, tracked timers 0, audio voices/timers 0,
+AudioContext suspended, cutin/loading/tutorial timers 0, heap 7.26 MB. Pause
+menu DOM is 138; its eight extra elements are the visible pause menu.
+
+Cloud RAF recent median 33.3 ms / p95 50.0 ms; maximum frame gap 1,083.1 ms across
+the mixed lifecycle run. Sixteen long-task entries were observed (maximum
+221 ms). **This is not a 60 FPS or mobile smoothness PASS.** Input regression
+and bounded resource/lifecycle results are separate from real-device performance.
+Evidence: `docs/qa/soak-10min.json`, `soak-20min.json`, `soak-30min.json`.
 
 | Gate | Current status |
 |---|---|
 | Exact 360 / 390 / 412 viewport screen inspection | NOT VERIFIED — in progress |
-| Real wall-clock 30-minute combined soak | NOT VERIFIED — in progress |
+| Real wall-clock 30-minute combined soak | PASS for bounded resource/lifecycle checks; phone FPS NOT VERIFIED |
 | Final version, cache and build verification | NOT VERIFIED — follows the gates above |
 | Android hand feel, volume, physical vibration, readability and lesson understanding | NOT VERIFIED — requires the user's actual phone |
 

@@ -44,6 +44,8 @@ footer #notice{color:#4c78a3!important}#build{color:#91a9b5!important}
 #overlay{background:#6b87a233;backdrop-filter:blur(6px)}
 #panel{background:#fffaf0f7;border:3px solid #8bc5ea;color:#315e91;box-shadow:4px 6px 0 #b7d9dc;border-radius:26px}
 #panel p{color:#58779a}.kicker{color:#e85b99;font-weight:800}.rule-box{background:#eef8ff;color:#456b91;border:1px dashed #8dc8e8}.rule-box b{color:#df548e}
+/* RC readability: result text must contrast with the warm paper panel. */
+#panel .result-score{color:#8a4765}#panel .result-meta{color:#705b68}#panel .storage-note{color:#876252!important}
 .primary{background:#f59bc0!important;border-color:#e774a7!important;color:#fff!important}.secondary{background:#eef9ff!important;border-color:#8fc7e8!important;color:#315e91!important}
 .text-button{color:#5b79a0}.menu-best,.storage-note{color:#c17a57!important}
 body[data-kind="normal"],body[data-kind="normal"][data-desert="3"],body[data-kind="normal"][data-desert="4"],body[data-kind="normal"][data-desert="5"],body[data-kind="normal"][data-desert="6"],body[data-kind="normal"][data-desert="7"],body[data-kind="normal"][data-desert="8"]{background:linear-gradient(180deg,#fff8e9,#ffeef4 52%,#e9f8e8)!important}

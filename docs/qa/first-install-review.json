@@ -1,0 +1,189 @@
+{
+  "test": "첫 사용자·튜토리얼 전체 검사",
+  "input": "browser synthetic PointerEvent; native capture not tested",
+  "result": "PASS",
+  "firstInstallation": {
+    "initialEntries": 0,
+    "entries": 0,
+    "writes": 0,
+    "storage": "empty-memory-before-app",
+    "homeBest": 0,
+    "tutorialCompleted": false,
+    "state": "menu",
+    "strictEmptyBoot": true,
+    "testBest": 0
+  },
+  "firstLoading": {
+    "actualTransitionMs": 193.1,
+    "elapsed": 180.09999999776483,
+    "ready": true,
+    "cancelled": false
+  },
+  "warmLoading": {
+    "actualTransitionMs": 218.6,
+    "elapsed": 179.60000000149012,
+    "ready": true,
+    "cancelled": false
+  },
+  "steps": [
+    {
+      "step": 1,
+      "name": "왼쪽 한 칸",
+      "result": "PASS"
+    },
+    {
+      "step": 2,
+      "name": "오른쪽 한 칸",
+      "result": "PASS"
+    },
+    {
+      "step": 3,
+      "name": "정지 롱프레스",
+      "result": "PASS"
+    },
+    {
+      "step": 4,
+      "name": "CW 스와이프",
+      "result": "PASS"
+    },
+    {
+      "step": 5,
+      "name": "위 스와이프 HOLD",
+      "result": "PASS"
+    },
+    {
+      "step": 6,
+      "name": "아래 스와이프 DROP",
+      "result": "PASS"
+    },
+    {
+      "step": 7,
+      "name": "실제 쏙 버튼",
+      "result": "PASS"
+    },
+    {
+      "step": 8,
+      "name": "직접 한 줄 완성",
+      "result": "PASS"
+    },
+    {
+      "step": 9,
+      "name": "실제 콤보 자산 예시",
+      "result": "PASS"
+    },
+    {
+      "step": 10,
+      "name": "완료 → 깨끗한 정상 게임",
+      "result": "PASS"
+    }
+  ],
+  "wrongInput": "PASS",
+  "pauseResume": "PASS",
+  "skip": "PASS",
+  "replay": "PASS",
+  "existingBestSettingsAdaptive": "PASS",
+  "snapshot": {
+    "version": "CRAYON BLOOM · RC 검수 2 · CONTROL 23 · HOME RC",
+    "state": "playing",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "visibility": "visible",
+    "storage": "empty-memory before application boot",
+    "firstInstallBoot": {
+      "initialEntries": 0,
+      "entries": 0,
+      "writes": 0,
+      "storage": "empty-memory-before-app",
+      "homeBest": 0,
+      "tutorialCompleted": false,
+      "state": "menu"
+    },
+    "pointer": null,
+    "DOM": 134,
+    "homeAnimations": 0,
+    "audio": {
+      "scene": "game",
+      "contextsCreated": 0,
+      "contextState": "unavailable",
+      "voices": 0,
+      "peakVoices": 0,
+      "timers": 0,
+      "scheduled": 0,
+      "dropped": 0,
+      "beat": 0,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": false,
+      "destroyed": false,
+      "sound": false,
+      "bgm": true,
+      "sfx": true
+    },
+    "celebration": {
+      "active": false,
+      "prepared": true,
+      "heroReady": true,
+      "chickReady": true,
+      "timers": 0,
+      "particles": 12,
+      "children": 14,
+      "shown": 2,
+      "skipped": 1,
+      "lastEvent": {
+        "combo": 4,
+        "lines": 0,
+        "best": false,
+        "at": 18420.89999999851,
+        "label": "BLOOM!"
+      },
+      "destroyed": false
+    },
+    "tutorial": {
+      "active": false,
+      "paused": false,
+      "step": 0,
+      "success": false,
+      "completed": 0,
+      "wrong": 0,
+      "timers": 0,
+      "pending": null,
+      "repeatMoves": 0,
+      "destroyed": false
+    },
+    "training": false,
+    "loading": {
+      "active": false,
+      "timers": 0,
+      "completed": 3,
+      "cancelled": 0,
+      "last": {
+        "elapsed": 179.60000000149012,
+        "ready": true,
+        "cancelled": false
+      }
+    },
+    "timers": {
+      "tracked": 0,
+      "peak": 2,
+      "scope": "post-load timers only; module stats cover preexisting ownership"
+    },
+    "frames": {
+      "count": 180,
+      "averageFPS": 9.38,
+      "recentMedianMs": 33.3,
+      "recentP95Ms": 1016.4,
+      "maxMs": 1016.6,
+      "over50": 21,
+      "hiddenFrameSamples": 0
+    },
+    "mainThread": {
+      "longTasks": 0,
+      "maxLongTaskMs": 0
+    },
+    "heapBytes": 13171588,
+    "errors": [],
+    "brokenImages": []
+  }
+}
