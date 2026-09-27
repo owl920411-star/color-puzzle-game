@@ -10,7 +10,10 @@ const COLORS={I:['#77c9f4','#2f78c7'],O:['#ffd86e','#e8a72e'],T:['#caa0ef','#815
 const systemReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
 function readStore(){try{return object(JSON.parse(localStorage.getItem(KEY)||'{}'));}catch{return{};}}
-let saved=readStore(),saveOK=true,kind=new URLSearchParams(location.search).get('mode')==='sand'?'sand':saved.material==='sand'?'sand':'normal';
+let saved=readStore(),saveOK=true,kind='normal';
+// CRAYON BLOOM is single-mode from MAIN 8. Preserve old scores/settings, but retire legacy sand selection.
+if(saved.material==='sand')prefLegacyMaterial();
+function prefLegacyMaterial(){saved.material='glass';try{localStorage.setItem(KEY,JSON.stringify(saved));}catch{}}
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
@@ -166,7 +169,7 @@ function settings(){
 panel.addEventListener('click',e=>{
  const relic=e.target.closest('[data-relic]');if(relic){if(!relic.disabled&&useRelic(relic.dataset.relic)){if(relicReturn==='dev')devPanel();else resume();}return;}
  const b=e.target.closest('button[data-menu]');if(!b||b.disabled)return;const a=b.dataset.menu;
- if(a==='normal'||a==='sand'){kind=a;pref('material',kind==='normal'?'glass':'sand');menu();}
+ if(a==='normal'){kind='normal';pref('material','glass');menu();}
  else if(a==='start'||a==='new')start();else if(a==='retry')start(true);else if(a==='resume')resume();else if(a==='menu')menu();else if(a==='settings')settings();
  else if(a==='sound'){pref('sound',!saved.sound);initAudio();settings();}else if(a==='haptics'){pref('haptics',!saved.haptics);settings();}
  else if(a==='effects'&&!systemReduced){reduced=!reduced;pref('effects',reduced?'light':'rich');settings();}
@@ -482,7 +485,7 @@ window.addEventListener('pagehide',()=>{rememberScore();adaptive?.end('interrupt
 window.addEventListener('resize',fit);window.visualViewport?.addEventListener('resize',fit);
 window.addEventListener('glassartready',()=>{if(overlayView==='menu')window.GlassArt?.menu(panel);hud();draw();});
 function frame(now){const dt=last?now-last:0;last=now;update(dt);draw();if(now-lastHUD>=120){hud();lastHUD=now;}requestAnimationFrame(frame);}
-if(new URLSearchParams(location.search).get('qa')==='1')window.__GLASSFALL_QA__={get run(){return run;},get state(){return state;},get kind(){return kind;},get drag(){return drag;},get desert(){return desert;},get items(){return itemSystem;},get elapsed(){return elapsed;},get adaptive(){return adaptive;},action,update,start,menu,pause,resume,finish,draw,hud,devPanel,jumpTime,loadPreset,itemScenario,forceNextItem,resolveNormal,riseGround,maybeSeedNextItem,useRelic,setKind(k){kind=k;menu();},lock(){lockNormal(!!drag);}};
+if(new URLSearchParams(location.search).get('qa')==='1')window.__GLASSFALL_QA__={get run(){return run;},get state(){return state;},get kind(){return kind;},get drag(){return drag;},get desert(){return desert;},get items(){return itemSystem;},get elapsed(){return elapsed;},get adaptive(){return adaptive;},action,update,start,menu,pause,resume,finish,draw,hud,devPanel,jumpTime,loadPreset,itemScenario,forceNextItem,resolveNormal,riseGround,maybeSeedNextItem,useRelic,setKind(k){kind='normal';menu();},lock(){lockNormal(!!drag);}};
 
 if(window.AdaptiveBridge&&window.AdaptiveDirector)adaptive=window.AdaptiveBridge.create({
  storage:{getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)},panel,
