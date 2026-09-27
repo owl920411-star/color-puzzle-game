@@ -5,7 +5,7 @@
 'use strict';
 const E=window.GlassEngine,M=window.MicroSand,R=window.EndlessRules,B=window.BlockItems,$=id=>document.getElementById(id);
 const canvas=$('board'),ctx=canvas.getContext('2d'),panel=$('panel'),KEY='glassfall-v1';
-const shatterFX=window.SandShatterFX?new window.SandShatterFX(canvas,{cellSize:36,originX:0,originY:0,maxParticles:180}):window.GlassShatterFX?new window.GlassShatterFX(canvas,{cellSize:36,originX:0,originY:0,maxParticles:180}):null;
+const shatterFX=window.CrayonBloomFX?new window.CrayonBloomFX(canvas,{cellSize:36,maxParticles:180}):null;
 const COLORS={I:['#77c9f4','#2f78c7'],O:['#ffd86e','#e8a72e'],T:['#caa0ef','#8156bd'],S:['#82d89b','#3a9b62'],Z:['#f58db8','#d64d88'],J:['#ffb09a','#dd6f67'],L:['#9fd8f6','#559ed2']};
 const systemReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
@@ -272,9 +272,7 @@ function tone(type,power=1){
 function callout(title,sub){$('callout').innerHTML='<strong>'+title+'</strong><span>'+sub+'</span>';$('callout').classList.add('show');calloutTime=1000;}
 function emitNormal(plan,result){
  const n=plan.rows.length;
- if(!reduced&&shatterFX)shatterFX.trigger(plan.cells.map(c=>({col:c.x,row:c.y})),Math.max(1,n));
- const cap=reduced?45:260,count=reduced?1:8;
- for(const c of plan.cells)for(let i=0;i<count&&fx.length<cap;i++){const life=650+Math.random()*220;fx.push({x:(c.x+.5)*36,y:(c.y+.5)*36,vx:(Math.random()-.5)*260,vy:-90-Math.random()*160,gravity:350,life,total:life,size:2+Math.random()*4.5,kind:'glass',spark:i%4===0,sprite:Math.floor(Math.random()*8),angle:Math.random()*6.28,color:COLORS[c.cell.type]?.[0]||COLORS.I[0]});}
+ if(!reduced&&shatterFX)shatterFX.trigger(plan.cells.filter(c=>plan.rows.includes(c.y)).map(c=>({col:c.x,row:c.y,color:COLORS[c.cell.type]?.[0]||COLORS.I[0]})),n,result.combo||0);
  if(!n){tone('clear');return;}
  const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}
  // This is the existing BLOOM level multiplier, not an item multiplier.
