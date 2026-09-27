@@ -1,0 +1,17 @@
+{
+  "candidate": "1f14315fa46ae54ecb47e03d80a6ea337971382e",
+  "viewports": [
+    "360x640",
+    "390x844",
+    "412x915"
+  ],
+  "scope": "Actual browser geometry of 15 screen/viewport combinations plus visual screenshots. Not Android hardware.",
+  "layout": "PASS",
+  "home": "Official baby/chick intact and Start visible; decorative side bleed accepted after manual inspection.",
+  "tutorial": "Paper note above active blocks, real controls visible at all three sizes.",
+  "loading": "360px actual preparation screenshot inspected; all sizes bounds and image readiness passed.",
+  "game": "Existing board/rail layout retained, no home style leakage observed.",
+  "over": "Pale legacy record text found, fixed to paper ink; all three size screenshots rechecked.",
+  "animationWallClock": "NOT VERIFIED as phone timing. One iframe QA deadline exceeded although all animation states subsequently finished.",
+  "errors": []
+}

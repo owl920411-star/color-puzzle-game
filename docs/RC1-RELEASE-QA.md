@@ -37,7 +37,7 @@ Wrong input resets only the training fixture after the current action returns. S
 
 Completion and SKIP add `glassfall-v1.tutorialCompleted = true`; Settings can replay the tutorial. Existing keys are merged rather than reset. Practice disables gravity, items and ground, skips starting an Adaptive session, excludes record saves and starts a fresh normal run on exit.
 
-## Browser results so far
+## Browser regression results
 
 Candidate `b5cff1e`:
 
@@ -82,9 +82,9 @@ verified phone timing. No animation was forcibly finished to pass the check.
 Visual review found an actual preexisting result-screen contrast defect: pale
 legacy score/meta text on the warm paper panel. Only result/meta/storage-note
 ink colors were corrected; scoring, layout and controls were unchanged.
-Post-deployment visual confirmation of that correction is still pending.
+Post-deployment screenshots at all three sizes confirmed readable score, records and controls. Contrast against the paper background is 6.37:1 / 5.96:1 / 5.18:1 for the corrected text colors.
 
-## Pending release gates
+## Release gates
 
 ### Real-time combined run — completed
 
@@ -117,9 +117,9 @@ Evidence: `docs/qa/soak-10min.json`, `soak-20min.json`, `soak-30min.json`.
 
 | Gate | Current status |
 |---|---|
-| Exact 360 / 390 / 412 viewport screen inspection | NOT VERIFIED — in progress |
+| Exact 360 / 390 / 412 viewport screen inspection | PASS for layout/readability after manual image review; phone animation cadence NOT VERIFIED |
 | Real wall-clock 30-minute combined soak | PASS for bounded resource/lifecycle checks; phone FPS NOT VERIFIED |
-| Final version, cache and build verification | NOT VERIFIED — follows the gates above |
+| Local final version, cache and build verification | PASS; final live deployment verification recorded separately |
 | Android hand feel, volume, physical vibration, readability and lesson understanding | NOT VERIFIED — requires the user's actual phone |
 
 Code implementation, automated tests, deployment success, browser inspection and physical-device acceptance are separate evidence categories. Pending gates must not be reported as PASS.
@@ -134,3 +134,20 @@ All items below remain **NOT VERIFIED** until the user tests the actual phone.
 - [ ] **Mascot cutins:** Baby/chick size and timing feel good; blocks and next actions remain readable, and touch stays responsive.
 - [ ] **Loading:** The transition feels short and clear. Leaving during preparation does not unexpectedly start a game on return.
 - [ ] **Tutorial:** Instructions are understandable without help. Real taps, hold, swipes and 쏙! advance the intended steps; SKIP and replay are easy to use.
+
+## Final RC label and validation
+
+- Screen: `RC1 · CONTROL 23 FINAL · HOME RC1`.
+- HTML build: `CB-RC1`; all runtime JS/CSS keys: `cb-rc1`.
+- Editable presentation source and generated distribution are identical.
+- Active-runtime gate: 295 tests PASS; frozen CONTROL spans 5/5 PASS.
+- Canonical GitHub Pages URL: https://owl920411-star.github.io/color-puzzle-game/dist/
+- Final GitHub commit/deployment and actual production screenshot are verified by
+  the release operator after this commit; the commit cannot contain its own SHA.
+- Android touch feel, sound balance, vibration, cutin comfort, loading feel and
+  lesson understanding remain NOT VERIFIED. RC1 is a candidate, not device approval.
+
+The remote inspection browser emitted its own `chrome-extension://` metadata
+transport errors. These are recorded separately from application errors; the game
+error/rejection/resource monitor stayed at zero. They are not silently counted as
+game failures, and no causal claim about their effect on FPS is made.
