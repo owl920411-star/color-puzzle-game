@@ -104,7 +104,17 @@ async function tutorialFlow(){
  return{firstLoading,warmLoading:{actualTransitionMs:rounded(performance.now()-warm),...q.loading.stats().last},steps,wrongInput:'PASS',pauseResume:'PASS',skip:'PASS',replay:'PASS',existingBestSettingsAdaptive:'PASS',snapshot:snapshot()};
 }
 function bounds(el){const r=el.getBoundingClientRect();return{x:rounded(r.x),y:rounded(r.y),width:rounded(r.width),height:rounded(r.height),right:rounded(r.right),bottom:rounded(r.bottom)};}
-function visible(el){if(!el||el.closest('[hidden]'))return false;const css=w.getComputedStyle(el);return css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0&&el.getClientRects().length>0;}
+function visible(el){if(!el||el.closest('[hidden]')||!el.getClientRects().length)return false;for(let node=el;node;node=node.parentElement){const css=w.getComputedStyle(node);if(css.display==='none'||css.visibility==='hidden'||Number(css.opacity)===0)return false;}return true;}
+async function settleHome(){
+ const home=w.document.querySelector('.cb-home'),started=performance.now();assert(home,'홈 화면 없음');
+ // Keep the tested iframe on screen. Offscreen CSS timelines are not mobile evidence.
+ frame.scrollIntoView({block:'start',behavior:'instant'});home.getBoundingClientRect();
+ for(const el of home.querySelectorAll('*'))w.getComputedStyle(el).opacity;
+ const animations=home.getAnimations({subtree:true});
+ const complete=await Promise.race([Promise.all(animations.map(a=>a.finished.catch(()=>null))).then(()=>true),wait(2000).then(()=>false)]);
+ const paint=await Promise.race([new Promise(resolve=>w.requestAnimationFrame(()=>resolve(true))),wait(1000).then(()=>false)]);
+ return{complete:complete&&paint,elapsedMs:rounded(performance.now()-started),animations:animations.map(a=>({state:a.playState,pending:a.pending,currentTime:rounded(a.currentTime)}))};
+}
 function geometryScreen(screen){
  const doc=w.document,width=doc.documentElement.clientWidth,height=doc.documentElement.clientHeight;
  const selectors={HOME:['.cb-start','.cb-settings','.cb-logo','.cb-hero','.cb-tagline'],LOADING:['.cb-load-logo','.cb-load-friends','.cb-load-status','.cb-load-tip'],GAME:['#board','#pause','#hold','#drop','[data-preview="0"]','[data-preview="1"]'],TUTORIAL:['#board','#pause','#hold','#drop','.bloom-tutorial-note','.bloom-tutorial-skip'],OVER:['#panel h2','.result-score','#panel [data-menu="new"]','#panel [data-menu="retry"]','#panel [data-menu="menu"]']}[screen];
@@ -124,14 +134,14 @@ async function loadingPreview(){
 }
 async function mobileGeometry(){
  const reports=[];for(const [width,height]of[[360,640],[390,844],[412,915]]){alive();frame.style.width=width+'px';frame.style.height=height+'px';frame.title=`RC 검수 게임 ${width} × ${height}`;document.getElementById('viewport').value=width+','+height;await wait(100);
-  q.menu();await wait(1100);reports.push(geometryScreen('HOME'));
+  q.menu();const entrance=await settleHome(),home=geometryScreen('HOME');home.entrance=entrance;if(!entrance.complete)home.result='NOT VERIFIED';reports.push(home);
   const restore=slowPreload();try{const request=q.requestStart();await wait(100);assert(q.state==='loading','로딩 화면 측정 전 종료됨');reports.push(geometryScreen('LOADING'));await request;}finally{restore();}
   prepare();await wait(100);reports.push(geometryScreen('GAME'));
   q.start(false,true);await wait(100);reports.push(geometryScreen('TUTORIAL'));
   prepare();q.finish('qa_geometry');await wait(100);reports.push(geometryScreen('OVER'));
   setStatus(`${width} × ${height} 5화면 측정 완료`);
  }
- const failed=reports.filter(r=>r.result==='FAIL'),review=reports.filter(r=>r.result==='VISUAL REVIEW');return{result:failed.length?'FAIL':review.length?'VISUAL REVIEW':'PASS',scope:'실제 화면 DOM 경계/중앙 포인터 대상 측정; 이미지 투명 여백은 별도 시각 검수',screens:reports.length,failed:failed.length,imageReview:review.length,reports,snapshot:snapshot()};
+ const failed=reports.filter(r=>r.result==='FAIL'),pending=reports.filter(r=>r.result==='NOT VERIFIED'),review=reports.filter(r=>r.result==='VISUAL REVIEW');return{result:failed.length?'FAIL':pending.length?'NOT VERIFIED':review.length?'VISUAL REVIEW':'PASS',scope:'실제 화면 DOM 경계/중앙 포인터 대상 측정; 이미지 투명 여백은 별도 시각 검수',screens:reports.length,failed:failed.length,notVerified:pending.length,imageReview:review.length,reports,snapshot:snapshot()};
 }
 async function soundOn(){q.pause();w.document.querySelector('[data-menu="settings"]')?.click();for(const [key,flag]of[['sound','sound'],['bgm','bgm'],['sfx','sfx']]){const stat=w.BloomAudio?.stats?.();if(stat&&stat[flag]===false)w.document.querySelector(`[data-menu="${key}"]`)?.click();}w.document.querySelector('[data-menu="back"]')?.click();q.resume();await w.BloomAudio?.unlock?.();}
 function stopSoak(reason){if(soakTimer)clearTimeout(soakTimer);soakTimer=null;if(!soakData)return;q.pause();soakData.stopped=reason;soakData.actualElapsedMs=rounded(performance.now()-soakData.start);soakData.final=snapshot();soakOut.textContent=JSON.stringify(soakData,null,2);controls(false);setStatus('실시간 검사 '+reason+' — 샘플의 실제 경과 시간을 확인하세요');}

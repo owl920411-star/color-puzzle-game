@@ -26,6 +26,9 @@ It uses the existing QA API and real installed board pointer handlers.
  It reports actual content viewport, element/image bounds, ancestor clipping, pointer
  hit targets, scroll and touch-target sizes. Images with transparent bleed are marked
  VISUAL REVIEW; essential clipped controls are FAIL. The iframe border is zero.
+ It scrolls the iframe into view and waits for the natural finite home entrance;
+ ancestor opacity is included in visibility checks. A throttled/timed-out animation
+ is NOT VERIFIED, never force-finished to produce a passing result.
 - Real30minute soak: asynchronous one-second driver, without accelerated clock.
  Records snapshots at actual10/20/30minute milestones. Stop button is available.
  Every15seconds a real item scenario forces a row transaction to exercise actual

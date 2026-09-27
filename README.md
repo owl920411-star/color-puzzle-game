@@ -39,8 +39,8 @@ CONTROL 23 최종 후보를 기준으로 입력 영역을 동결합니다. 회�
 
 ## 원본과 생성 파일
 
-- 홈 원본: `src/bloom-home.js`, `src/bloom-home.css`, `src/assets/`.
-- 홈 빌드: `node scripts/build-home.cjs`. 위 원본을 `dist/`에 복사합니다.
+- 홈·콤보·사운드·로딩·튜토리얼 원본: `src/bloom-*.js`, `src/bloom-*.css`, `src/assets/`.
+- 정적 빌드: `node scripts/build-home.cjs`. 위 원본을 `dist/`에 복사합니다.
 - 게임 원본: 현재 `dist/endless-app.js`와 해당 게임 모듈을 직접 유지합니다. 별도 번들러는 없습니다.
 - 입력: `endless-app.js`, `pointer-button-guard.js`.
 - 규칙: `engine.js`, `endless-rules.js`, `block-items.js`.
@@ -53,14 +53,19 @@ CONTROL 23 최종 후보를 기준으로 입력 영역을 동결합니다. 회�
 
 최고점과 사용자 설정은 기존 `glassfall-v1`, Adaptive 데이터는 `glassfall-adaptive-v1`에 보존합니다. 역사적인 키 이름을 바꾸거나 localStorage 전체를 초기화하지 않습니다. 계정 동기화나 온라인 순위표는 없습니다.
 
+기존 소리 설정에 BGM·효과음 개별 설정을 추가합니다. 첫 사용자 튜토리얼은 실제 게임 입력 결과를 관찰하며 연습 기록을 최고점과 Adaptive에 포함하지 않습니다. 완료 또는 건너뛰기는 기존 설정에 `tutorialCompleted`를 추가하며, 설정에서 언제든 다시 볼 수 있습니다.
+
 ## 검증
 
 ```sh
 node --check dist/endless-app.js
-node --test tests/control23-freeze.test.cjs tests/control20-stability.test.cjs tests/bloom-home.test.cjs tests/bloom-items.test.cjs tests/rc-surface.test.cjs
+node scripts/build-home.cjs
+node scripts/test-rc.cjs
 ```
 
 일부 과거 프로젝트 테스트는 현재 폐기된 진입점과 모드를 대상으로 합니다. 해당 테스트를 맞추려고 모래모드나 호환 실행 경로를 복원하지 않습니다. 현재 RC 검증 결과는 각 Phase 기록을 기준으로 확인합니다.
+
+통합 검수 근거와 Android 미검증 항목은 `docs/RC1-RELEASE-QA.md`에 기록합니다. 개발 검수 페이지 `dist/qa/rc-review.html`은 실제 런타임을 불러오되 저장소의 메모리 사본을 사용합니다. 합성 포인터 검사는 실기기 터치 평가를 대신하지 않습니다.
 
 ## 과거 파일과 자산
 
