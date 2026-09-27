@@ -1,9 +1,9 @@
 /* ENDLESS / BLOCK ITEMS V2. CONTROL 16 and NOVICE 7 retained.
- * Item design: DESERT-BLOCK-ITEMS-V2.md. Sand engine is unchanged.
+ * Item design: DESERT-BLOCK-ITEMS-V2.md.
  */
 (() => {
 'use strict';
-const E=window.GlassEngine,M=window.MicroSand,R=window.EndlessRules,B=window.BlockItems,$=id=>document.getElementById(id);
+const E=window.GlassEngine,R=window.EndlessRules,B=window.BlockItems,$=id=>document.getElementById(id);
 const canvas=$('board'),ctx=canvas.getContext('2d'),panel=$('panel'),KEY='glassfall-v1';
 const shatterFX=window.CrayonBloomFX?new window.CrayonBloomFX(canvas,{cellSize:36,maxParticles:180}):null;
 const COLORS={I:['#77c9f4','#2f78c7'],O:['#ffd86e','#e8a72e'],T:['#caa0ef','#8156bd'],S:['#82d89b','#3a9b62'],Z:['#f58db8','#d64d88'],J:['#ffb09a','#dd6f67'],L:['#9fd8f6','#559ed2']};
@@ -11,9 +11,6 @@ const systemReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
 function readStore(){try{return object(JSON.parse(localStorage.getItem(KEY)||'{}'));}catch{return{};}}
 let saved=readStore(),saveOK=true,kind='normal';
-// CRAYON BLOOM is single-mode from MAIN 8. Preserve old scores/settings, but retire legacy sand selection.
-if(saved.material==='sand')prefLegacyMaterial();
-function prefLegacyMaterial(){saved.material='glass';try{localStorage.setItem(KEY,JSON.stringify(saved));}catch{}}
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
@@ -31,7 +28,7 @@ const DESERT_LEVELS=[
 let desert, itemSystem=B.state('preview'),relicReturn='game';
 /* ADAPTIVE DIRECTOR V1 HOOKS */
 let adaptive=null,resultHTML='';
-function adaptiveRecordKey(){return kind==='normal'?(adaptive?.recordKey()||'normal'):kind;}
+function adaptiveRecordKey(){return adaptive?.recordKey()||'normal';
 
 const DESERT_ITEMS=B.ITEMS;
 // Golden Scarab score item was removed; non-score support relics stay available.
@@ -96,11 +93,10 @@ function instantItem(type){
 function runSim(){const t=B.regression(300);showPanel(`<div class="kicker">REAL BOARD REGRESSION</div><h2>${t.cases}개 보드 연산 검사</h2><div class="rule-box">${t.pass?'통과':'실패'} · 오류 ${t.failures.length}<br>검사: 보드 크기·셀 ID 중복·원본 보드 보존·겹친 스티커의 줄 판정</div><p>${t.scope}<br>이전 생존시간 근사 계산은 이번 아이템의 검증 근거로 사용하지 않습니다.</p><button class="primary" data-menu="back">개발자 모드</button>`,'sim');}
 function desertChecklist(){showPanel('<div class="kicker">PLAN TRACKER</div><h2>블록 아이템 V2</h2><div class="rule-box">구현: 6종 보드 효과 / 점수 아이템 제거 / NEXT 예고 / 착지 타이머 / 낙서 정리 선물 예약 / 연습 프리셋<br><br>남음: 실제 휴대폰 조작·연출 평가 / 초보 7분 목표 보정 / 실전 엔진을 사용하는 대량 BOT</div><p>좋은 도구 3종과 방해 낙서 3종의 기존 보드 효과를 유지합니다. 구현과 검증 완료는 구분합니다.</p><button class="primary" data-menu="back">개발자 모드</button>','audit');}
 function devPanel(){if(kind!=='normal')return;const d=boardDanger();showPanel(`<div class="kicker">DEV LAB · BLOCK ITEMS V2</div><h2>블록 아이템 테스트</h2>${adaptive?.button()||''}<div class="rule-box">${timeText()} · BLOOM ${desert.level} · 높이 ${20-d.top}/20 · 구멍 ${d.holes}<br>${practice()?'연습 기록 · 최고점 저장 제외':'정상 기록 · 상태를 바꾸면 연습으로 전환'}<br>생성 ${itemSystem.stats.spawned} / 성공 ${itemSystem.stats.cleared} / 실패 ${itemSystem.stats.failed}<br>정리 ${itemSystem.purify}/2 · 활성 ${B.liveCount(run)}/${B.LIMIT}</div><p>이름을 누르면 연습판을 준비하고, 즉시 발동을 누르면 바로 효과를 보여줍니다. 방해 낙서는 시간이 지나면 방해 효과가 발생합니다.</p><div class="item-force-grid">${Object.entries(DESERT_ITEMS).map(([k,v])=>`<button data-menu="itemscenario" data-v="${k}">${window.BloomItemArt?.html(k)||v.icon} ${v.label}</button><button data-menu="iteminstant" data-v="${k}" aria-label="${v.label} 즉시 발동">즉시 발동</button>`).join('')}</div><div class="settings-row"><button data-menu="forcegood">NEXT GOOD</button><button data-menu="forcebad">NEXT BAD</button><button data-menu="itemtoggle">아이템 ${itemSystem.enabled?'ON':'OFF'}</button></div><div class="settings-row"><button data-menu="itemdeadline">방해까지 1초</button><button data-menu="itemcombo">MAX 복합판</button><button data-menu="devinv">무적 ${desert.invincible?'ON':'OFF'}</button></div><div class="item-force-grid">${[0,3,5,7,9,11,13,15,17,30].map(m=>`<button data-menu="devtime" data-v="${m*60000}">${m===17?'MAX 17분':m+'분'}</button>`).join('')}</div><div class="settings-row"><button data-menu="devrise">지반 +1</button><button data-menu="devrelic">보조 도구 지급</button><button data-menu="devrelicview">도구함</button></div><div class="item-force-grid">${[['high','높은 적재'],['holes','구멍판'],['left','좌측 위험'],['right','우측 위험'],['ceiling','천장 직전'],['rise','상승 직전'],['max','MAX 위험']].map(([k,v])=>`<button data-menu="preset" data-v="${k}">${v}</button>`).join('')}</div><div class="settings-row"><button data-menu="devsim">보드 연산 검사</button><button data-menu="devaudit">기획 체크리스트</button></div><button class="primary" data-menu="back">게임으로 돌아가기</button><p class="storage-note">점수 추가·배수 아이템 없음. 조작 CONTROL 18 / 기본 난이도 NOVICE 7 유지.</p>`,'dev');}
-const bitmap=document.createElement('canvas');bitmap.width=M.W;bitmap.height=M.H;
-const bg=bitmap.getContext('2d'),pixels=bg.createImageData(M.W,M.H),sprites=new WeakMap();let ghost=null;
+let ghost=null;
 const playing=()=>state==='playing'||state==='clearing';
-const canAct=()=>state==='playing'&&run?.active&&(kind==='normal'||run.state==='falling');
-const pieceID=()=>kind==='sand'?run?.active?.id:run?.active?.cells[0]?.id;
+const canAct=()=>state==='playing'&&run?.active;
+const pieceID=()=>run?.active?.cells[0]?.id;
 const finite=v=>Number.isFinite(Number(v))&&Number(v)>=0?Number(v):0;
 const touchLevel=()=>Math.max(1,Math.min(10,Math.round(Number(saved.touchSensitivity10)||Number(saved.touchSensitivity)*2||6)));
 const touchScale=()=>[0,.72,.78,.84,.90,.96,1.02,1.09,1.16,1.24,1.34][touchLevel()];
@@ -112,14 +108,14 @@ function rememberScore(final=false){
  recordBest=Math.max(recordBest,run.score);
  writeStore(s=>{
   s.endlessV1=object(s.endlessV1);const key=adaptiveRecordKey(),r=object(s.endlessV1[key]);r.best=Math.max(finite(r.best),recordBest);recordBest=r.best;
-  if(final&&!finalSaved){r.plays=finite(r.plays)+1;r.last={score:run.score,seconds:Math.floor(elapsed/1000),lines:kind==='normal'?run.lines:0,units:kind==='sand'?Math.floor(run.removed/M.UNIT):0,combo:kind==='normal'?run.maxCombo:run.maxChain};}
+  if(final&&!finalSaved){r.plays=finite(r.plays)+1;r.last={score:run.score,seconds:Math.floor(elapsed/1000),lines:run.lines,combo:run.maxCombo};}
   s.endlessV1[key]=r;
  });
  if(final)finalSaved=true;
  lastSave=performance.now();
 }
 function seed(){const n=new Uint32Array(2);if(window.crypto?.getRandomValues)window.crypto.getRandomValues(n);else{n[0]=Math.random()*4294967295;n[1]=Date.now();}return'ENDLESS-'+Array.from(n,x=>x.toString(36)).join('-');}
-function name(){return kind==='normal'?'일반':'모래';}
+function name(){return'일반';}
 function timeText(){const n=Math.floor(elapsed/1000);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
 function clearInput(){
  const d=drag;if(d?.timer)clearTimeout(d.timer);drag=null;repeat=null;heldKeys.clear();
@@ -136,12 +132,12 @@ function fit(){
 }
 function showPanel(html,view){if(view==='over')resultHTML=html;overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
 function hidePanel(){$('overlay').hidden=true;$('app').inert=false;overlayView='';}
-function ruleHTML(){return kind==='normal'?'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 쏙 내려요: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>방해 낙서를 제때 정리하면 좋은 블록 예약 게이지가 쌓입니다.<br>스티커의 첫 겹 제거는 줄 제거 점수를 주지 않습니다.':'<b>모래 붕괴 점수</b><br>같은 색 12 모래량 연결 → 붕괴<br>(제거 모래량 × 20 + 제거 묶음 × 100)점<br>자연 연쇄 배수: ×1 → ×2 → ×4 → ×8…<br>배수 상한 ×1,024 · 모래주머니 하나 = 4 모래량<br>쏙 내려요: 미세 격자 6칸당 1점';}
+function ruleHTML(){return'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 쏙 내려요: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>블록 아이템 V2</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>방해 낙서를 제때 정리하면 좋은 블록 예약 게이지가 쌓입니다.<br>스티커의 첫 겹 제거는 줄 제거 점수를 주지 않습니다.';}
 function menu(){
  adaptive?.end('menu');
  if(playing()||state==='paused')rememberScore();clearInput();shatterFX?.clear();state='menu';phase=null;pending=null;falls=[];fx=[];floaters=[];trail=null;impact=null;elapsed=0;calloutTime=0;$('callout').classList.remove('show');resetDesert();
- loadBest();run=kind==='normal'?new R.NormalGame('preview'):new M.Run({seed:'preview',colors:3,burst:12,gravity:26});
- if(kind==='normal')for(let x=0;x<10;x++)for(let y=19;y>=19-(x%3);y--)run.board[y][x]={type:Object.keys(COLORS)[(x+y)%7],mask:0,id:1000+y*10+x};
+ loadBest();run=new R.NormalGame('preview');
+ for(let x=0;x<10;x++)for(let y=19;y>=19-(x%3);y--)run.board[y][x]={type:Object.keys(COLORS)[(x+y)%7],mask:0,id:1000+y*10+x};
  run.active=null;showMenu();hud();draw();
 }
 function showMenu(){
@@ -150,9 +146,9 @@ function showMenu(){
 function start(retry=false){
  adaptive?.end('restart');
  if(playing()||state==='paused')rememberScore();clearInput();currentSeed=retry&&currentSeed?currentSeed:seed();
- run=kind==='normal'?new R.NormalGame(currentSeed):new M.Run({seed:currentSeed,colors:3,burst:12,gravity:26,gems:0});
+ run=new R.NormalGame(currentSeed);
  state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
- adaptive?.begin();loadBest();if(kind==='normal')maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();
+ adaptive?.begin();loadBest();maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();
 }
 function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
 function pausePanel(){showPanel(`<div class="kicker">잠깐 쉬는 시간 ♡</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}${practice()?' · 연습 기록':''}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">놀이 방법 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">놀이터 고르기</button>`,'pause');}
