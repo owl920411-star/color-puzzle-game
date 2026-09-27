@@ -23,8 +23,12 @@ button.onclick=async()=>{
   try{send('pointerdown');await new Promise(r=>setTimeout(r,320));send('pointerup');const atUp=moves.length;await new Promise(r=>setTimeout(r,100));holds.push({side,synthetic:true,moves,extraAfterUp:moves.length-atUp});}
   finally{run.move=move;canvas.setPointerCapture=capture;}
  }
+ frame.hidden=true;
+ const idleFrames=[];let idlePrev=performance.now(),idleUntil=idlePrev+3000;
+ await new Promise(resolve=>{function tick(t){idleFrames.push(t-idlePrev);idlePrev=t;t>=idleUntil?resolve():requestAnimationFrame(tick);}requestAnimationFrame(tick);});
+ frame.hidden=false;idleFrames.sort((a,b)=>a-b);
  samples.sort((a,b)=>a-b);
- out.textContent=JSON.stringify({version:w.document.getElementById('build').textContent,holds,frames:samples.length,medianFrameMs:samples[Math.floor(samples.length/2)],p95FrameMs:samples[Math.floor(samples.length*.95)],over50ms:samples.filter(x=>x>50).length,longTasksMs:longTasks,drawMs:draw,hudMs:hud,touchAction:w.getComputedStyle(canvas).touchAction,overlayDisplay:w.getComputedStyle(overlay).display,homeAnimations:w.document.getAnimations().length},null,2);
+ out.textContent=JSON.stringify({version:w.document.getElementById('build').textContent,holds,hiddenGameBaseline:{frames:idleFrames.length,medianFrameMs:idleFrames[Math.floor(idleFrames.length/2)]},frames:samples.length,medianFrameMs:samples[Math.floor(samples.length/2)],p95FrameMs:samples[Math.floor(samples.length*.95)],over50ms:samples.filter(x=>x>50).length,longTasksMs:longTasks,drawMs:draw,hudMs:hud,touchAction:w.getComputedStyle(canvas).touchAction,overlayDisplay:w.getComputedStyle(overlay).display,homeAnimations:w.document.getAnimations().length},null,2);
  q.pause();
  }catch(e){out.textContent=String(e);}finally{button.disabled=false;}
 };
