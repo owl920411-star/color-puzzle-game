@@ -15,6 +15,6 @@ async function setup(){await document.fonts.ready;await q.celebration.preload();
  // A documented static sample of the real 250ms presentation, only for art review.
  // Timing and input are independently exercised by the unmodified RC regression page.
  await wait(60);for(const a of document.getAnimations()){a.pause();a.currentTime=250;}const real=document.querySelector('.bloom-celebration'),copy=real.cloneNode(true);const source=[real,...real.querySelectorAll('*')],dest=[copy,...copy.querySelectorAll('*')];source.forEach((e,i)=>{const st=getComputedStyle(e);dest[i].style.animation='none';dest[i].style.transform=st.transform;dest[i].style.opacity=st.opacity;});q.celebration.clear();copy.dataset.visualSample='250ms';copy.hidden=false;real.parentNode.appendChild(copy);}
- if(scene==='danger'){q.loadPreset('high');q.draw();}
+ if(scene==='danger'){q.loadPreset('ceiling');q.resume();q.draw();}
 }
 setup().catch(e=>document.body.dataset.qaError=String(e));

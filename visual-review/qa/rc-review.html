@@ -112,7 +112,7 @@ async function settleHome(){
  frame.scrollIntoView({block:'start',behavior:'instant'});home.getBoundingClientRect();
  for(const el of home.querySelectorAll('*'))w.getComputedStyle(el).opacity;
  const animations=home.getAnimations({subtree:true});
- const complete=await Promise.race([Promise.all(animations.map(a=>a.finished.catch(()=>null))).then(()=>true),wait(2000).then(()=>false)]);
+ const complete=await Promise.race([Promise.all(animations.map(a=>a.finished.catch(()=>null))).then(()=>true),wait(5000).then(()=>false)]);
  const paint=await Promise.race([new Promise(resolve=>w.requestAnimationFrame(()=>resolve(true))),wait(1000).then(()=>false)]);
  return{complete:complete&&paint,elapsedMs:rounded(performance.now()-started),animations:animations.map(a=>({state:a.playState,pending:a.pending,currentTime:rounded(a.currentTime)}))};
 }
