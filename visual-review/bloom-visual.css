@@ -98,3 +98,5 @@ body[data-desert="3"] #pace-label::after,body[data-desert="4"] #pace-label::afte
 body[data-desert="6"] #pace-label::after,body[data-desert="7"] #pace-label::after,body[data-desert="8"] #pace-label::after{opacity:1;transform:scale(1.1)}
 
 @media(max-height:700px){#panel .paper-options .storage-note{margin-top:6px}.paper-options .text-button{margin-top:5px}.paper-options h3{margin-top:7px}.paper-toggle{height:38px}}
+#game-area{position:relative}
+.relic-grid button{background:var(--paper);color:var(--ink);border-color:var(--outline)}
