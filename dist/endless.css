@@ -113,3 +113,6 @@ body[data-mascot="encourage"] #game-area::after{content:"♡";font-size:14px}
 .relic-grid b{display:block;font-size:12px}.relic-grid small{display:block;margin-top:5px;font-size:10px;line-height:1.5}
 .item-force-grid .bloom-item-icon{display:inline-block;width:23px;height:23px;vertical-align:middle;margin-right:3px}
 .item-force-grid button[data-menu="iteminstant"]{background:#edf8ed;border:2px dashed #9ac7ae;color:#446753}
+#panel:has(.item-force-grid) .item-force-grid button,#panel:has(.item-force-grid) .settings-row button{background:#fff8f2;border:2px solid #c5b2d9;color:#594567;box-shadow:1px 2px 0 #e8d9e4}
+#panel:has(.item-force-grid) .item-force-grid button[data-menu="iteminstant"]{background:#edf8ed;border:2px dashed #9ac7ae;color:#365d45}
+#panel:has(.item-force-grid) .item-force-grid button{font-size:11px}
