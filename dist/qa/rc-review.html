@@ -4,7 +4,7 @@
 <body><h1>CRAYON BLOOM RC · 개발 검수</h1>
 <p>실제 게임 iframe에서 합성 PointerEvent를 실행합니다. Android 손맛·물리 포인터 캡처·실기기 오디오 검사가 아닙니다. 테스트 저장은 메모리 사본에만 기록합니다. 정식 게임 UI에는 이 페이지가 표시되지 않습니다.</p>
 <div class="tools"><label>화면 크기 <select id="viewport" aria-label="검수 화면 크기"><option value="360,640">360 × 640</option><option value="390,844" selected>390 × 844</option><option value="412,915">412 × 915</option></select></label><button id="reload">검수 게임 새로고침</button><button id="home">홈 화면</button><button id="game">게임 화면</button><button id="over">게임오버 화면</button><button id="snapshot">상태 기록</button></div>
-<div class="tools"><button id="regression">CONTROL 전체 합성 검사</button><button id="lifecycle">라이프사이클 10회 검사</button><button id="effects">콤보·오디오 중 입력 검사</button><button id="tutorial-flow">첫 사용자·튜토리얼 전체 검사</button><button id="tutorial-screen">튜토리얼 화면</button><button id="soak">실시간 30분 검사 시작</button><button id="stop" disabled>검사 중지</button></div>
+<div class="tools"><button id="regression">CONTROL 전체 합성 검사</button><button id="lifecycle">라이프사이클 10회 검사</button><button id="effects">콤보·오디오 중 입력 검사</button><button id="tutorial-flow">첫 사용자·튜토리얼 전체 검사</button><button id="tutorial-screen">튜토리얼 화면</button><button id="loading-screen">실제 로딩 화면 검사</button><button id="geometry">모바일 3크기 화면 영역 검사</button><button id="soak">실시간 30분 검사 시작</button><button id="stop" disabled>검사 중지</button></div>
 <p id="status" class="status" role="status">게임 로딩 중</p>
 <div class="layout"><iframe id="game-frame" title="RC 검수 게임 390 × 844" src="../index.html?qa=1&amp;rc_review=1"></iframe><div class="results"><details open><summary>검사 결과</summary><pre id="report">준비 중</pre></details><details open><summary>실시간 10 / 20 / 30분 샘플</summary><pre id="soak-report">미실행 — 자동 가속 시간이 아닌 실제 경과 시간을 기록합니다.</pre></details></div></div>
 <script>
@@ -16,7 +16,7 @@ function assert(ok,message){if(!ok)throw Error(message);}
 function rounded(v){return Number.isFinite(v)?Math.round(v*100)/100:v;}
 function setStatus(s){statusEl.textContent=s;}
 function write(data){out.textContent=JSON.stringify(data,null,2);}
-function controls(lock){busy=lock;for(const id of ['regression','lifecycle','effects','soak','reload','home','game','over','tutorial-flow','tutorial-screen'])document.getElementById(id).disabled=lock;document.getElementById('stop').disabled=!lock;}
+function controls(lock){busy=lock;for(const id of ['regression','lifecycle','effects','soak','reload','home','game','over','tutorial-flow','tutorial-screen','loading-screen','geometry'])document.getElementById(id).disabled=lock;document.getElementById('stop').disabled=!lock;}
 function sandboxStorage(win){
  const source=win.localStorage,copy=new Map();for(let i=0;i<source.length;i++){const key=source.key(i);copy.set(key,source.getItem(key));}
  const memory={get length(){return copy.size;},key:i=>[...copy.keys()][i]??null,getItem:k=>copy.has(String(k))?copy.get(String(k)):null,setItem:(k,v)=>copy.set(String(k),String(v)),removeItem:k=>copy.delete(String(k)),clear(){throw Error('QA never clears storage');}};
@@ -58,7 +58,7 @@ function point(side=-1){const r=board().getBoundingClientRect();return{x:r.left+
 function pointer(type,p,id=701,target=board()){emit(target,type,p.x,p.y,id);}
 function observe(){const g=q.run,calls=[],start=performance.now(),originals={};for(const name of ['move','rotateDir','hold','lock']){originals[name]=g[name];g[name]=function(...args){const before=this.active?.x,result=originals[name].apply(this,args);if(name!=='move'||args[0])calls.push({name,args,at:rounded(performance.now()-start),result,before,after:this.active?.x});return result;};}return{calls,start,restore(){for(const name of Object.keys(originals))g[name]=originals[name];}};}
 function alive(){if(stopRequested)throw Error('사용자가 검사를 중지했습니다');}
-async function runTask(name,fn){if(busy)return;controls(true);stopRequested=false;setStatus(name+' 실행 중');try{const result=await fn();write({test:name,input:'browser synthetic PointerEvent; native capture not tested',result:'PASS',...result});setStatus(name+' PASS — Android 실기기 미검증');}catch(e){write({test:name,result:'FAIL',error:String(e),snapshot:ready?snapshot():null});setStatus(name+' FAIL');}finally{try{q?.pause();}catch{}controls(false);}}
+async function runTask(name,fn){if(busy)return;controls(true);stopRequested=false;setStatus(name+' 실행 중');try{const result=await fn(),verdict=result?.result||'PASS';write({test:name,input:'browser synthetic PointerEvent; native capture not tested',result:verdict,...result});setStatus(name+' '+verdict+' — Android 실기기 미검증');}catch(e){write({test:name,result:'FAIL',error:String(e),snapshot:ready?snapshot():null});setStatus(name+' FAIL');}finally{try{q?.pause();}catch{}controls(false);}}
 async function regression(){
  const results=[],traces=[];const group=async(name,count,fn)=>{for(let i=0;i<count;i++){alive();setStatus(`${name} ${i+1}/${count}`);await fn(i);}results.push({name,count,result:'PASS'});};
  for(const side of [-1,1]){
@@ -103,6 +103,36 @@ async function tutorialFlow(){
  q.menu();const warm=performance.now();clickUI('[data-menu="start"]');await waitFor(()=>q.state==='playing'&&!q.training,'완료 사용자 바로 게임');
  return{firstLoading,warmLoading:{actualTransitionMs:rounded(performance.now()-warm),...q.loading.stats().last},steps,wrongInput:'PASS',pauseResume:'PASS',skip:'PASS',replay:'PASS',existingBestSettingsAdaptive:'PASS',snapshot:snapshot()};
 }
+function bounds(el){const r=el.getBoundingClientRect();return{x:rounded(r.x),y:rounded(r.y),width:rounded(r.width),height:rounded(r.height),right:rounded(r.right),bottom:rounded(r.bottom)};}
+function visible(el){if(!el||el.closest('[hidden]'))return false;const css=w.getComputedStyle(el);return css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0&&el.getClientRects().length>0;}
+function geometryScreen(screen){
+ const doc=w.document,width=doc.documentElement.clientWidth,height=doc.documentElement.clientHeight;
+ const selectors={HOME:['.cb-start','.cb-settings','.cb-logo','.cb-hero','.cb-tagline'],LOADING:['.cb-load-logo','.cb-load-friends','.cb-load-status','.cb-load-tip'],GAME:['#board','#pause','#hold','#drop','[data-preview="0"]','[data-preview="1"]'],TUTORIAL:['#board','#pause','#hold','#drop','.bloom-tutorial-note','.bloom-tutorial-skip'],OVER:['#panel h2','.result-score','#panel [data-menu="new"]','#panel [data-menu="retry"]','#panel [data-menu="menu"]']}[screen];
+ const rows=selectors.map(selector=>{const el=doc.querySelector(selector);if(!el||!visible(el))return{selector,visible:false,result:'FAIL',reason:'필수 화면 요소가 보이지 않음'};
+  const r=el.getBoundingClientRect(),inside=r.left>=-1.5&&r.top>=-1.5&&r.right<=width+1.5&&r.bottom<=height+1.5,isImage=el.tagName==='IMG',interactive=el.matches('button,a,input,select'),clippers=[];
+  for(let parent=el.parentElement;parent&&parent!==doc.body;parent=parent.parentElement){const css=w.getComputedStyle(parent),pr=parent.getBoundingClientRect();if(/hidden|clip|auto|scroll/.test(css.overflowX)&& (r.left<pr.left-1.5||r.right>pr.right+1.5))clippers.push(parent.id||parent.className);if(/hidden|clip|auto|scroll/.test(css.overflowY)&& (r.top<pr.top-1.5||r.bottom>pr.bottom+1.5))clippers.push(parent.id||parent.className);}
+  const hit=interactive?doc.elementFromPoint(r.left+r.width/2,r.top+r.height/2):null,hitOK=!interactive||!!hit&&(hit===el||el.contains(hit));const loaded=!isImage||el.complete&&el.naturalWidth>0;
+  return{selector,visible:true,bounds:bounds(el),insideViewport:inside,clippedBy:[...new Set(clippers)],interactive,centerReceivesPointer:hitOK,smallTouchTarget:interactive&&(r.width<44||r.height<44),textOverflowX:!isImage&&el.scrollWidth>el.clientWidth+2,image:isImage?{complete:el.complete,naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight}:undefined,result:!loaded||!hitOK||(!isImage&&(!inside||clippers.length))?'FAIL':isImage&&(!inside||clippers.length)?'VISUAL REVIEW':'PASS'};
+ });
+ return{screen,actualViewport:{width,height},iframeCSS:{width:frame.clientWidth,height:frame.clientHeight},documentWidth:doc.documentElement.scrollWidth,panelScroll:doc.getElementById('panel')?{height:doc.getElementById('panel').clientHeight,scrollHeight:doc.getElementById('panel').scrollHeight}:null,rows,result:rows.some(r=>r.result==='FAIL')?'FAIL':rows.some(r=>r.result==='VISUAL REVIEW')?'VISUAL REVIEW':'PASS'};
+}
+function slowPreload(){assert(q.celebration&&q.loading,'실제 로딩 모듈 없음');const original=q.celebration.preload;let restored=false;q.celebration.preload=()=>Promise.all([Promise.resolve(original()),wait(1000)]).then(([result])=>result);return()=>{if(!restored){restored=true;q.celebration.preload=original;}};}
+async function loadingPreview(){
+ q.menu();let restore=slowPreload(),request=q.requestStart();try{await wait(70);assert(q.state==='loading'&&q.loading.stats().active,'실제 로딩 상태 없음');const loadingGeometry=geometryScreen('LOADING');write({test:'실제 로딩 화면',state:'LOADING',geometry:loadingGeometry,snapshot:snapshot()});setStatus('실제 자산 준비를 1000ms 지연한 로딩 화면');await request;assert(q.loading.stats().last.elapsed>=950&&q.loading.stats().last.elapsed<1500,'로딩 상한/준비 지연 오류');const completed={...q.loading.stats()};restore();q.menu();
+  restore=slowPreload();request=q.requestStart();await wait(70);q.menu();await request;await wait(1100);assert(q.state==='menu'&&!q.loading.stats().active,'취소된 로딩이 늦게 게임을 시작함');return{result:loadingGeometry.result,actualDelayedLoading:completed,cancelledLoading:q.loading.stats(),loadingGeometry,snapshot:snapshot()};
+ }finally{restore();}
+}
+async function mobileGeometry(){
+ const reports=[];for(const [width,height]of[[360,640],[390,844],[412,915]]){alive();frame.style.width=width+'px';frame.style.height=height+'px';frame.title=`RC 검수 게임 ${width} × ${height}`;document.getElementById('viewport').value=width+','+height;await wait(100);
+  q.menu();await wait(1100);reports.push(geometryScreen('HOME'));
+  const restore=slowPreload();try{const request=q.requestStart();await wait(100);assert(q.state==='loading','로딩 화면 측정 전 종료됨');reports.push(geometryScreen('LOADING'));await request;}finally{restore();}
+  prepare();await wait(100);reports.push(geometryScreen('GAME'));
+  q.start(false,true);await wait(100);reports.push(geometryScreen('TUTORIAL'));
+  prepare();q.finish('qa_geometry');await wait(100);reports.push(geometryScreen('OVER'));
+  setStatus(`${width} × ${height} 5화면 측정 완료`);
+ }
+ const failed=reports.filter(r=>r.result==='FAIL'),review=reports.filter(r=>r.result==='VISUAL REVIEW');return{result:failed.length?'FAIL':review.length?'VISUAL REVIEW':'PASS',scope:'실제 화면 DOM 경계/중앙 포인터 대상 측정; 이미지 투명 여백은 별도 시각 검수',screens:reports.length,failed:failed.length,imageReview:review.length,reports,snapshot:snapshot()};
+}
 async function soundOn(){q.pause();w.document.querySelector('[data-menu="settings"]')?.click();for(const [key,flag]of[['sound','sound'],['bgm','bgm'],['sfx','sfx']]){const stat=w.BloomAudio?.stats?.();if(stat&&stat[flag]===false)w.document.querySelector(`[data-menu="${key}"]`)?.click();}w.document.querySelector('[data-menu="back"]')?.click();q.resume();await w.BloomAudio?.unlock?.();}
 function stopSoak(reason){if(soakTimer)clearTimeout(soakTimer);soakTimer=null;if(!soakData)return;q.pause();soakData.stopped=reason;soakData.actualElapsedMs=rounded(performance.now()-soakData.start);soakData.final=snapshot();soakOut.textContent=JSON.stringify(soakData,null,2);controls(false);setStatus('실시간 검사 '+reason+' — 샘플의 실제 경과 시간을 확인하세요');}
 async function startSoak(){if(busy)return;controls(true);stopRequested=false;prepare();await soundOn();Object.assign(monitor,{frames:0,frameSum:0,maxFrame:0,over50:0,frameRing:[],hiddenSamples:0,longTasks:0,maxLongTask:0,maxTimers:monitor.timers.size});const started=performance.now();soakData={kind:'real-wallclock-browser-soak',start:started,startedISO:new Date().toISOString(),targetMinutes:30,input:'synthetic actions; no physical Android input',storage:'isolated memory',samples:[{minute:0,snapshot:snapshot()}],cycles:0,drops:0,nextSample:10};let tick=0;
@@ -120,6 +150,7 @@ frame.addEventListener('load',()=>{try{monitor?.stop();w=frame.contentWindow;q=w
 document.getElementById('viewport').onchange=e=>{const [width,height]=e.target.value.split(',').map(Number);frame.style.width=width+'px';frame.style.height=height+'px';frame.title=`RC 검수 게임 ${width} × ${height}`;};
 document.getElementById('reload').onclick=()=>{ready=false;frame.src='../index.html?qa=1&rc_review='+Date.now();};
 document.getElementById('home').onclick=()=>{q.menu();write(snapshot());};document.getElementById('game').onclick=()=>{prepare();write(snapshot());};document.getElementById('over').onclick=()=>{prepare();q.finish('qa_screen');write(snapshot());};document.getElementById('snapshot').onclick=()=>write(snapshot());
+document.getElementById('loading-screen').onclick=()=>runTask('실제 로딩 화면·취소',loadingPreview);document.getElementById('geometry').onclick=()=>runTask('모바일 화면 영역',mobileGeometry);
 document.getElementById('tutorial-flow').onclick=()=>runTask('첫 사용자·튜토리얼 전체 검사',tutorialFlow);document.getElementById('tutorial-screen').onclick=()=>{q.start(false,true);write(snapshot());};
 document.getElementById('regression').onclick=()=>runTask('CONTROL 전체 합성 검사',regression);document.getElementById('lifecycle').onclick=()=>runTask('라이프사이클 10회',lifecycle);document.getElementById('effects').onclick=()=>runTask('콤보·오디오 중 입력',effects);document.getElementById('soak').onclick=()=>startSoak().catch(e=>{write({result:'FAIL',error:String(e)});controls(false);});document.getElementById('stop').onclick=()=>{stopRequested=true;if(soakTimer)stopSoak('사용자 중지');};
 </script></body></html>

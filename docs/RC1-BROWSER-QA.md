@@ -19,6 +19,13 @@ It uses the existing QA API and real installed board pointer handlers.
  The memory fixture sets tutorialCompleted=false, then actual Settings toggles refresh
  the runtime saved object and restore sound before the first Start.
 - Tutorial screen button starts the actual tutorial fixture for viewport screenshots.
+- Actual loading screen/cancel button temporarily wraps the real celebration preload
+ with a1000ms preparation promise, restores it afterwards and checks that cancellation
+ cannot start a late game. It uses the actual bounded loading module and UI.
+- Mobile geometry runs HOME/LOADING/GAME/TUTORIAL/OVER at360×640,390×844,412×915.
+ It reports actual content viewport, element/image bounds, ancestor clipping, pointer
+ hit targets, scroll and touch-target sizes. Images with transparent bleed are marked
+ VISUAL REVIEW; essential clipped controls are FAIL. The iframe border is zero.
 - Real30minute soak: asynchronous one-second driver, without accelerated clock.
  Records snapshots at actual10/20/30minute milestones. Stop button is available.
  Every15seconds a real item scenario forces a row transaction to exercise actual
