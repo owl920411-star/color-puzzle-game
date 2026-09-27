@@ -1,0 +1,266 @@
+{
+  "test": "CONTROL 전체 합성 검사",
+  "input": "browser synthetic PointerEvent; native capture not tested",
+  "result": "PASS",
+  "groups": [
+    {
+      "name": "TAP LEFT",
+      "count": 30,
+      "result": "PASS"
+    },
+    {
+      "name": "LONG LEFT",
+      "count": 10,
+      "result": "PASS"
+    },
+    {
+      "name": "SWIPE LEFT",
+      "count": 20,
+      "result": "PASS"
+    },
+    {
+      "name": "TAP RIGHT",
+      "count": 30,
+      "result": "PASS"
+    },
+    {
+      "name": "LONG RIGHT",
+      "count": 10,
+      "result": "PASS"
+    },
+    {
+      "name": "SWIPE RIGHT",
+      "count": 20,
+      "result": "PASS"
+    },
+    {
+      "name": "HOLD",
+      "count": 20,
+      "result": "PASS"
+    },
+    {
+      "name": "DROP",
+      "count": 20,
+      "result": "PASS"
+    },
+    {
+      "name": "MULTITOUCH DROP",
+      "count": 20,
+      "result": "PASS"
+    },
+    {
+      "name": "JITTER",
+      "count": 2,
+      "result": "PASS"
+    },
+    {
+      "name": "WALL / RELEASE / PAUSE",
+      "count": 2,
+      "result": "PASS"
+    }
+  ],
+  "traces": [
+    {
+      "side": -1,
+      "down": 0,
+      "up": 312.5,
+      "moves": [
+        {
+          "name": "move",
+          "args": [
+            -1
+          ],
+          "at": 165.7,
+          "result": true,
+          "before": 7,
+          "after": 6
+        },
+        {
+          "name": "move",
+          "args": [
+            -1
+          ],
+          "at": 204.2,
+          "result": true,
+          "before": 6,
+          "after": 5
+        },
+        {
+          "name": "move",
+          "args": [
+            -1
+          ],
+          "at": 237.4,
+          "result": true,
+          "before": 5,
+          "after": 4
+        },
+        {
+          "name": "move",
+          "args": [
+            -1
+          ],
+          "at": 266.7,
+          "result": true,
+          "before": 4,
+          "after": 3
+        },
+        {
+          "name": "move",
+          "args": [
+            -1
+          ],
+          "at": 296,
+          "result": true,
+          "before": 3,
+          "after": 2
+        }
+      ],
+      "extraAfterUp": 0
+    },
+    {
+      "side": 1,
+      "down": 0,
+      "up": 312.7,
+      "moves": [
+        {
+          "name": "move",
+          "args": [
+            1
+          ],
+          "at": 165.4,
+          "result": true,
+          "before": 0,
+          "after": 1
+        },
+        {
+          "name": "move",
+          "args": [
+            1
+          ],
+          "at": 203.9,
+          "result": true,
+          "before": 1,
+          "after": 2
+        },
+        {
+          "name": "move",
+          "args": [
+            1
+          ],
+          "at": 237.1,
+          "result": true,
+          "before": 2,
+          "after": 3
+        },
+        {
+          "name": "move",
+          "args": [
+            1
+          ],
+          "at": 266.4,
+          "result": true,
+          "before": 3,
+          "after": 4
+        },
+        {
+          "name": "move",
+          "args": [
+            1
+          ],
+          "at": 295.6,
+          "result": true,
+          "before": 4,
+          "after": 5
+        }
+      ],
+      "extraAfterUp": 0
+    }
+  ],
+  "snapshot": {
+    "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2",
+    "state": "playing",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "visibility": "visible",
+    "storage": "isolated in-memory copy",
+    "firstInstallBoot": null,
+    "pointer": null,
+    "DOM": 136,
+    "homeAnimations": 0,
+    "audio": {
+      "scene": "game",
+      "contextsCreated": 0,
+      "contextState": "unavailable",
+      "voices": 0,
+      "peakVoices": 0,
+      "timers": 0,
+      "scheduled": 0,
+      "dropped": 0,
+      "beat": 0,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": false,
+      "destroyed": false,
+      "sound": false,
+      "bgm": true,
+      "sfx": true
+    },
+    "celebration": {
+      "active": false,
+      "prepared": true,
+      "heroReady": true,
+      "chickReady": true,
+      "timers": 0,
+      "particles": 12,
+      "children": 14,
+      "shown": 0,
+      "skipped": 0,
+      "lastEvent": null,
+      "destroyed": false
+    },
+    "tutorial": {
+      "active": false,
+      "paused": false,
+      "step": 0,
+      "success": false,
+      "completed": 0,
+      "wrong": 0,
+      "timers": 0,
+      "pending": null,
+      "repeatMoves": 0,
+      "destroyed": false
+    },
+    "training": false,
+    "loading": {
+      "active": false,
+      "timers": 0,
+      "completed": 0,
+      "cancelled": 0,
+      "last": null
+    },
+    "timers": {
+      "tracked": 0,
+      "peak": 1,
+      "scope": "post-load timers only; module stats cover preexisting ownership"
+    },
+    "frames": {
+      "count": 864,
+      "averageFPS": 20.68,
+      "recentMedianMs": 33.3,
+      "recentP95Ms": 50,
+      "maxMs": 1183,
+      "over50": 41,
+      "hiddenFrameSamples": 0
+    },
+    "mainThread": {
+      "longTasks": 0,
+      "maxLongTaskMs": 0
+    },
+    "heapBytes": 4919933,
+    "errors": [],
+    "brokenImages": []
+  }
+}

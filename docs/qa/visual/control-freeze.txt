@@ -1,0 +1,13 @@
+✔ CONTROL FINAL frozen clear-input (1.202735ms)
+✔ CONTROL FINAL frozen touch-and-buttons (0.201312ms)
+✔ CONTROL FINAL frozen actions (0.197014ms)
+✔ CONTROL FINAL frozen keyboard (0.146207ms)
+✔ CONTROL FINAL frozen replacement-carry (0.158481ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.223534

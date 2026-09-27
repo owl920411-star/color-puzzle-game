@@ -1,0 +1,32 @@
+[
+  {
+    "name": "clear-input",
+    "expected": "cb85a411efbab6f3db008be79fffab91db15efb08dc740f1297334c3d02eedbd",
+    "actual": "cb85a411efbab6f3db008be79fffab91db15efb08dc740f1297334c3d02eedbd",
+    "pass": true
+  },
+  {
+    "name": "touch-and-buttons",
+    "expected": "36d4677be78d0df4cc538141c057c3f824a0dcde93165473c131e813be76029c",
+    "actual": "36d4677be78d0df4cc538141c057c3f824a0dcde93165473c131e813be76029c",
+    "pass": true
+  },
+  {
+    "name": "actions",
+    "expected": "a42d8a74adb2179cb8ce3331ac8e214be8b8fe50b1e1b77ec28358eaba51af54",
+    "actual": "a42d8a74adb2179cb8ce3331ac8e214be8b8fe50b1e1b77ec28358eaba51af54",
+    "pass": true
+  },
+  {
+    "name": "keyboard",
+    "expected": "67091d959f71410aee742c35b80c9aa64721c21819f627aee6da2cb3bacb01b2",
+    "actual": "67091d959f71410aee742c35b80c9aa64721c21819f627aee6da2cb3bacb01b2",
+    "pass": true
+  },
+  {
+    "name": "replacement-carry",
+    "expected": "23f332cdfbe25a26a53730159435790c60df2112d7dede40c3da0618fe2eee60",
+    "actual": "23f332cdfbe25a26a53730159435790c60df2112d7dede40c3da0618fe2eee60",
+    "pass": true
+  }
+]

@@ -18,7 +18,6 @@
 #panel .cb-home .cb-mode{position:relative;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:53px;padding:8px 6px;border:1.7px solid #bcae9980;border-radius:5px 9px 4px 8px;background:#fffaf0;color:#7b7062;font-size:14px;font-weight:650;transform:rotate(1deg)}
 #panel .cb-home .cb-mode:first-child{transform:rotate(-1.5deg)}
 #panel .cb-home .cb-mode.is-selected{background:#f8e3e6;border:2px solid #b8758e;color:#6a3f54;outline:1px dashed #c58b9f;outline-offset:-5px;box-shadow:2px 3px 0 #d9c4ae66}
-#panel .cb-home .cb-mode[data-menu="sand"].is-selected{background:#f9edc9;border-color:#aa8e52;color:#6f5835;outline-color:#bba26a}
 #panel .cb-home .cb-mode-icon{width:26px;height:26px;flex:none}.cb-home .cb-mode-icon svg{width:100%;height:100%}
 #panel .cb-home .cb-check{font-size:17px;line-height:1;font-weight:800;margin-left:1px}
 #panel .cb-home .cb-mode-hint{margin:10px 0 11px;min-height:20px;text-align:center;color:#7e685b;font-size:12px;line-height:20px}

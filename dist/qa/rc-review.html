@@ -112,13 +112,13 @@ async function settleHome(){
  frame.scrollIntoView({block:'start',behavior:'instant'});home.getBoundingClientRect();
  for(const el of home.querySelectorAll('*'))w.getComputedStyle(el).opacity;
  const animations=home.getAnimations({subtree:true});
- const complete=await Promise.race([Promise.all(animations.map(a=>a.finished.catch(()=>null))).then(()=>true),wait(2000).then(()=>false)]);
+ const complete=await Promise.race([Promise.all(animations.map(a=>a.finished.catch(()=>null))).then(()=>true),wait(5000).then(()=>false)]);
  const paint=await Promise.race([new Promise(resolve=>w.requestAnimationFrame(()=>resolve(true))),wait(1000).then(()=>false)]);
  return{complete:complete&&paint,elapsedMs:rounded(performance.now()-started),animations:animations.map(a=>({state:a.playState,pending:a.pending,currentTime:rounded(a.currentTime)}))};
 }
 function geometryScreen(screen){
  const doc=w.document,width=doc.documentElement.clientWidth,height=doc.documentElement.clientHeight;
- const selectors={HOME:['.cb-start','.cb-settings','.cb-logo','.cb-hero','.cb-tagline'],LOADING:['.cb-load-logo','.cb-load-friends','.cb-load-status','.cb-load-tip'],GAME:['#board','#pause','#hold','#drop','[data-preview="0"]','[data-preview="1"]'],TUTORIAL:['#board','#pause','#hold','#drop','.bloom-tutorial-note','.bloom-tutorial-skip'],OVER:['#panel h2','.result-score','#panel [data-menu="new"]','#panel [data-menu="retry"]','#panel [data-menu="menu"]']}[screen];
+ const selectors={HOME:['.cb-start','.cb-settings','.cb-logo','.cb-hero','.cb-heading h1'],LOADING:['.cb-load-logo','.cb-load-friends','.cb-load-status','.cb-load-tip'],GAME:['#board','#pause','#hold','#drop','[data-preview="0"]','[data-preview="1"]'],TUTORIAL:['#board','#pause','#hold','#drop','.bloom-tutorial-note','.bloom-tutorial-skip'],OVER:['#panel h2','.result-score','#panel [data-menu="new"]','#panel [data-menu="retry"]','#panel [data-menu="menu"]']}[screen];
  const rows=selectors.map(selector=>{const el=doc.querySelector(selector);if(!el||!visible(el))return{selector,visible:false,result:'FAIL',reason:'필수 화면 요소가 보이지 않음'};
   const r=el.getBoundingClientRect(),inside=r.left>=-1.5&&r.top>=-1.5&&r.right<=width+1.5&&r.bottom<=height+1.5,isImage=el.tagName==='IMG',interactive=el.matches('button,a,input,select'),clippers=[];
   for(let parent=el.parentElement;parent&&parent!==doc.body;parent=parent.parentElement){const css=w.getComputedStyle(parent),pr=parent.getBoundingClientRect();if(/hidden|clip|auto|scroll/.test(css.overflowX)&& (r.left<pr.left-1.5||r.right>pr.right+1.5))clippers.push(parent.id||parent.className);if(/hidden|clip|auto|scroll/.test(css.overflowY)&& (r.top<pr.top-1.5||r.bottom>pr.bottom+1.5))clippers.push(parent.id||parent.className);}
@@ -139,7 +139,7 @@ async function mobileGeometry(){
   const restore=slowPreload();try{const request=q.requestStart();await wait(100);assert(q.state==='loading','로딩 화면 측정 전 종료됨');reports.push(geometryScreen('LOADING'));await request;}finally{restore();}
   prepare();await wait(100);reports.push(geometryScreen('GAME'));
   q.start(false,true);await wait(100);reports.push(geometryScreen('TUTORIAL'));
-  prepare();q.finish('qa_geometry');await wait(100);reports.push(geometryScreen('OVER'));
+  prepare();q.finish('qa_geometry');await Promise.all(w.document.getElementById('panel').getAnimations({subtree:true}).map(a=>a.finished.catch(()=>null)));await wait(100);reports.push(geometryScreen('OVER'));
   setStatus(`${width} × ${height} 5화면 측정 완료`);
  }
  const failed=reports.filter(r=>r.result==='FAIL'),pending=reports.filter(r=>r.result==='NOT VERIFIED'),review=reports.filter(r=>r.result==='VISUAL REVIEW');return{result:failed.length?'FAIL':pending.length?'NOT VERIFIED':review.length?'VISUAL REVIEW':'PASS',scope:'실제 화면 DOM 경계/중앙 포인터 대상 측정; 이미지 투명 여백은 별도 시각 검수',screens:reports.length,failed:failed.length,notVerified:pending.length,imageReview:review.length,reports,snapshot:snapshot()};

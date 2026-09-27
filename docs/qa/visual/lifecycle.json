@@ -1,0 +1,157 @@
+{
+  "test": "라이프사이클 10회",
+  "input": "browser synthetic PointerEvent; native capture not tested",
+  "result": "PASS",
+  "cycles": [
+    {
+      "cycle": 1,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 2,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 3,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 4,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 5,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 6,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 7,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 8,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 9,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    },
+    {
+      "cycle": 10,
+      "result": "PASS",
+      "timers": 0,
+      "DOM": 164
+    }
+  ],
+  "snapshot": {
+    "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2",
+    "state": "menu",
+    "viewport": {
+      "width": 412,
+      "height": 915
+    },
+    "visibility": "visible",
+    "storage": "isolated in-memory copy",
+    "firstInstallBoot": null,
+    "pointer": null,
+    "DOM": 164,
+    "homeAnimations": 8,
+    "audio": {
+      "scene": "home",
+      "contextsCreated": 0,
+      "contextState": "unavailable",
+      "voices": 0,
+      "peakVoices": 0,
+      "timers": 0,
+      "scheduled": 0,
+      "dropped": 0,
+      "beat": 0,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": false,
+      "destroyed": false,
+      "sound": false,
+      "bgm": true,
+      "sfx": true
+    },
+    "celebration": {
+      "active": false,
+      "prepared": true,
+      "heroReady": true,
+      "chickReady": true,
+      "timers": 0,
+      "particles": 12,
+      "children": 14,
+      "shown": 0,
+      "skipped": 0,
+      "lastEvent": null,
+      "destroyed": false
+    },
+    "tutorial": {
+      "active": false,
+      "paused": false,
+      "step": 0,
+      "success": false,
+      "completed": 0,
+      "wrong": 0,
+      "timers": 0,
+      "pending": null,
+      "repeatMoves": 0,
+      "destroyed": false
+    },
+    "training": false,
+    "loading": {
+      "active": false,
+      "timers": 0,
+      "completed": 3,
+      "cancelled": 0,
+      "last": {
+        "elapsed": 1001.4000000022352,
+        "ready": true,
+        "cancelled": false
+      }
+    },
+    "timers": {
+      "tracked": 0,
+      "peak": 1,
+      "scope": "post-load timers only; module stats cover preexisting ownership"
+    },
+    "frames": {
+      "count": 794,
+      "averageFPS": 22.48,
+      "recentMedianMs": 16.7,
+      "recentP95Ms": 50,
+      "maxMs": 1016.6,
+      "over50": 26,
+      "hiddenFrameSamples": 0
+    },
+    "mainThread": {
+      "longTasks": 0,
+      "maxLongTaskMs": 0
+    },
+    "heapBytes": 10314516,
+    "errors": [],
+    "brokenImages": []
+  }
+}

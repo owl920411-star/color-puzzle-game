@@ -133,7 +133,7 @@ function fit(){
  document.documentElement.style.setProperty('--rail',rail+'px');document.documentElement.style.setProperty('--board-width',bw+'px');document.documentElement.style.setProperty('--board-height',bw*2+'px');
  const ratio=Math.min(devicePixelRatio||1,2);canvas.width=360*ratio;canvas.height=720*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);if(run)draw();
 }
-function showPanel(html,view){tutorial?.setPaused(true);celebration?.clear();window.BloomAudio?.scene(view==='menu'?'home':view==='over'?'over':'paused');if(view==='over')resultHTML=html;overlayView=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
+function showPanel(html,view){tutorial?.setPaused(true);celebration?.clear();window.BloomAudio?.scene(view==='menu'?'home':view==='over'?'over':'paused');if(view==='over')resultHTML=html;overlayView=view;panel.dataset.view=view;panel.innerHTML=html;$('overlay').hidden=false;$('app').inert=true;panel.focus({preventScroll:true});}
 function hidePanel(){tutorial?.setPaused(false);window.BloomAudio?.scene('game');$('overlay').hidden=true;panel.innerHTML='';$('app').inert=false;overlayView='';}
 function ruleHTML(){return'<b>줄 제거 점수</b><br>1줄 100 · 2줄 300 · 3줄 500 · 4줄 800점<br>줄 제거 점수 × 현재 레벨<br>연속으로 제거하면 두 번째부터 콤보 보너스<br>+50 × (연속 제거 횟수 − 1) × 레벨<br>천천히 하강: 칸당 1점 · 쏙 내려요: 칸당 2점<br>10줄마다 낙하 레벨 상승<br><br><b>도움 도구와 방해 낙서</b><br>아이템으로 추가 제거한 칸·줄에는 점수나 콤보가 붙지 않습니다.<br>방해 낙서를 제때 정리하면 좋은 블록 예약 게이지가 쌓입니다.<br>스티커의 첫 겹 제거는 줄 제거 점수를 주지 않습니다.';}
 function menu(){
@@ -161,16 +161,17 @@ function start(retry=false,asTraining=false){
  if(training){itemSystem.practice=true;itemSystem.enabled=false;desert.nextRise=Infinity;Object.defineProperty(run,'gravity',{get:()=>Infinity});Object.defineProperty(run,'lockDelay',{get:()=>Infinity});watchTutorialRun();}else adaptive?.begin();loadBest();maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();if(training)tutorial.start();
 }
 function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
-function pausePanel(){showPanel(`<div class="kicker">잠깐 쉬는 시간 ♡</div><h2>잠시 쉬어가세요.</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}${practice()?' · 연습 기록':''}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">놀이 방법 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">처음 화면으로</button>`,'pause');}
+function pausePanel(){showPanel(`<img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="72" height="72"><div class="kicker">잠깐 쉬는 시간</div><h2>잠깐 쉬어갈까요?</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}${practice()?' · 연습 기록':''}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">놀이 방법 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">처음 화면으로</button>`,'pause');}
 function resume(){if(state!=='paused')return;clearInput();state=beforePause==='clearing'?'clearing':'playing';last=performance.now();hidePanel();hud();}
 function finish(reason='unknown',detail=null){
  if(state!=='over'){adaptive?.terminal(reason,detail);adaptive?.end('gameover');}
  if(state==='over')return;state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
- const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'PRACTICE':run.score>initialBest?'NEW BEST':'GAME OVER'}</div><h2>${!practice()&&run.score>initialBest?'최고 기록을 넘었어요!':'한 번 더 도전해 볼까요?'}</h2><div class="result-score">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-meta">제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거<br>플레이 ${timeText()} · 최고 ${recordBest.toLocaleString()}점<br>BLOOM ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 BLOOM LV.${finite(ds.maxLevel)}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">새로운 판 시작</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">처음 화면으로</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');tone('over');hud();
+ const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'연습 그림':run.score>initialBest?'새 기록!':'오늘의 그림'}</div><img class="result-friends" src="assets/${!practice()&&run.score>initialBest?'bloom-happy.webp':'bloom-home-hero.webp'}?v=cb-rc2" alt="크레용을 든 아기와 병아리" width="240" height="180"><h2>${!practice()&&run.score>initialBest?'활짝! 새 기록이에요':'한 번 더 그려볼까요?'}</h2><div class="result-score" data-best="${!practice()&&run.score>initialBest}">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-best">BEST <strong>${recordBest.toLocaleString()}</strong></div><div class="result-meta">제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거<br>플레이 ${timeText()}<br>BLOOM ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 BLOOM LV.${finite(ds.maxLevel)}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">다시 하기</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">처음 화면으로</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');tone('over');hud();
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
- showPanel(`<div class="kicker">CRAYON BLOOM GUIDE</div><h2>놀이 방법 · 설정</h2>${adaptive?.button()||''}<div class="rule-box">${ruleHTML()}</div><p>왼쪽·오른쪽 짧게 터치: 한 칸 이동<br>길게 누르기: 연속 이동<br>좌우 스와이프: 회전 · 위: 보관 · 아래: 즉시하강</p><div class="settings-row"><button data-menu="sound">소리 ${saved.sound?'켬':'끔'}</button><button data-menu="haptics" ${typeof navigator.vibrate!=='function'?'disabled':''}>진동 ${saved.haptics?'켬':'끔'}</button><button data-menu="effects" ${systemReduced?'disabled':''}>효과 ${reduced?'간결':'풍부'}</button></div><div class="settings-row"><button data-menu="bgm">배경음 ${saved.bgm===false?'끔':'켬'}</button><button data-menu="sfx">효과음 ${saved.sfx===false?'끔':'켬'}</button></div><button class="secondary" data-menu="tutorial">튜토리얼 다시 보기</button><button class="primary" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p>`,'settings');hud();
+ const toggle=(key,label,on,disabled=false)=>`<button class="paper-toggle" data-menu="${key}" aria-pressed="${on}" ${disabled?'disabled':''}><span>${label}</span><span class="toggle-state">${key==='effects'?(on?'풍부':'간결'):(on?'켬':'끔')}</span><svg viewBox="0 0 28 28" aria-hidden="true"><path class="toggle-ring" d="M14 2C29 1 30 26 14 26 0 27-2 3 14 2Z"/><path class="toggle-check" d="m7 14 5 6L22 8"/></svg></button>`;
+ showPanel(`<div class="paper-options"><header><img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="54" height="54"><div class="kicker">그림책 뒤쪽</div><h2>놀이 방법 · 설정</h2></header><h3>소리</h3>${toggle('sound','전체 소리',!!saved.sound)}${toggle('bgm','배경음',saved.bgm!==false)}${toggle('sfx','효과음',saved.sfx!==false)}<h3>느낌</h3>${toggle('haptics','진동',!!saved.haptics,typeof navigator.vibrate!=='function')}${toggle('effects','효과',!reduced,systemReduced)}<h3>도움</h3><button class="secondary" data-menu="tutorial">튜토리얼 다시 보기</button><details class="paper-rules"><summary>조작과 점수 알아보기</summary><p>짧게 톡! 한 칸 이동<br>꾹 누르면 휘리릭!<br>옆으로 슥! 회전 · 위로 보관 · 아래로 쏙!</p><div class="rule-box">${ruleHTML()}</div></details>${adaptive?.button()||''}<button class="text-button" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'기록은 이 기기·브라우저에 저장돼요.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p></div>`,'settings');hud();
 }
 panel.addEventListener('click',e=>{
  const relic=e.target.closest('[data-relic]');if(relic){if(!relic.disabled&&useRelic(relic.dataset.relic)){if(relicReturn==='dev')devPanel();else resume();}return;}
@@ -332,31 +333,29 @@ function update(raw){
 }
 function desertAtmosphere(g){const lv=desert.level,t=Math.min(1,lv/8);
  if(lv>=3){g.save();g.fillStyle=`rgba(174,147,209,${.008*lv})`;g.fillRect(0,0,360,720);g.restore();}
- if(lv>=6&&!reduced){g.save();g.globalAlpha=.10+.025*(lv-6);g.strokeStyle='#ccb1df';g.lineWidth=2;for(let i=0;i<14;i++){const y=(i*57+(elapsed/35)%57)%720;g.beginPath();g.moveTo(0,y);g.lineTo(360,y-55);g.stroke();}g.restore();}
+
  const danger=run?.board?run.board.slice(0,5).some(row=>row.some(Boolean)):false;
- if(danger){g.save();g.strokeStyle='rgba(255,91,53,.72)';g.setLineDash([10,7]);g.lineWidth=2;g.beginPath();g.moveTo(0,108);g.lineTo(360,108);g.stroke();g.restore();}
+ if(danger){g.save();g.strokeStyle='rgba(184,76,109,.72)';g.setLineDash([10,7]);g.lineWidth=2;g.beginPath();g.moveTo(0,108);g.lineTo(360,108);g.stroke();g.restore();}
  if(desert.previewHoles){g.save();g.fillStyle='rgba(152,136,221,.30)';for(const x of desert.previewHoles)g.fillRect(x*36,684,36,36);g.restore();}
 }
 function drawPyramidBackground(g){
- const sky=g.createLinearGradient(0,0,0,720);sky.addColorStop(0,'#72ace5');sky.addColorStop(.62,'#a9d2ed');sky.addColorStop(1,'#d9efd0');g.fillStyle=sky;g.fillRect(0,0,360,720);
- g.save();
- // Decorations stay faint and away from the stacking zone.
- g.globalAlpha=.13;g.fillStyle='#fff';for(const q of [[62,96,25],[291,145,27]]){g.beginPath();g.arc(q[0],q[1],q[2],0,Math.PI*2);g.fill();}
- g.globalAlpha=.22;g.fillStyle='#86c77e';g.beginPath();g.moveTo(0,635);g.quadraticCurveTo(95,590,185,642);g.quadraticCurveTo(270,678,360,616);g.lineTo(360,720);g.lineTo(0,720);g.closePath();g.fill();
- const flowers=['#f58db8','#ffd86e','#caa0ef','#77c9f4'];for(let i=0;i<12;i++){const x=10+(i*67)%345,y=670+(i*19)%42;g.globalAlpha=.22;g.fillStyle=flowers[i%4];g.beginPath();g.arc(x,y,2+(i%2),0,Math.PI*2);g.fill();}
- g.restore();
+ g.fillStyle='#fffaf0';g.fillRect(0,0,360,720);
+ g.save();g.strokeStyle='#b5c9c7';g.globalAlpha=.24;g.lineWidth=.8;
+ g.beginPath();for(let y=36;y<720;y+=36){g.moveTo(0,y+.5);g.lineTo(360,y+.5);}g.stroke();
+ g.globalAlpha=.18;g.strokeStyle='#80b7c8';g.lineWidth=2;g.beginPath();g.moveTo(18,88);g.bezierCurveTo(20,76,31,79,34,83);g.bezierCurveTo(37,64,62,67,62,83);g.bezierCurveTo(81,77,88,94,70,95);g.lineTo(24,96);g.stroke();
+ g.globalAlpha=.16;g.strokeStyle='#83a98c';g.beginPath();g.moveTo(0,710);g.quadraticCurveTo(95,689,185,709);g.quadraticCurveTo(270,722,360,703);g.stroke();g.restore();
 }
 function pyramidTile(g,c,x,y,size){
- const pair=COLORS[c.type]||COLORS.I,light=pair[0],dark=pair[1],r=Math.max(5,size*.17),seed=(c.id??0);
+ const pair=COLORS[c.type]||COLORS.I,light=pair[0],dark=pair[1],r=Math.max(1.5,size*.055),seed=(c.id??0);
  g.save();g.lineJoin='round';g.lineCap='round';
- // soft crayon shadow + rounded candy/crayon body
- g.globalAlpha=.22;g.fillStyle='#39466f';g.beginPath();g.roundRect(x+size*.055,y+size*.09,size*.94,size*.92,r);g.fill();
- const grad=g.createLinearGradient(x,y,x,y+size);grad.addColorStop(0,'#fff7');grad.addColorStop(.18,light);grad.addColorStop(.78,light);grad.addColorStop(1,dark);g.globalAlpha=1;g.fillStyle=grad;g.beginPath();g.roundRect(x,y,size*.94,size*.94,r);g.fill();
+ // Matte, densely coloured crayon paper; no glass/candy highlight.
+ g.globalAlpha=.12;g.fillStyle='#685548';g.beginPath();g.roundRect(x+1,y+2,size*.94,size*.94,2);g.fill();
+ g.globalAlpha=1;g.fillStyle=light;g.beginPath();g.moveTo(x+1,y+1);g.lineTo(x+size*.94,y+size*.025);g.lineTo(x+size*.92,y+size*.94);g.lineTo(x+size*.025,y+size*.92);g.closePath();g.fill();
  // doubled hand-drawn edge
  g.strokeStyle=dark;g.globalAlpha=.95;g.lineWidth=Math.max(1.7,size*.055);g.beginPath();g.roundRect(x+1,y+1,size*.94-2,size*.94-2,r);g.stroke();
- g.strokeStyle='#fff';g.globalAlpha=.52;g.lineWidth=Math.max(1,size*.035);g.beginPath();g.roundRect(x+size*.08,y+size*.07,size*.78,size*.70,r*.72);g.stroke();
+ g.strokeStyle='#fff';g.globalAlpha=.34;g.lineWidth=Math.max(1,size*.035);g.beginPath();g.roundRect(x+size*.08,y+size*.07,size*.78,size*.78,r*.72);g.stroke();
  // visible crayon scribble strokes
- g.globalAlpha=.16;g.strokeStyle=dark;g.lineWidth=Math.max(.8,size*.026);for(let k=0;k<4;k++){const yy=y+size*(.18+k*.17);g.beginPath();g.moveTo(x+size*.12,yy+((seed+k)%3-1));g.lineTo(x+size*.80,yy+(((seed+k*2)%3)-1));g.stroke();}
+ g.globalAlpha=.25;g.strokeStyle=dark;g.lineWidth=Math.max(.8,size*.026);for(let k=0;k<6;k++){const yy=y+size*(.13+k*.13);g.beginPath();g.moveTo(x+size*.12,yy+((seed+k)%3-1));g.lineTo(x+size*.80,yy+(((seed+k*2)%3)-1));g.stroke();}
  const mark=seed%5;g.globalAlpha=.92;g.strokeStyle=dark;g.fillStyle=dark;g.lineWidth=Math.max(1.4,size*.05);
  if(mark===0){ // heart
    const cx=x+size*.47,cy=y+size*.47;g.beginPath();g.moveTo(cx,cy+size*.16);g.bezierCurveTo(cx-size*.30,cy-size*.02,cx-size*.18,cy-size*.27,cx,cy-size*.08);g.bezierCurveTo(cx+size*.18,cy-size*.27,cx+size*.30,cy-size*.02,cx,cy+size*.16);g.stroke();
@@ -390,7 +389,7 @@ function draw(){
  if(impact&&!reduced){const t=1-impact.life/impact.total;ctx.save();ctx.globalAlpha=(1-t)*.55;ctx.strokeStyle='#b7fff0';ctx.lineWidth=2*(1-t)+.5;ctx.beginPath();ctx.ellipse(impact.x,Math.min(714,impact.y),20+90*t,3+13*t,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  for(const p of fx){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.globalAlpha=Math.min(1,p.life/350);if(p.spark&&!reduced){ctx.strokeStyle=p.color;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-p.size*2,0);ctx.lineTo(p.size*2,0);ctx.moveTo(0,-p.size*2);ctx.lineTo(0,p.size*2);ctx.stroke();}ctx.fillStyle=p.color;ctx.beginPath();ctx.moveTo(-p.size,0);ctx.lineTo(p.size*.7,-p.size*.6);ctx.lineTo(p.size*.2,p.size);ctx.closePath();ctx.fill();ctx.restore();}
  if(!reduced)shatterFX?.draw();
- for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='600 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f1fff9';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
+ for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='700 23px Gaegu, sans-serif';ctx.textAlign='center';ctx.fillStyle='#755065';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
 }
 // CONTROL 23: normal-board gestures own one state and one timer.
 // Keyboard repeat remains in update().

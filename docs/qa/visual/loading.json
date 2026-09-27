@@ -1,0 +1,228 @@
+{
+  "test": "실제 로딩 화면·취소",
+  "input": "browser synthetic PointerEvent; native capture not tested",
+  "result": "PASS",
+  "actualDelayedLoading": {
+    "active": false,
+    "timers": 0,
+    "completed": 4,
+    "cancelled": 0,
+    "last": {
+      "elapsed": 1001,
+      "ready": true,
+      "cancelled": false
+    }
+  },
+  "cancelledLoading": {
+    "active": false,
+    "timers": 0,
+    "completed": 4,
+    "cancelled": 1,
+    "last": {
+      "elapsed": 70.5,
+      "ready": false,
+      "cancelled": true
+    }
+  },
+  "loadingGeometry": {
+    "screen": "LOADING",
+    "actualViewport": {
+      "width": 390,
+      "height": 844
+    },
+    "iframeCSS": {
+      "width": 390,
+      "height": 844
+    },
+    "documentWidth": 390,
+    "panelScroll": {
+      "height": 844,
+      "scrollHeight": 844
+    },
+    "rows": [
+      {
+        "selector": ".cb-load-logo",
+        "visible": true,
+        "bounds": {
+          "x": 75,
+          "y": 178.88,
+          "width": 240,
+          "height": 85.33,
+          "right": 315,
+          "bottom": 264.2
+        },
+        "insideViewport": true,
+        "clippedBy": [],
+        "interactive": false,
+        "centerReceivesPointer": true,
+        "smallTouchTarget": false,
+        "textOverflowX": false,
+        "image": {
+          "complete": true,
+          "naturalWidth": 900,
+          "naturalHeight": 320
+        },
+        "result": "PASS"
+      },
+      {
+        "selector": ".cb-load-friends",
+        "visible": true,
+        "bounds": {
+          "x": 28,
+          "y": 272.2,
+          "width": 334,
+          "height": 250.5,
+          "right": 362,
+          "bottom": 522.7
+        },
+        "insideViewport": true,
+        "clippedBy": [],
+        "interactive": false,
+        "centerReceivesPointer": true,
+        "smallTouchTarget": false,
+        "textOverflowX": false,
+        "image": {
+          "complete": true,
+          "naturalWidth": 1000,
+          "naturalHeight": 750
+        },
+        "result": "PASS"
+      },
+      {
+        "selector": ".cb-load-status",
+        "visible": true,
+        "bounds": {
+          "x": 120.73,
+          "y": 561.7,
+          "width": 148.52,
+          "height": 30,
+          "right": 269.25,
+          "bottom": 591.7
+        },
+        "insideViewport": true,
+        "clippedBy": [],
+        "interactive": false,
+        "centerReceivesPointer": true,
+        "smallTouchTarget": false,
+        "textOverflowX": false,
+        "result": "PASS"
+      },
+      {
+        "selector": ".cb-load-tip",
+        "visible": true,
+        "bounds": {
+          "x": 100.77,
+          "y": 612.08,
+          "width": 188.45,
+          "height": 76.35,
+          "right": 289.22,
+          "bottom": 688.42
+        },
+        "insideViewport": true,
+        "clippedBy": [],
+        "interactive": false,
+        "centerReceivesPointer": true,
+        "smallTouchTarget": false,
+        "textOverflowX": false,
+        "result": "PASS"
+      }
+    ],
+    "result": "PASS"
+  },
+  "snapshot": {
+    "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2",
+    "state": "menu",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "visibility": "visible",
+    "storage": "isolated in-memory copy",
+    "firstInstallBoot": null,
+    "pointer": null,
+    "DOM": 166,
+    "homeAnimations": 8,
+    "audio": {
+      "scene": "home",
+      "contextsCreated": 1,
+      "contextState": "running",
+      "voices": 1,
+      "peakVoices": 11,
+      "timers": 1,
+      "scheduled": 146,
+      "dropped": 0,
+      "beat": 2,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": true,
+      "destroyed": false,
+      "sound": true,
+      "bgm": true,
+      "sfx": true
+    },
+    "celebration": {
+      "active": false,
+      "prepared": true,
+      "heroReady": true,
+      "chickReady": true,
+      "timers": 0,
+      "particles": 12,
+      "children": 14,
+      "shown": 8,
+      "skipped": 1,
+      "lastEvent": {
+        "combo": 4,
+        "lines": 0,
+        "best": false,
+        "at": 169154.5,
+        "label": "BLOOM!"
+      },
+      "destroyed": false
+    },
+    "tutorial": {
+      "active": false,
+      "paused": false,
+      "step": 0,
+      "success": false,
+      "completed": 0,
+      "wrong": 0,
+      "timers": 0,
+      "pending": null,
+      "repeatMoves": 0,
+      "destroyed": false
+    },
+    "training": false,
+    "loading": {
+      "active": false,
+      "timers": 0,
+      "completed": 4,
+      "cancelled": 1,
+      "last": {
+        "elapsed": 70.5,
+        "ready": false,
+        "cancelled": true
+      }
+    },
+    "timers": {
+      "tracked": 1,
+      "peak": 3,
+      "scope": "post-load timers only; module stats cover preexisting ownership"
+    },
+    "frames": {
+      "count": 1463,
+      "averageFPS": 6.91,
+      "recentMedianMs": 33.3,
+      "recentP95Ms": 1016.5,
+      "maxMs": 1183,
+      "over50": 223,
+      "hiddenFrameSamples": 0
+    },
+    "mainThread": {
+      "longTasks": 2,
+      "maxLongTaskMs": 158
+    },
+    "heapBytes": 5174567,
+    "errors": [],
+    "brokenImages": []
+  }
+}

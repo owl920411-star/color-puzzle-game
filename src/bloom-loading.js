@@ -18,8 +18,8 @@ function create({show,prepare=()=>Promise.resolve(true),reduced=()=>false}){
  const now=()=>root.performance.now();
  function html(tip,ready){return `<section class="cb-loading" data-motion="${reduced()?'reduced':'full'}" aria-label="색칠 준비">
   <p class="cb-load-brand">CRAYON BLOOM</p>
-  <img class="cb-load-logo" src="assets/bloom-home-logo.webp" width="900" height="320" alt="크레용블룸">
-  <img class="cb-load-friends" src="assets/bloom-home-hero.webp" width="1000" height="750" alt="분홍 후드티의 아기와 노란 병아리가 함께 기다려요">
+  <img class="cb-load-logo" src="assets/bloom-home-logo.webp?v=cb-rc2" width="900" height="320" alt="크레용블룸">
+  <img class="cb-load-friends" src="assets/bloom-home-hero.webp?v=cb-rc2" width="1000" height="750" alt="분홍 후드티의 아기와 노란 병아리가 함께 기다려요">
   <div class="cb-load-stroke" aria-hidden="true"></div>
   <p class="cb-load-status" role="status" aria-live="polite">${ready?'준비됐어요!':'색칠 준비 중…'}</p>
   <p class="cb-load-tip"><span>작은 놀이 팁</span>${tip}</p>

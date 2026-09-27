@@ -1,0 +1,27 @@
+{
+  "ink/paper": {
+    "foreground": "#493c38",
+    "background": "#fff8e9",
+    "ratio": 9.99
+  },
+  "secondary/paper": {
+    "foreground": "#756459",
+    "background": "#fff8e9",
+    "ratio": 5.33
+  },
+  "primary label/pink": {
+    "foreground": "#fff8e9",
+    "background": "#a94869",
+    "ratio": 5.2
+  },
+  "result score/paper": {
+    "foreground": "#8b3e5e",
+    "background": "#fff8e9",
+    "ratio": 6.73
+  },
+  "ink/drop": {
+    "foreground": "#493c38",
+    "background": "#efd183",
+    "ratio": 7.11
+  }
+}

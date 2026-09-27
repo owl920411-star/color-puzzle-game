@@ -22,8 +22,8 @@
     const progress=doc.createElement('span');progress.className='bloom-tutorial-progress';
     const title=doc.createElement('h2'),hint=doc.createElement('p');
     const feedback=doc.createElement('span');feedback.className='bloom-tutorial-feedback';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
-    const chick=doc.createElement('img');chick.className='bloom-tutorial-chick';chick.src='assets/bloom-chick.webp';chick.alt='';chick.width=38;chick.height=38;chick.draggable=false;
-    const hero=doc.createElement('img');hero.className='bloom-tutorial-hero';hero.src='assets/bloom-home-hero.webp';hero.alt='크레용을 든 아기와 노란 병아리';hero.width=160;hero.height=120;hero.draggable=false;
+    const chick=doc.createElement('img');chick.className='bloom-tutorial-chick';chick.src='assets/bloom-chick.webp?v=cb-rc2';chick.alt='';chick.width=38;chick.height=38;chick.draggable=false;
+    const hero=doc.createElement('img');hero.className='bloom-tutorial-hero';hero.src='assets/bloom-home-hero.webp?v=cb-rc2';hero.alt='크레용을 든 아기와 노란 병아리';hero.width=160;hero.height=120;hero.draggable=false;
     const startButton=doc.createElement('button');startButton.type='button';startButton.className='bloom-tutorial-start';startButton.textContent='게임 시작';
     const skipButton=doc.createElement('button');skipButton.type='button';skipButton.className='bloom-tutorial-skip';skipButton.textContent='건너뛰기';
     note.appendChild(progress);note.appendChild(title);note.appendChild(hint);note.appendChild(feedback);note.appendChild(chick);note.appendChild(hero);note.appendChild(startButton);
@@ -37,7 +37,7 @@
     function schedule(fn,delay,kind){clearTask();transition={fn,remaining:delay,deadline:now()+delay,kind};armTask();}
     function render(){
       const info=STEPS[step];root.dataset.step=String(step);root.classList.toggle('is-success',success);
-      progress.textContent='놀이 연습 '+(step+1)+' / '+STEPS.length;
+      progress.textContent='';progress.setAttribute('aria-label','놀이 연습 '+(step+1)+' / '+STEPS.length);
       title.textContent=info.title;hint.textContent=info.hint;
       hero.hidden=step!==9;startButton.hidden=step!==9;skipButton.hidden=step===9;
       chick.hidden=!success;host.dataset.bloomTutorialTarget=info.target||'';

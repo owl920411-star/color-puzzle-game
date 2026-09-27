@@ -35,7 +35,7 @@ test('integrated pause freezes game and adaptive clocks and blocks drop',()=>{
 test('integrated settings apply auto/off only to the next game',()=>{
  const a=boot();a.q.start();a.menu('settings');a.adaptive('open');assert.match(a.nodes.get('panel').innerHTML,/현재: 관찰/);
  const deadline=a.q.desert.nextRise;a.adaptive('mode','adaptive');a.adaptive('style','calm');assert.equal(a.q.adaptive.info().mode,'observe');assert.equal(a.q.desert.nextRise,deadline);
- a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/CRAYON BLOOM GUIDE/);a.menu('back');assert.equal(a.q.state,'playing');
+ a.adaptive('return');assert.match(a.nodes.get('panel').innerHTML,/놀이 방법 · 설정/);a.menu('back');assert.equal(a.q.state,'playing');
  a.q.start();assert.equal(a.q.adaptive.info().mode,'adaptive');assert.equal(a.q.adaptive.info().applied,1);assert.equal(a.q.adaptive.recordKey(),'normal-adaptive-v1-calm');
  a.menu('settings');a.adaptive('open');a.adaptive('mode','off');assert.equal(a.q.adaptive.info().mode,'adaptive');a.q.start();a.q.action('drop');assert.equal(a.q.adaptive.info().mode,'off');assert.equal(a.q.adaptive.info().placements,0);
 });

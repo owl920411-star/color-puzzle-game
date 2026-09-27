@@ -1,0 +1,171 @@
+{
+  "test": "첫 사용자·튜토리얼 전체 검사",
+  "input": "browser synthetic PointerEvent; native capture not tested",
+  "result": "PASS",
+  "firstInstallation": false,
+  "firstLoading": {
+    "actualTransitionMs": 210.9,
+    "elapsed": 182,
+    "ready": true,
+    "cancelled": false
+  },
+  "warmLoading": {
+    "actualTransitionMs": 213.2,
+    "elapsed": 187.80000000074506,
+    "ready": true,
+    "cancelled": false
+  },
+  "steps": [
+    {
+      "step": 1,
+      "name": "왼쪽 한 칸",
+      "result": "PASS"
+    },
+    {
+      "step": 2,
+      "name": "오른쪽 한 칸",
+      "result": "PASS"
+    },
+    {
+      "step": 3,
+      "name": "정지 롱프레스",
+      "result": "PASS"
+    },
+    {
+      "step": 4,
+      "name": "CW 스와이프",
+      "result": "PASS"
+    },
+    {
+      "step": 5,
+      "name": "위 스와이프 HOLD",
+      "result": "PASS"
+    },
+    {
+      "step": 6,
+      "name": "아래 스와이프 DROP",
+      "result": "PASS"
+    },
+    {
+      "step": 7,
+      "name": "실제 쏙 버튼",
+      "result": "PASS"
+    },
+    {
+      "step": 8,
+      "name": "직접 한 줄 완성",
+      "result": "PASS"
+    },
+    {
+      "step": 9,
+      "name": "실제 콤보 자산 예시",
+      "result": "PASS"
+    },
+    {
+      "step": 10,
+      "name": "완료 → 깨끗한 정상 게임",
+      "result": "PASS"
+    }
+  ],
+  "wrongInput": "PASS",
+  "pauseResume": "PASS",
+  "skip": "PASS",
+  "replay": "PASS",
+  "existingBestSettingsAdaptive": "PASS",
+  "snapshot": {
+    "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2",
+    "state": "playing",
+    "viewport": {
+      "width": 412,
+      "height": 915
+    },
+    "visibility": "visible",
+    "storage": "isolated in-memory copy",
+    "firstInstallBoot": null,
+    "pointer": null,
+    "DOM": 138,
+    "homeAnimations": 0,
+    "audio": {
+      "scene": "game",
+      "contextsCreated": 1,
+      "contextState": "running",
+      "voices": 4,
+      "peakVoices": 12,
+      "timers": 1,
+      "scheduled": 140,
+      "dropped": 0,
+      "beat": 1,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": true,
+      "destroyed": false,
+      "sound": true,
+      "bgm": true,
+      "sfx": true
+    },
+    "celebration": {
+      "active": false,
+      "prepared": true,
+      "heroReady": true,
+      "chickReady": true,
+      "timers": 0,
+      "particles": 12,
+      "children": 14,
+      "shown": 8,
+      "skipped": 1,
+      "lastEvent": {
+        "combo": 4,
+        "lines": 0,
+        "best": false,
+        "at": 79767.80000000075,
+        "label": "BLOOM!"
+      },
+      "destroyed": false
+    },
+    "tutorial": {
+      "active": false,
+      "paused": false,
+      "step": 0,
+      "success": false,
+      "completed": 0,
+      "wrong": 0,
+      "timers": 0,
+      "pending": null,
+      "repeatMoves": 0,
+      "destroyed": false
+    },
+    "training": false,
+    "loading": {
+      "active": false,
+      "timers": 0,
+      "completed": 6,
+      "cancelled": 0,
+      "last": {
+        "elapsed": 187.80000000074506,
+        "ready": true,
+        "cancelled": false
+      }
+    },
+    "timers": {
+      "tracked": 1,
+      "peak": 3,
+      "scope": "post-load timers only; module stats cover preexisting ownership"
+    },
+    "frames": {
+      "count": 1207,
+      "averageFPS": 14.82,
+      "recentMedianMs": 16.7,
+      "recentP95Ms": 66.6,
+      "maxMs": 1016.6,
+      "over50": 80,
+      "hiddenFrameSamples": 0
+    },
+    "mainThread": {
+      "longTasks": 0,
+      "maxLongTaskMs": 0
+    },
+    "heapBytes": 10884694,
+    "errors": [],
+    "brokenImages": []
+  }
+}

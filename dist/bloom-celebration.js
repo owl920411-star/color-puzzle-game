@@ -25,12 +25,12 @@
     hero.className = 'bloom-celebration-hero';
     hero.alt = ''; hero.width = 100; hero.height = 75;
     hero.decoding = 'async'; hero.draggable = false;
-    hero.src = 'assets/bloom-home-hero.webp';
+    hero.src = 'assets/bloom-happy.webp?v=cb-rc2';
     const chick = doc.createElement('img');
     chick.className = 'bloom-celebration-chick';
     chick.alt = ''; chick.width = 76; chick.height = 76;
     chick.decoding = 'async'; chick.draggable = false;
-    chick.src = 'assets/bloom-chick.webp';
+    chick.src = 'assets/bloom-chick.webp?v=cb-rc2';
     const label = doc.createElement('span');
     label.className = 'bloom-celebration-label';
     cutin.appendChild(hero); cutin.appendChild(chick); cutin.appendChild(label);
