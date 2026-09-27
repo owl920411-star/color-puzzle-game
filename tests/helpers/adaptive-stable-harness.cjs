@@ -16,7 +16,7 @@ function boot({initial={},appSource=null,Bridge=null,FX=null}={}){
  const q=env.__GLASSFALL_QA__;
  function click(attr,a,v){const b={dataset:{[attr]:a,v:String(v??'')},disabled:false};for(const f of node('panel').events.click||[])f({target:{closest:s=>s===(attr==='adaptive'?'[data-adaptive]':'button[data-menu]')?b:null}});}
  function step(ms){for(let t=0;t<ms;t+=100){const dt=Math.min(100,ms-t);now+=dt;q.update(dt);}}
- function advance(ms,frame=1){const end=now+ms;while(now<end){now=Math.min(end,now+frame);for(const [id,t] of [...timers])if(t.at<=now){timers.delete(id);t.f();}q.update(frame);}}
+ function advance(ms,frame=1,runUpdate=true){const end=now+ms;while(now<end){now=Math.min(end,now+frame);for(const [id,t] of [...timers])if(t.at<=now){timers.delete(id);t.f();}if(runUpdate)q.update(frame);}}
  return {q,nodes,store,step,advance,get fx(){return env.testFX;},get now(){return now;},timers,menu:(a,v)=>click('menu',a,v),adaptive:(a,v)=>click('adaptive',a,v),panel:()=>node('panel').innerHTML,
   gesture(x,y,dx,dy){for(const [type,xx,yy]of[['pointerdown',x,y],['pointermove',x+dx,y+dy],['pointerup',x+dx,y+dy]])for(const f of node('board').events[type]||[])f({button:0,pointerId:1,clientX:xx,clientY:yy,preventDefault(){}});}};
 }

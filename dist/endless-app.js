@@ -119,7 +119,7 @@ function seed(){const n=new Uint32Array(2);if(window.crypto?.getRandomValues)win
 function name(){return kind==='normal'?'일반':'모래';}
 function timeText(){const n=Math.floor(elapsed/1000);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
 function clearInput(){
- const d=drag;if(d?.holdTimer)clearTimeout(d.holdTimer);drag=null;repeat=null;heldKeys.clear();
+ const d=drag;if(d?.timer)clearTimeout(d.timer);drag=null;repeat=null;heldKeys.clear();
  if(d&&canvas.hasPointerCapture?.(d.id))try{canvas.releasePointerCapture(d.id);}catch{}
  for(const b of document.querySelectorAll('[data-action]'))b.classList.remove('pressed');
 }
@@ -303,8 +303,8 @@ function sandEvents(){
  }
 }
 function update(raw){
- const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;if(drag?.repeatStarted)hiddenRepeat(drag,performance.now());elapsed+=dt;adaptive?.tick(raw);
- desertTick();if(!playing())return;itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;if(r.hidden&&r.drag===drag)hiddenMove(r.drag,r.action==='left'?-1:1);else action(r.action);if(repeat===r)r.time+=r.hidden?38:70;}}
+ const dt=Math.min(100,Math.max(0,raw));const hitStop=kind==='normal'&&!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;adaptive?.tick(raw);
+ desertTick();if(!playing())return;itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;action(r.action);if(repeat===r)r.time+=70;}}
  if(kind==='sand'){run.step(Math.min(50,dt));sandEvents();}
  else if(state==='playing'){
   if(run.active&&!run.fits(run.active,0,1)){fallTime=0;lockTime+=dt;if(lockTime>=run.lockDelay)lockNormal();}
@@ -407,80 +407,60 @@ function draw(){
  for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='600 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f1fff9';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
 }
 function fastDown(d,x,y,now){const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);if(kind==='sand')return!d.noRelease&&d.axis==='y'&&!d.soft&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4;return!d.noRelease&&dy>=Math.max(48,d.unit*1.5)&&age<=380&&dy>Math.abs(dx)*1.35&&d.peakDown-dy<d.unit*.65;}
-function hiddenMove(d,dir){
- if(!canAct()||kind!=='normal')return false;
- const before=run.active.x,moved=action(dir<0?'left':'right');
- if(moved){d.translated=true;d.lane=run.active.x;d.virtualX=run.active.x;}
- return run.active.x!==before;
+// CONTROL 20: normal-board gestures own one state and one timer.
+// Sand keeps its established drag path below. Keyboard repeat remains in update().
+function normalTouchTick(d){
+ d.timer=null;
+ if(drag!==d||d.piece!==pieceID()||!canAct()){if(drag===d)clearInput();return;}
+ if(d.state!=='PENDING'&&d.state!=='REPEATING')return;
+ d.state='REPEATING';
+ if(!action(d.side<0?'left':'right')){d.state='BLOCKED';return;}
+ // Timer belongs to this pointer and this piece, not animation/gameplay dt.
+ // No accumulated catch-up work after a main-thread stall.
+ if(drag===d)d.timer=setTimeout(()=>normalTouchTick(d),38);
 }
-// CONTROL 19: one stationary hold clock; release never arms a repeat.
-function hiddenRepeat(d,now){
- if(!d||kind!=='normal'||drag!==d)return;
- if(d.piece!==pieceID()){clearInput();return;}
- if(!canAct()||d.noRelease||d.gestureAxis||d.dropIntent||d.rotateIntent||d.holdIntent||d.peakDistance>16)return;
- if(!d.repeatStarted){
-  if(d.mode!=='tap'||now-d.started<170)return;
-  d.repeatStarted=true;d.mode='hold';d.repeatNext=now;
- }
- if(now<d.repeatNext)return;
- hiddenMove(d,d.side);
- // At most one collision-checked step per frame; discard overdue backlog.
- d.repeatNext=Math.max(d.repeatNext+38,now+1);
+function normalTouchMove(d,x,y){
+ if(drag!==d)return;
+ if(d.piece!==pieceID()||!canAct()){clearInput();return;}
+ const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);
+ if(Math.max(ax,ay)<d.swipe)return;
+ // A committed repeat cannot also rotate/drop. A large excursion ends it.
+ // Before commitment, a clear swipe wins and executes exactly once now.
+ const pending=d.state==='PENDING';
+ clearInput();
+ if(pending)action(ax>=ay?(dx>0?'rotate':'rotateCCW'):(dy<0?'hold':'drop'));
 }
 function processSwipe(d,x,y,now){
- if(drag!==d||!playing())return;d.lastX=x;d.lastY=y;
+ if(drag!==d||!playing())return;if(kind==='normal'){normalTouchMove(d,x,y);return;}d.lastX=x;d.lastY=y;
  if(d.piece!==null&&d.piece!==pieceID()){clearInput();return;}
  const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);d.peakX=Math.max(d.peakX,ax);d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
- if(kind==='normal'){
-  // CONTROL 18: movement-hold and swipe are mutually exclusive.
-  // As soon as the finger actually travels beyond tap jitter, cancel the
-  // stationary long-press repeat timer. A horizontal swipe can therefore
-  // rotate once, but can never arm continuous left/right movement.
-  const intent=Math.max(15,d.unit*.48),swipe=Math.max(26,d.unit*.78);
-  if(!d.gestureAxis&&!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&Math.max(ax,ay)>intent){
-   if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}
-   if(repeat?.hidden&&repeat.drag===d)repeat=null;
-   d.repeatStarted=false;
-   if(ax>ay*1.12)d.gestureAxis='x';
-   else if(ay>ax*1.12)d.gestureAxis='y';
-  }
-  if(d.gestureAxis==='y'&&!d.dropIntent&&!d.holdIntent&&dy>swipe){
-   d.dropIntent=true;d.mode='dropSwipe';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
-  }
-  if(d.gestureAxis==='y'&&!d.dropIntent&&!d.holdIntent&&dy<-swipe){
-   d.holdIntent=true;d.mode='holdSwipe';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
-  }
-  if(d.gestureAxis==='x'&&!d.rotateIntent&&ax>swipe){
-   d.rotateIntent=dx>0?1:-1;d.mode='rotate';if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}if(repeat?.hidden&&repeat.drag===d)repeat=null;
-  }
-  if(d.dropIntent||d.rotateIntent||d.holdIntent||d.gestureAxis)return;
-  return;
- }
  if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
  if(d.axis==='x'&&canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
  else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){if(now-d.started>300)d.soft=true;if(d.soft){const unit=canvas.getBoundingClientRect().height/M.H;let n=Math.min(80,Math.floor((y-d.downAnchor)/unit));while(n-->0){d.downAnchor+=unit;const id=pieceID();run.softDrop(1);if(id!==pieceID()){clearInput();break;}}}}
 }
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,mode:kind==='normal'?'tap':null,side,repeatStarted:false,repeatNext:0,gestureAxis:null,dropIntent:false,rotateIntent:0,holdIntent:false,holdTimer:null,peakDistance:0,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
- if(kind==='normal'){const d=drag;d.holdTimer=setTimeout(()=>{d.holdTimer=null;hiddenRepeat(d,performance.now());},170);}
+ if(kind==='normal'){
+  const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',side,startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
+  d.timer=setTimeout(()=>normalTouchTick(d),170);return;
+ }
+ drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,side,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,peakDistance:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
- const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);if(drag!==d)return;if(d.holdTimer)clearTimeout(d.holdTimer);if(repeat?.hidden&&repeat.drag===d)repeat=null;drag=null;
- if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
+ const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();
  if(kind==='normal'){
-  if(d.holdIntent){action('hold');return;}
-  if(d.dropIntent||fastDown(d,e.clientX,e.clientY,now)){action('drop');return;}
-  if(d.rotateIntent){action(d.rotateIntent>0?'rotate':'rotateCCW');return;}
-  if(!d.repeatStarted&&!d.gestureAxis&&d.peakDistance<18)hiddenMove(d,d.side);
-  return;
+  normalTouchMove(d,e.clientX,e.clientY);if(drag!==d)return;
+  const tap=d.state==='PENDING'&&d.piece===pieceID()&&canAct();clearInput();
+  if(tap)action(d.side<0?'left':'right');return;
  }
+ const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);if(drag!==d)return;drag=null;
+ if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
  if(fastDown(d,e.clientX,e.clientY,now))action('drop');
 });
 for(const type of ['pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if(drag?.id===e.pointerId)clearInput();});
 for(const b of document.querySelectorAll('[data-action]')){
- b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);if(drag){drag.noRelease=true;drag.dropIntent=false;drag.rotateIntent=0;drag.holdIntent=false;drag.gestureAxis='button';if(drag.holdTimer){clearTimeout(drag.holdTimer);drag.holdTimer=null;}if(repeat?.hidden&&repeat.drag===drag)repeat=null;}action(b.dataset.action);b.classList.add('pressed');});
+ b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);if(drag){if(kind==='normal')clearInput();else drag.noRelease=true;}action(b.dataset.action);b.classList.add('pressed');});
  for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>b.classList.remove('pressed'));
  b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)action(b.dataset.action);});
 }

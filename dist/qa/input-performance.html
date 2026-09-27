@@ -1,0 +1,31 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="robots" content="noindex"><title>CONTROL 20 개발용 성능 검사</title>
+<style>body{font:16px sans-serif;margin:20px}iframe{width:390px;height:844px;border:1px solid #bbb}pre{white-space:pre-wrap}button{padding:12px}</style>
+<p>개발용 검사. 정식 게임에는 표시되지 않습니다. 렌더링 시간은 이 브라우저 기준이며 휴대폰 측정값이 아닙니다.</p>
+<button id="measure">8초 성능 측정</button><pre id="result">준비</pre><iframe id="game" title="검사 게임" src="../index.html?qa=1&play=1&v=control20"></iframe>
+<script>
+const button=document.getElementById('measure'),out=document.getElementById('result'),frame=document.getElementById('game');
+button.onclick=async()=>{
+ button.disabled=true;out.textContent='측정 중';
+ try{
+ const w=frame.contentWindow,q=w.__GLASSFALL_QA__;if(!q)throw Error('게임 준비 후 다시 실행');
+ const samples=[],longTasks=[];let prev=performance.now(),until=prev+8000;
+ let observer;try{observer=new PerformanceObserver(list=>longTasks.push(...list.getEntries().map(x=>x.duration)));observer.observe({type:'longtask',buffered:false});}catch{}
+ await new Promise(resolve=>{function tick(t){samples.push(t-prev);prev=t;t>=until?resolve():requestAnimationFrame(tick);}requestAnimationFrame(tick);});observer?.disconnect();
+ const cost=fn=>{const times=[];for(let i=0;i<40;i++){const t=performance.now();fn();times.push(performance.now()-t);}times.sort((a,b)=>a-b);return {median:times[20],p95:times[38],max:times[39]};};
+ const draw=cost(()=>q.draw()),hud=cost(()=>q.hud());
+ const canvas=w.document.getElementById('board'),overlay=w.document.getElementById('overlay');
+ const holds=[];
+ for(const side of ['left','right']){
+  q.start();const run=q.run,move=run.move.bind(run),moves=[],rect=canvas.getBoundingClientRect(),x=rect.left+rect.width*(side==='left'?.25:.75),y=rect.top+rect.height*.4;
+  const capture=canvas.setPointerCapture;canvas.setPointerCapture=()=>{};const start=performance.now();
+  run.move=(dx,dy)=>{const result=move(dx,dy);if(dx)moves.push({at:performance.now()-start,result});return result;};
+  const send=type=>canvas.dispatchEvent(new w.PointerEvent(type,{pointerId:991,pointerType:'touch',button:0,buttons:type==='pointerup'?0:1,clientX:x,clientY:y,bubbles:true,cancelable:true}));
+  try{send('pointerdown');await new Promise(r=>setTimeout(r,320));send('pointerup');const atUp=moves.length;await new Promise(r=>setTimeout(r,100));holds.push({side,synthetic:true,moves,extraAfterUp:moves.length-atUp});}
+  finally{run.move=move;canvas.setPointerCapture=capture;}
+ }
+ samples.sort((a,b)=>a-b);
+ out.textContent=JSON.stringify({version:w.document.getElementById('build').textContent,holds,frames:samples.length,medianFrameMs:samples[Math.floor(samples.length/2)],p95FrameMs:samples[Math.floor(samples.length*.95)],over50ms:samples.filter(x=>x>50).length,longTasksMs:longTasks,drawMs:draw,hudMs:hud,touchAction:w.getComputedStyle(canvas).touchAction,overlayDisplay:w.getComputedStyle(overlay).display,homeAnimations:w.document.getAnimations().length},null,2);
+ q.pause();
+ }catch(e){out.textContent=String(e);}finally{button.disabled=false;}
+};
+</script></html>
