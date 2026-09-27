@@ -103,3 +103,6 @@ body[data-desert="6"] #pace-label::after,body[data-desert="7"] #pace-label::afte
 /* Preserve measured RC1 HUD/rail boxes; typography must not resize the board. */
 @media(min-height:571px){.topbar{height:50px;min-height:50px}.scorebar{height:52.75px}}
 .rail button,body[data-kind="normal"] .rail button{border-width:2px!important}
+/* Rewards occupy unused presentation space, never NEXT/HOLD or active blocks. */
+@media(min-height:701px){.bloom-celebration-cutin{top:200px;height:76px}.bloom-celebration-cutin img{height:60px;max-height:60px;bottom:18px}.bloom-celebration-doodle{top:235px}.bloom-celebration-cutin::before{inset:48px 0 4px -6px}}
+@media(max-height:700px){.bloom-celebration-cutin{top:-116px;right:48px;width:76px;height:52px}.bloom-celebration-cutin img{height:40px;max-height:40px;bottom:14px}.bloom-celebration-label{font-size:18px}.bloom-celebration-doodle{top:-91px;right:82px;width:8px;height:8px}.bloom-celebration-cutin::before{inset:32px 0 0 -4px}}
