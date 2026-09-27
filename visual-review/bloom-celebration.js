@@ -25,7 +25,7 @@
     hero.className = 'bloom-celebration-hero';
     hero.alt = ''; hero.width = 100; hero.height = 75;
     hero.decoding = 'async'; hero.draggable = false;
-    hero.src = 'assets/bloom-home-hero.webp?v=cb-rc2';
+    hero.src = 'assets/bloom-happy.webp?v=cb-rc2';
     const chick = doc.createElement('img');
     chick.className = 'bloom-celebration-chick';
     chick.alt = ''; chick.width = 76; chick.height = 76;

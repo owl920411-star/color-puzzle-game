@@ -45,7 +45,7 @@ footer #notice,body[data-kind="normal"] #notice{color:var(--ink-soft)!important}
 .paper-toggle .toggle-state{margin-left:auto;font-size:11px;color:var(--ink-soft)}.paper-toggle svg{width:26px;height:26px;fill:none;stroke:var(--outline);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .paper-toggle[aria-pressed="true"] .toggle-ring{fill:#e6eee0;stroke:#73937a}.toggle-check{visibility:hidden;stroke:#486d54;stroke-width:2.7}.paper-toggle[aria-pressed="true"] .toggle-check{visibility:visible;stroke-dasharray:25;animation:paper-check 140ms ease-out both}
 .paper-rules{margin-top:12px;font-size:12px}.paper-rules summary{min-height:34px;cursor:pointer;color:var(--ink-soft)}
-.paper-options [data-adaptive]{font-size:11px!important;border:0!important;border-top:1px solid #cbbda77a!important;margin-top:2px;text-align:left;padding:9px 0}
+#panel .paper-options [data-adaptive]{font-size:11px!important;border:0!important;border-top:1px solid #cbbda77a!important;margin-top:2px;text-align:left;padding:9px 0}
 #panel[data-view="over"]{text-align:center;padding:20px 22px}#panel[data-view="over"] h2{margin:0 0 5px;font-size:25px}.result-friends{display:block;width:min(210px,70%);height:140px;object-fit:contain;margin:4px auto 0;pointer-events:none}
 #panel .result-score{font:750 48px/1.15 ui-rounded,'Arial',sans-serif;letter-spacing:-2px;color:#8b3e5e;margin:10px 0 5px;position:relative}#panel .result-score small{font:700 18px var(--hand)}
 .result-score[data-best="true"]::after{content:"";display:inline-block;width:30px;height:30px;background:url('assets/paper-star.svg') center/contain no-repeat;margin-left:6px;animation:paper-bloom 500ms var(--ease-out) both}
@@ -91,3 +91,10 @@ body[data-kind="normal"].ground-warning .board-shell{animation:none;outline:2px 
 @keyframes paper-check{from{stroke-dashoffset:25}to{stroke-dashoffset:0}}
 @media(max-height:700px){#panel .cb-home .cb-logo{max-height:100px}#panel .cb-home .cb-start{height:58px;font-size:29px}#panel .cb-home figcaption{font-size:18px}#panel[data-view="over"]{padding:14px 20px}.result-friends{height:108px;width:165px}#panel[data-view="over"] .result-meta{margin:5px auto 7px}#panel .result-score{font-size:43px;margin:5px 0}#panel[data-view="settings"]{padding:14px 20px}.paper-options h3{margin-top:10px}.paper-toggle{height:39px}#panel .paper-options h2{margin-bottom:9px}}
 @media(prefers-reduced-motion:reduce){#panel,#panel .cb-home .cb-heading::after,.result-score::after,.scorebar .record::after,.paper-toggle .toggle-check{animation:none!important;transform:none!important}button{transition:none!important}}
+/* Quiet flower mark grows with the already-existing BLOOM level. */
+#pace-label{position:relative;padding-right:12px}#pace-label::after{content:"";position:absolute;right:-3px;top:-3px;width:12px;height:12px;background:url('assets/paper-flower.svg') center/contain no-repeat;opacity:.25;transform:scale(.6);pointer-events:none;transition:transform 500ms var(--ease-out),opacity 500ms}
+body[data-desert="1"] #pace-label::after,body[data-desert="2"] #pace-label::after{opacity:.6;transform:scale(.75)}
+body[data-desert="3"] #pace-label::after,body[data-desert="4"] #pace-label::after,body[data-desert="5"] #pace-label::after{opacity:.85;transform:scale(.9)}
+body[data-desert="6"] #pace-label::after,body[data-desert="7"] #pace-label::after,body[data-desert="8"] #pace-label::after{opacity:1;transform:scale(1.1)}
+
+@media(max-height:700px){#panel .paper-options .storage-note{margin-top:6px}.paper-options .text-button{margin-top:5px}.paper-options h3{margin-top:7px}.paper-toggle{height:38px}}
