@@ -1,0 +1,32 @@
+{
+  "entryBuild": "CB-RC2",
+  "visibleBuild": "RC2 · CONTROL 23 FINAL · HOME RC2",
+  "assetRefs": [
+    "endless.css?v=cb-rc2",
+    "bloom-home.css?v=cb-rc2",
+    "assets/bloom-home-hero.webp?v=cb-rc2",
+    "assets/bloom-home-logo.webp?v=cb-rc2",
+    "bloom-celebration.css?v=cb-rc2",
+    "bloom-loading.css?v=cb-rc2",
+    "bloom-tutorial.css?v=cb-rc2",
+    "bloom-visual.css?v=cb-rc2",
+    "assets/fonts/gaegu-bold.woff",
+    "engine.js?v=cb-rc2",
+    "endless-rules.js?v=cb-rc2",
+    "bloom-item-art.js?v=cb-rc2",
+    "crayon-bloom-fx.js?v=cb-rc2",
+    "block-items.js?v=cb-rc2",
+    "adaptive-director.js?v=cb-rc2",
+    "adaptive-audit.js?v=cb-rc2",
+    "adaptive-bridge.js?v=cb-rc2",
+    "pointer-button-guard.js?v=cb-rc2",
+    "bloom-audio.js?v=cb-rc2",
+    "bloom-celebration.js?v=cb-rc2",
+    "bloom-loading.js?v=cb-rc2",
+    "bloom-tutorial.js?v=cb-rc2",
+    "bloom-home.js?v=cb-rc2",
+    "endless-app.js?v=cb-rc2"
+  ],
+  "missing": [],
+  "retiredEntryRefs": []
+}

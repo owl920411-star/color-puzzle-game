@@ -2,7 +2,7 @@
 
 ## 판정과 기준
 
-**상태: 최종 장시간 검사·Production 승격 대기. Android 실기기는 NOT VERIFIED.**
+**상태: 자동·브라우저 시각·30분 리소스 검사 통과, Production 배포 확인 중. Android 실기기는 NOT VERIFIED.**
 
 - 기준 main: `28036e15809a0269bd55a83dea15f5b352ea7e33`
 - 기준 버전: `RC1 · CONTROL 23 FINAL · HOME RC1`
@@ -12,6 +12,8 @@
 - 본편 URL: https://owl920411-star.github.io/color-puzzle-game/dist/
 - 격리 검수 URL: https://owl920411-star.github.io/color-puzzle-game/visual-review/qa/visual-gallery.html
 - 검수 경로는 실제 배포된 후보 런타임을 사용하며 본편 저장과 별개의 메모리 저장을 사용한다.
+
+[HOME/GAME 나란히 보기](visual/before-after.jpg) — 동일 390×844 캡처를 잘라 배열한 비교 이미지. 색과 화면 내용은 수정하지 않았다.
 
 ## 1. BEFORE에서 확인한 프로토타입 원인
 
@@ -156,7 +158,16 @@ Gaegu: JIKJI SOFT, SIL Open Font License. https://github.com/google/fonts/tree/m
 - 제거: 큰 화면 blur, 높은 BLOOM에서 계속 움직이던 배경 선, 여러 legacy gradient/미사용 theme CSS.
 - 추가: WOFF 198,824B + 축하 WebP 61,574B + 작은 정적 SVG, 공통 CSS 15,141B. 캐릭터 원본을 여러 고해상도 파일로 늘리지 않았다.
 - browser 회귀 검사에서 console error/깨진 이미지 0. 클라우드 frame cadence를 Android 60FPS로 해석하지 않는다.
-- 새 30분 wallclock 결과: **진행 중**. 실제 sample JSON과 분리하여 기록한다.
+- 새 30분 wallclock 검사 **PASS**. 실제 30.01분, DROP 1657회, 재시작 152회, 강제 아이템 시나리오 119회. [원본 증거](visual/soak-30min.json).
+
+|실제 샘플|DOM|활성 타이머|AudioContext|marks|heap bytes|
+|---|---|---|---|---|---|
+|0분|140|0|1|12|10377799|
+|10분|142|1|1|12|11318631|
+|20분|142|1|1|12|11229866|
+|30분|142|1|1|12|11340822|
+
+화면 상태별 DOM 차이와 누적 증가를 구분했다. 10/20/30분 게임 상태의 리소스가 bounded이며, 종료는 정상 pause 화면이다. 첫 샘플 오디오는 unlock 직후 suspended였고 후속 샘플은 running이다. 합성 입력/클라우드 브라우저 검사이며 Android FPS 증거가 아니다.
 - 실제 Android 10분 피로도/터치감/오디오 동기/60FPS: **NOT VERIFIED**.
 
 ## 12. CONTROL 23 FINAL
@@ -213,3 +224,20 @@ Gaegu: JIKJI SOFT, SIL Open Font License. https://github.com/google/fonts/tree/m
 - 실제 기기의 프레임 안정성/발열
 
 신규 모드·아이템·점수 규칙·상점·랭킹·모래모드/사막 세계관 복원은 없다. 내부 역사적 함수/변수명은 출시 전 무리한 리팩터링을 하지 않았다.
+
+## 16. 최종 시각 자체 검수
+
+|질문|브라우저 시각 검수 판단|범위|
+|---|---|---|
+|HOME을 소개용 캡처로 쓸 수 있는가?|YES|로고·공식 캐릭터·시작 순서가 명확|
+|게임 화면에 브랜드가 남는가?|YES|종이·크레용 블록·lettering을 공유|
+|설정이 같은 게임의 일부인가?|YES|소리/느낌/도움과 종이 체크|
+|튜토리얼이 임시 개발 안내처럼 보이지 않는가?|YES|숫자 step 숨김, 간결한 메모|
+|결과가 숫자만 나열한 dialog를 벗어났는가?|YES|캐릭터·점수·RETRY 위계|
+|콤보에 게임 고유의 보상 장면이 있는가?|YES|공식 친구들·크레용 선·꽃/별, 실제 재미 평가는 별도|
+|마스코트가 화면별 역할을 갖는가?|YES|표지/동행/성공/결과, 상시 게임판 점유 없음|
+|게임판 가독성을 지켰는가?|YES|geometry 동일, 낮은 배경 대비, 컷인 겹침 수정|
+|CONTROL을 보호했는가?|YES|frozen SHA/합성 회귀, Android 손맛은 별도|
+|장시간 시각 자극을 억제했는가?|YES, 브라우저 관찰 범위|지속 배경 움직임 제거, cooldown/particle 상한 유지; 실제 Android 피로도 NOT VERIFIED|
+
+이 표는 미적 검토자의 판단이다. 자동 테스트가 아름다움이나 상업적 성공을 증명한다는 의미가 아니다.
