@@ -38,16 +38,16 @@ const RELIC_HELP={hourglass:'다음 꽃밭 상승을 10초 늦춰요. 지연은 
 const RELIC_ICONS={hourglass:'☁',sun:'▱',eye:'✎',hammer:'✿',ankh:'♡'};
 function desertCfg(){let d=DESERT_LEVELS[0];for(const x of DESERT_LEVELS)if(elapsed>=x.at)d=x;return d;}
 function resetDesert(){document.body.classList.remove('ground-warning');desert={level:0,nextRise:180000,warned:false,lastHoles:[],rises:0,maxLevel:0,lastEscapeUntil:0,delay:0,invincible:false,inventory:Object.fromEntries(RELICS.map(k=>[k,0])),previewHoles:null,relicMeter:0,lastRelicAt:-60000};document.body.dataset.desert='0';itemSystem=B.state(currentSeed+'/block-items-v2');}
-function practice(){return kind==='normal'&&itemSystem.practice;}
+function practice(){return itemSystem.practice;}
 function markPractice(){itemSystem.practice=true;adaptive?.exclude();recordBest=initialBest;}
-function desertRecord(final=false){if(kind!=='normal'||practice()||adaptive?.guest)return;const sec=Math.floor(elapsed/1000);writeStore(s=>{const key=adaptive?.desertKey()||'desertSurvival';s[key]=object(s[key]);const d=s[key];d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});}
+function desertRecord(final=false){if(practice()||adaptive?.guest)return;const sec=Math.floor(elapsed/1000);writeStore(s=>{const key=adaptive?.desertKey()||'desertSurvival';s[key]=object(s[key]);const d=s[key];d.bestTime=Math.max(finite(d.bestTime),sec);d.maxLevel=Math.max(finite(d.maxLevel),desert.maxLevel);d.bestScore=Math.max(finite(d.bestScore),run?.score||0);if(final)d.last={seconds:sec,level:desert.level,rises:desert.rises,score:run?.score||0};});}
 function boardDanger(){let top=20,holes=0,bump=0,prev=20;for(let x=0;x<10;x++){let h=20;for(let y=0;y<20;y++)if(run.board[y][x]){h=y;break;}top=Math.min(top,h);if(x)bump+=Math.abs(h-prev);prev=h;for(let y=h;y<20;y++)if(!run.board[y][x])holes++;}return{top,holes,bump};}
 function fairHoles(){const heights=Array(10).fill(20);for(let x=0;x<10;x++)for(let y=0;y<20;y++)if(run.board[y][x]){heights[x]=y;break;}let choices=[0,1,2,3,4,5,6,7,8,9].sort((a,b)=>heights[b]-heights[a]);choices=choices.filter(x=>!desert.lastHoles.includes(x)).concat(choices.filter(x=>desert.lastHoles.includes(x)));const d=boardDanger();if(d.top<5)choices=choices.filter(x=>heights[x]>=7).concat(choices.filter(x=>heights[x]<7));const first=choices[0],second=Math.max(0,Math.min(9,first+(first<5?1:-1)));const holes=(desert.level<=3||d.top<6)?[first,second]:[first];desert.lastHoles=holes;return holes;}
-function itemEligible(){return kind==='normal'&&desert.level>0&&itemSystem.enabled;}
-function findSpecials(){return kind==='normal'&&run?B.specials(run.board):[];}
+function itemEligible(){return desert.level>0&&itemSystem.enabled;}
+function findSpecials(){return run?B.specials(run.board):[];}
 function directorPick(k=null){return itemEligible()?B.pick(run,itemSystem,desert.level,k):null;}
 function attachItemToPiece(p,type){return B.attach(p,type,itemSystem);}
-function forceNextItem(type){if(kind!=='normal'||!DESERT_ITEMS[type]||!run?.queue[0])return false;markPractice();for(const c of run.queue[0].cells)delete c.special;return attachItemToPiece(run.queue[0],type);}
+function forceNextItem(type){if(!DESERT_ITEMS[type]||!run?.queue[0])return false;markPractice();for(const c of run.queue[0].cells)delete c.special;return attachItemToPiece(run.queue[0],type);}
 function maybeSeedNextItem(){if(!itemEligible()||!run?.queue?.[0]||B.liveCount(run)>=B.LIMIT)return;
  // Keep earned rewards until a free slot exists; never discard them.
  if(itemSystem.purify>=2){const p=run.queue[1]||run.queue[0],t=directorPick('good');if(t&&attachItemToPiece(p,t)){itemSystem.purify-=2;callout('깔끔한 그림 선물','다음 블록에 도움 도구가 예약됐습니다');}return;}
@@ -60,9 +60,9 @@ function resolveNormal(p){if(!p)return null;const tx=itemSystem.enabled?B.resolv
  // Score only naturally completed, removable rows. Block effects never add points.
  adaptive?.resolved(p,tx);emitNormal({...p,rows:tx.scoringRows},result);announceItems(tx.events);return result;
 }
-function itemTick(){if(kind!=='normal'||!itemSystem.enabled||state!=='playing')return;const before=adaptive?.board(),events=B.expire(run,itemSystem,elapsed);if(events.length)adaptive?.system('item',before);announceItems(events);}
-function awardRelic(reason='SURVIVAL'){if(kind!=='normal'||desert.level===0||elapsed-desert.lastRelicAt<45000)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];if(desert.inventory[key]>=2)return;desert.inventory[key]++;desert.lastRelicAt=elapsed;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();}
-function useRelic(key){if(kind!=='normal'||!RELICS.includes(key)||key==='ankh'||!desert.inventory[key]||beforePause==='clearing')return false;
+function itemTick(){if(!itemSystem.enabled||state!=='playing')return;const before=adaptive?.board(),events=B.expire(run,itemSystem,elapsed);if(events.length)adaptive?.system('item',before);announceItems(events);}
+function awardRelic(reason='SURVIVAL'){if(desert.level===0||elapsed-desert.lastRelicAt<45000)return;const key=RELICS[(desert.rises+run.lines+desert.level)%RELICS.length];if(desert.inventory[key]>=2)return;desert.inventory[key]++;desert.lastRelicAt=elapsed;callout(RELIC_NAMES[key],reason+' 보상 · 획득');hud();}
+function useRelic(key){if(!RELICS.includes(key)||key==='ankh'||!desert.inventory[key]||beforePause==='clearing')return false;
  const adaptiveBefore=adaptive?.board();
  if(key==='hourglass')desert.delay=Math.min(15000,desert.delay+10000);
  else if(key==='sun'){const b=B.removeBottom(run.board,run.active);if(!b){callout('쓱싹 지우개','대상이 없거나 현재 블록과 겹쳐 사용하지 않았습니다');return false;}run.board=b;}
@@ -71,12 +71,12 @@ function useRelic(key){if(kind!=='normal'||!RELICS.includes(key)||key==='ankh'||
  desert.inventory[key]--;adaptive?.system('relic',adaptiveBefore);callout(RELIC_NAMES[key],'도구 사용 · 아이템 추가 점수 없음');hud();return true;
 }
 function showRelics(){if(!run||kind!=='normal')return;relicReturn=overlayView==='dev'?'dev':'game';if(playing())beforePause=state;state='paused';clearInput();showPanel(`<div class="kicker">DOODLE TOOLBOX</div><h2>낙서 도구함</h2><div class="relic-grid">${RELICS.map(k=>`<button data-relic="${k}" ${!desert.inventory[k]||k==='ankh'||beforePause==='clearing'?'disabled':''}><b>${RELIC_ICONS[k]} ${RELIC_NAMES[k]} ×${desert.inventory[k]}</b><small>${RELIC_HELP[k]}</small></button>`).join('')}</div><p>보조 도구는 추가 점수를 주지 않습니다.<br>하트 반창고는 치명적인 지반 상승 때 자동 발동합니다.${beforePause==='clearing'?'<br>줄 제거 연출 후 사용할 수 있습니다.':''}</p><button class="primary" data-menu="back">${relicReturn==='dev'?'개발자 모드':'게임으로 돌아가기'}</button>`,'relic');}
-function riseGround(){if(kind!=='normal'||!run||state==='clearing'||state==='over')return false;const adaptiveBefore=adaptive?.board();const source=B.clone(run.board),holes=desert.previewHoles||fairHoles();const types=Object.keys(COLORS);let topOut=source[0].some(Boolean);const row=Array.from({length:10},(_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%7],mask:0,id:++run.serial,desert:true});source.shift();source.push(row);let p=run.active?{...run.active}:null;
+function riseGround(){if(!run||state==='clearing'||state==='over')return false;const adaptiveBefore=adaptive?.board();const source=B.clone(run.board),holes=desert.previewHoles||fairHoles();const types=Object.keys(COLORS);let topOut=source[0].some(Boolean);const row=Array.from({length:10},(_,x)=>holes.includes(x)?null:{type:types[(x+desert.rises)%7],mask:0,id:++run.serial,desert:true});source.shift();source.push(row);let p=run.active?{...run.active}:null;
  const locate=()=>{if(!p)return true;for(const dy of [0,-1,-2]){const q={...run.active,y:run.active.y+dy};if(B.fits(source,q)){p=q;return true;}}return false;};let safe=locate();
  if(topOut||!safe){if(desert.inventory.ankh>0||desert.invincible){if(!desert.invincible)desert.inventory.ankh--;for(let y=0;y<4;y++)source[y]=Array(10).fill(null);topOut=false;safe=locate();if(!safe&&desert.invincible){for(let y=0;y<20;y++)source[y]=Array(10).fill(null);p=run.active?{...run.active,y:0}:null;safe=true;}}if(topOut||!safe){finish(topOut?'ground_overflow':'ground_active_blocked',{topOut,activeFits:safe,attemptedRows:source.map(r=>r.reduce((m,c,x)=>m|(c?1<<x:0),0))});return false;}}
  run.board=source;run.active=p;adaptive?.system('ground',adaptiveBefore);desert.previewHoles=null;desert.rises++;desert.warned=false;fallTime=lockTime=0;vibrate([18,28,24]);callout('꽃밭이 자라나요!','꽃밭 +1');if(desert.rises%4===0)awardRelic('지반 생존');return true;
 }
-function desertTick(){if(kind!=='normal'||!playing())return;const cfg=desertCfg();if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv)callout(cfg.lv===8?'BLOOM MAX':'BLOOM LEVEL '+cfg.lv,cfg.label);}
+function desertTick(){if(!playing())return;const cfg=desertCfg();if(cfg.lv!==desert.level){desert.level=cfg.lv;desert.maxLevel=Math.max(desert.maxLevel,cfg.lv);document.body.dataset.desert=String(cfg.lv);if(cfg.lv)callout(cfg.lv===8?'BLOOM MAX':'BLOOM LEVEL '+cfg.lv,cfg.label);}
  const left=desert.nextRise+desert.delay-elapsed,warning=left<=3000;document.body.classList.toggle('ground-warning',warning);if(warning&&!desert.warned){desert.warned=true;vibrate(8);}if(left>3000)desert.warned=false;
  // Never change the board while its line-clear transaction is pending.
  if(cfg.lv&&left<=0&&state==='playing'){desert.delay=0;if(riseGround()){const next=adaptive?.interval(cfg.interval)??cfg.interval;desert.nextRise=elapsed+next;desert.adaptiveInterval=next;}}
@@ -365,9 +365,8 @@ function draw(){
  if(!reduced)shatterFX?.draw();
  for(const f of floaters){const t=1-f.life/f.total;ctx.save();ctx.globalAlpha=Math.min(1,f.life/220);if(!reduced){ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=(1-t)*.6;ctx.beginPath();ctx.ellipse(f.x,f.y,25+t*145,10+t*55,0,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6,near=10+t*100,far=near+22*(1-t)*f.power;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*near,f.y+Math.sin(a)*near*.6);ctx.lineTo(f.x+Math.cos(a)*far,f.y+Math.sin(a)*far*.6);ctx.stroke();}}ctx.globalAlpha=Math.min(1,f.life/220);ctx.font='600 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f1fff9';ctx.fillText('+'+f.gain.toLocaleString(),180,Math.max(30,f.y-12-t*35));ctx.restore();}
 }
-function fastDown(d,x,y,now){const dx=x-d.startX,dy=y-d.startY,age=Math.max(1,now-d.started);if(kind==='sand')return!d.noRelease&&d.axis==='y'&&!d.soft&&dy>45&&dy>Math.abs(dx)*1.5&&age<350&&dy/age>.4;return!d.noRelease&&dy>=Math.max(48,d.unit*1.5)&&age<=380&&dy>Math.abs(dx)*1.35&&d.peakDown-dy<d.unit*.65;}
 // CONTROL 23: normal-board gestures own one state and one timer.
-// Sand keeps its established drag path below. Keyboard repeat remains in update().
+// Keyboard repeat remains in update().
 function normalTouchTick(d){
  d.timer=null;
  if(drag!==d||d.piece!==pieceID()||!canAct()){if(drag===d)clearInput();return;}
@@ -387,47 +386,32 @@ function normalTouchMove(d,x,y){
  clearInput();
  if(action(ax>=ay?(dx>0?'rotate':'rotateCCW'):(dy<0?'hold':'drop')))draw();
 }
-function processSwipe(d,x,y,now){
- if(drag!==d||!playing())return;if(kind==='normal'){normalTouchMove(d,x,y);return;}d.lastX=x;d.lastY=y;
- if(d.piece!==null&&d.piece!==pieceID()){clearInput();return;}
- const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);d.peakX=Math.max(d.peakX,ax);d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
- if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){d.axis=Math.abs(dx)>Math.abs(dy)*1.15?'x':'y';d.vertical=Math.sign(dy);}
- if(d.axis==='x'&&canAct()){const before=run.active.x,target=d.originX+(x-d.anchorX)/canvas.getBoundingClientRect().width*M.W;run.moveTo(target);if(Math.abs(target-run.active.x)>2)rebase();if(before!==run.active.x)d.translated=true;}
- else if(d.axis==='y'&&d.vertical===1&&dy>0&&canAct()){if(now-d.started>300)d.soft=true;if(d.soft){const unit=canvas.getBoundingClientRect().height/M.H;let n=Math.min(80,Math.floor((y-d.downAnchor)/unit));while(n-->0){d.downAnchor+=unit;const id=pieceID();run.softDrop(1);if(id!==pieceID()){clearInput();break;}}}}
-}
+function processSwipe(d,x,y,now){if(drag!==d||!playing())return;normalTouchMove(d,x,y);}
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
- if(kind==='normal'){
-  const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',steps:0,side,startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
-  d.timer=setTimeout(()=>normalTouchTick(d),165);return;
- }
- drag={id:e.pointerId,piece:pieceID(),startX:e.clientX,startY:e.clientY,anchorX:e.clientX,lastX:e.clientX,lastY:e.clientY,started:performance.now(),originX:run.active.x,startPieceX:run.active.x,virtualX:run.active.x,lane:run.active.x,shift:0,axis:null,side,soft:false,translated:false,noRelease:false,peakX:0,peakDown:0,peakDistance:0,downAnchor:e.clientY,unit:Math.max(23,Math.min(36,r.width/10)),rowUnit:Math.max(12,r.height/20)};
+ const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',steps:0,side,startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
+ d.timer=setTimeout(()=>normalTouchTick(d),165);
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
  const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();
- if(kind==='normal'){
-  normalTouchMove(d,e.clientX,e.clientY);if(drag!==d)return;
-  const tap=d.state==='PENDING'&&d.piece===pieceID()&&canAct();clearInput();
-  if(tap&&action(d.side<0?'left':'right'))draw();return;
- }
- const now=performance.now();processSwipe(d,e.clientX,e.clientY,now);if(drag!==d)return;drag=null;
- if(!canAct()||d.piece!==pieceID()||d.noRelease)return;
- if(fastDown(d,e.clientX,e.clientY,now))action('drop');
+ normalTouchMove(d,e.clientX,e.clientY);if(drag!==d)return;
+ const tap=d.state==='PENDING'&&d.piece===pieceID()&&canAct();clearInput();
+ if(tap&&action(d.side<0?'left':'right'))draw();
 });
 for(const type of ['pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if(drag?.id===e.pointerId)clearInput();});
 for(const b of document.querySelectorAll('[data-action]')){
- b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);if(drag){if(kind==='normal')clearInput();else drag.noRelease=true;}action(b.dataset.action);b.classList.add('pressed');});
+ b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);if(drag)clearInput();action(b.dataset.action);b.classList.add('pressed');});
  for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>b.classList.remove('pressed'));
  b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)action(b.dataset.action);});
 }
 for(const b of document.querySelectorAll('[data-preview]'))b.addEventListener('click',()=>{
  if(!run||!playing())return;const p=run.queue[Number(b.dataset.preview)];previewReturn='playing';beforePause=state;state='paused';clearInput();rememberScore();const sp=p?.cells?.find(c=>c.special)?.special,it=sp&&DESERT_ITEMS[sp.type];
- showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas>'+(it?'<p>'+it.help+'<br>추가 점수 없음 · NEXT/보관 중 방해 시간 정지</p>':'')+'<button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');(kind==='normal'?normalPreview:sandPreview)(g,p,240,240);hud();
+ showPanel('<div class="kicker">NEXT</div><h2>'+ (b.dataset.preview==='0'?'다음 블록':'두 번째 다음 블록')+'</h2><canvas class="preview-large" id="preview-large" width="240" height="240"></canvas>'+(it?'<p>'+it.help+'<br>추가 점수 없음 · NEXT/보관 중 방해 시간 정지</p>':'')+'<button class="primary" data-menu="back">계속하기</button>','preview');const g=$('preview-large').getContext('2d');normalPreview(g,p,240,240);hud();
 });
 $('pause').addEventListener('click',pause);
-$('mode-label')?.addEventListener('click',()=>{if(kind==='normal'&&run&&state!=='menu'&&state!=='over')showRelics();});
-$('build')?.addEventListener('click',()=>{if(kind!=='normal'||!run||state==='menu'||state==='over')return;if(playing())beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();devPanel();hud();});
+$('mode-label')?.addEventListener('click',()=>{if(run&&state!=='menu'&&state!=='over')showRelics();});
+$('build')?.addEventListener('click',()=>{if(!run||state==='menu'||state==='over')return;if(playing())beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();devPanel();hud();});
 const keys={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'rotate',x:'rotate',X:'rotate',' ':'drop',c:'hold',C:'hold'};
 document.addEventListener('keydown',e=>{
  if(['Escape','p','P'].includes(e.key)){if(e.repeat)return;e.preventDefault();if(state==='paused')resume();else pause();return;}
@@ -447,7 +431,7 @@ if(window.AdaptiveBridge&&window.AdaptiveDirector)adaptive=window.AdaptiveBridge
  storage:{getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)},panel,
  get:()=>({run,kind,state,desert,elapsed,seed:currentSeed,practice:practice(),overlayView,
   baseInterval:desertCfg().interval,interval:desert?.adaptiveInterval||desertCfg().interval}),
- curses:()=>kind==='normal'?findSpecials().filter(q=>DESERT_ITEMS[q.s.type].kind==='bad'&&!q.s.failed).length:0,
+ curses:()=>findSpecials().filter(q=>DESERT_ITEMS[q.s.type].kind==='bad'&&!q.s.failed).length,
  show:showPanel,
  pauseForPanel:()=>{if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}document.body.classList.remove('ground-warning');},
  back:view=>{if(view==='over'&&state==='over'){showPanel(resultHTML,'over');return;}if(view==='dev')devPanel();else if(view==='settings')settings();else if(view==='pause')pausePanel();else if(view==='menu'||state==='menu')showMenu();else if(state==='paused')resume();else showMenu();},
