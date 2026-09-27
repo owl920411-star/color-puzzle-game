@@ -425,11 +425,15 @@ function processSwipe(d,x,y,now){
  if(d.piece!==null&&d.piece!==pieceID()){clearInput();return;}
  const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);d.peakX=Math.max(d.peakX,ax);d.peakDown=Math.max(d.peakDown,dy);d.peakDistance=Math.max(d.peakDistance,Math.hypot(dx,dy));
  if(kind==='normal'){
-  // CONTROL 17: lock one gesture axis before assigning an action. Once a
-  // swipe becomes horizontal it cannot later turn into drop/hold, and a
-  // vertical swipe cannot later become rotation because of finger wobble.
+  // CONTROL 18: movement-hold and swipe are mutually exclusive.
+  // As soon as the finger actually travels beyond tap jitter, cancel the
+  // stationary long-press repeat timer. A horizontal swipe can therefore
+  // rotate once, but can never arm continuous left/right movement.
   const intent=Math.max(15,d.unit*.48),swipe=Math.max(26,d.unit*.78);
   if(!d.gestureAxis&&!d.dropIntent&&!d.rotateIntent&&!d.holdIntent&&Math.max(ax,ay)>intent){
+   if(d.holdTimer){clearTimeout(d.holdTimer);d.holdTimer=null;}
+   if(repeat?.hidden&&repeat.drag===d)repeat=null;
+   d.repeatStarted=false;
    if(ax>ay*1.12)d.gestureAxis='x';
    else if(ay>ax*1.12)d.gestureAxis='y';
   }
