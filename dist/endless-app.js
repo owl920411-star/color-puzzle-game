@@ -446,9 +446,9 @@ document.addEventListener('keydown',e=>{
  const a=keys[e.key];if(!a||!canAct())return;e.preventDefault();if(e.repeat||heldKeys.has(e.key))return;heldKeys.add(e.key);action(a);if(['left','right','down'].includes(a))repeat={id:e.key,action:a,time:200};
 });
 document.addEventListener('keyup',e=>{heldKeys.delete(e.key);if(repeat?.id===e.key)repeat=null;});
-window.addEventListener('blur',()=>{if(playing())pause();else clearInput();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing())pause();});
-window.addEventListener('pagehide',()=>{rememberScore();adaptive?.end('interrupted',true);clearInput();});
+window.addEventListener('blur',()=>{if(state==='loading')menu();else if(playing())pause();else clearInput();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(state==='loading')menu();else if(playing())pause();}});
+window.addEventListener('pagehide',()=>{if(state==='loading')menu();rememberScore();adaptive?.end('interrupted',true);clearInput();});
 window.addEventListener('resize',fit);window.visualViewport?.addEventListener('resize',fit);
 function frame(now){const dt=last?now-last:0;last=now;if(playing()&&!document.hidden){update(dt);draw();if(now-lastHUD>=120){hud();lastHUD=now;}}requestAnimationFrame(frame);}
 tutorial=window.BloomTutorial?.create({host:$('game-area'),prepareStep:prepareTutorialStep,resetInput:clearInput,finish:()=>start(false,false),saveCompleted:()=>pref('tutorialCompleted',true),celebrate:event=>celebration?.celebrate(event),successSound:()=>tone('success')});
