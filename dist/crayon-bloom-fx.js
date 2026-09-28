@@ -108,7 +108,12 @@ class CrayonBloomFX {
   }
   g.restore();
  }
- project(p){const scale=460/(460-p.z);return {x:p.ox+(p.x-p.ox)*scale,y:p.oy+(p.y-p.oy)*scale,scale};}
+ project(p){
+  const scale=460/(460-p.z);
+  // A brief size-only front pop: the approved trajectory and timing stay unchanged.
+  const kick=p.burst&&p.age>0&&p.age<140?1+.24*Math.sin(Math.PI*p.age/140)**2:1;
+  return {x:p.ox+(p.x-p.ox)*scale,y:p.oy+(p.y-p.oy)*scale,scale:scale*kick};
+ }
  clear(){this.particles.length=0;this.blooms.length=0;}
 }
 window.CrayonBloomFX=CrayonBloomFX;
