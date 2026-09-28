@@ -179,7 +179,8 @@
     const at = context.currentTime + 0.003, strength = Math.max(1,Math.min(6,Number(power) || 1));
     const before = effectsScheduled;
     const chime = (notes,volume=0.16) => notes.forEach((n,i) => note(n,at + i * 0.07,0.24,volume,'effect'));
-    if (type === 'rotate') { voice('paper',2400,at,0.055,0.17,'effect');note(74,at,0.055,0.05,'effect'); }
+    if (type === 'move') { voice('paper',1850,at,0.032,0.075,'effect');note(67,at,0.028,0.018,'effect','pluck'); }
+    else if (type === 'rotate') { voice('paper',2400,at,0.055,0.17,'effect');note(74,at,0.055,0.05,'effect'); }
     else if (type === 'hold') { voice('paper',1300,at,0.13,0.15,'effect');note(72,at + 0.025,0.1,0.075,'effect','pluck'); }
     else if (type === 'drop') { voice('bell',230,at,0.10,0.34,'effect',125);voice('paper',700,at,0.045,0.20,'effect'); }
     else if (type === 'clear') { voice('paper',2100,at,0.15,0.24,'effect');chime([72,76,79],0.13); }
@@ -187,7 +188,7 @@
     else if (type === 'good' || type === 'success') chime([72,76,81],0.14);
     else if (type === 'bad') { note(67,at,0.14,0.18,'effect','pluck');note(64,at + 0.09,0.16,0.16,'effect','pluck');voice('paper',900,at,0.07,0.1,'effect'); }
     else if (type === 'gameover' || type === 'over') chime([72,69,67,64],0.12);
-    else return false; // Deliberately no movement / repeat-cell sound.
+    else return false;
     const count = effectsScheduled - before;
     if (count) effectEvents[type] = (effectEvents[type] || 0) + count;
     return count > 0;
