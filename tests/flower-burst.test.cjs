@@ -39,3 +39,13 @@ test('projected burst stays centered with equal size on both sides throughout fl
   }
  }
 });
+test('single-line clears are dense and four-line clears add a longer three-wave burst',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.canvas.height=720;
+ f.trigger(cells.slice(0,10),1,0);assert.equal(f.particles.length,112);
+ const singleDelay=Math.max(...f.particles.map(p=>-p.age));
+ assert.ok(f.particles.every(p=>Math.abs(p.x-180)<=57),'launch stays centered');
+ for(let i=0;i<3;i++)f.update(100);
+ assert.ok(f.particles.filter(p=>{const q=f.project(p);return q.x>=0&&q.x<=360;}).length>=100,'dense burst stays on screen');
+ f.clear();f.trigger(cells,4,0);assert.equal(f.particles.length,180);
+ assert.ok(Math.max(...f.particles.map(p=>-p.age))>singleDelay+100,'four lines have a longer layered release');
+});

@@ -23,7 +23,7 @@ class CrayonBloomFX {
   if(!cells?.length)return;
   const power=Math.min(4,Math.max(1,lines)),boost=Math.min(3,Math.max(0,combo-1));
   // Project particles toward the viewer, rather than spreading flat on the board.
-  const count=Math.min(this.maxParticles,38+power*18+boost*8);
+  const count=Math.min(this.maxParticles,[0,112,136,158,180][power]+boost*4);
   this.particles.splice(0,Math.max(0,this.particles.length+count-this.maxParticles));
   const rows=[...new Set(cells.map(c=>c.row))].slice(0,4);
   const ox=this.canvas.width/2,oy=cells.reduce((v,c)=>v+(c.row+.5)*this.cellSize,0)/cells.length;
@@ -31,14 +31,16 @@ class CrayonBloomFX {
   // Emit matched left/right pairs so foreground size and perspective cannot bias a burst.
   for(let i=0;i<count;i+=2){
    const pair=i/2,cell=cells[(pair*7+Math.floor(pair/5))%cells.length];
-   const near=pair%5===0,shape=near||pair%3===0?'flower':'petal';
-   const offset=Math.abs((cell.col+.5)*this.cellSize-ox);
-   const vx=(Math.random()-.5)*(near?60:95),a=Math.random()*Math.PI*2;
-   const shared={y:(cell.row+.5)*this.cellSize,ox,oy,vy:-65-Math.random()*90,
+   const near=pair%3===0,shape=near||pair%3===1?'flower':'petal';
+   // Keep the launch in the center so perspective does not eject most flowers offscreen.
+   const offset=5+Math.random()*(near?30:52);
+   const vx=8+Math.random()*(near?22:42),a=Math.random()*Math.PI*2;
+   const wave=pair%(power===4?3:2),delay=wave*(power===4?105:65);
+   const shared={y:oy+(Math.random()-.5)*this.cellSize*.9,ox,oy,vy:-80-Math.random()*95,
     z:0,vz:near?600+Math.random()*100:190+Math.random()*250,
     spin:(Math.random()-.5)*9,tilt:Math.random()*.6,flip:5+Math.random()*7,
-    age:-Math.random()*32,life:near?820:950+Math.random()*200,
-    size:near?18+Math.random()*7:shape==='flower'?11+Math.random()*5:7+Math.random()*6,
+    age:-delay-Math.random()*25,life:near?950:1100+Math.random()*200,
+    size:near?23+Math.random()*9:shape==='flower'?16+Math.random()*8:10+Math.random()*7,
     phase:a,burst:true};
    for(const side of [-1,1]){
     if(i+(side===1?1:0)>=count)break;
