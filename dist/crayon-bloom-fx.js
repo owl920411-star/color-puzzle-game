@@ -3,7 +3,8 @@
 'use strict';
 const PALETTE=['#f58db8','#77c9f4','#82d89b','#ffd86e','#caa0ef','#ffb09a'];
 class CrayonBloomFX {
- constructor(canvas,opts={}){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.cellSize=opts.cellSize||36;this.maxParticles=opts.maxParticles||180;this.particles=[];this.blooms=[];this.sprites=new Map();}
+ // Geometry uses board coordinates. The canvas backing pixels may be enlarged for DPR.
+ constructor(canvas,opts={}){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.cellSize=opts.cellSize||36;this.width=opts.width||this.cellSize*10;this.height=opts.height||this.cellSize*20;this.maxParticles=opts.maxParticles||180;this.particles=[];this.blooms=[];this.sprites=new Map();}
  sprite(shape,color){
   const key=shape+color;if(this.sprites.has(key))return this.sprites.get(key);
   const c=document.createElement('canvas');c.width=c.height=48;const g=c.getContext('2d');g.translate(24,24);g.fillStyle=color;g.strokeStyle='#775477';g.lineWidth=1.4;g.lineJoin='round';g.beginPath();
@@ -27,8 +28,8 @@ class CrayonBloomFX {
   this.particles.splice(0,Math.max(0,this.particles.length+count-this.maxParticles));
   const rows=[...new Set(sources.map(c=>c.row))].slice(0,4);
   this.blooms.push({rows,age:0,life:150,power});this.blooms=this.blooms.slice(-3);
-  const seed=Math.random()*1000,columns=Math.round(this.canvas.width/this.cellSize);
-  const cameraX=this.canvas.width/2,cameraY=(Math.min(...rows)+.5)*this.cellSize;
+  const seed=Math.random()*1000,columns=Math.round(this.width/this.cellSize);
+  const cameraX=this.width/2,cameraY=(Math.min(...rows)+.5)*this.cellSize;
   for(const cell of sources){
    const ox=(cell.col+.5)*this.cellSize,oy=(cell.row+.5)*this.cellSize;
    // Neighboring cells vary, while mirror columns share motion weight to avoid a sideways bias.
@@ -96,19 +97,19 @@ class CrayonBloomFX {
   for(const b of this.blooms){const t=b.age/b.life;
    if(b.item){g.save();g.globalAlpha=(1-t)*.65;g.lineWidth=2;g.lineCap='round';
     for(let i=0;i<3;i++){g.strokeStyle=b.bad?'#a49abd':PALETTE[i*2];g.beginPath();
-     if(b.item==='oasis'){g.moveTo(0,b.y+i*3);g.quadraticCurveTo(180,b.y-9+i*3,this.canvas.width*Math.min(1,t*3),b.y+i*3);}
-     else if(b.item==='spear'){g.moveTo(b.x+i*3,b.y);g.lineTo(b.x+i*3,Math.min(this.canvas.height,b.y+180*t));}
+     if(b.item==='oasis'){g.moveTo(0,b.y+i*3);g.quadraticCurveTo(180,b.y-9+i*3,this.width*Math.min(1,t*3),b.y+i*3);}
+     else if(b.item==='spear'){g.moveTo(b.x+i*3,b.y);g.lineTo(b.x+i*3,Math.min(this.height,b.y+180*t));}
      else{g.moveTo(b.x-15,b.y+i*5);g.bezierCurveTo(b.x+25,b.y-24,b.x-25,b.y+24,b.x+15,b.y+i*5);}g.stroke();
     }g.restore();continue;
    }
    // A short crayon stroke ties the row together. No full-screen flash or shake.
-   for(const row of b.rows){g.save();g.globalAlpha=Math.max(0,1-t*3)*.7;g.strokeStyle='#ffe5a0';g.lineWidth=3+8*(1-t);g.lineCap='round';g.beginPath();g.moveTo(6,(row+.5)*this.cellSize);g.lineTo(this.canvas.width-6,(row+.5)*this.cellSize);g.stroke();g.restore();}
+   for(const row of b.rows){g.save();g.globalAlpha=Math.max(0,1-t*3)*.7;g.strokeStyle='#ffe5a0';g.lineWidth=3+8*(1-t);g.lineCap='round';g.beginPath();g.moveTo(6,(row+.5)*this.cellSize);g.lineTo(this.width-6,(row+.5)*this.cellSize);g.stroke();g.restore();}
   }
   for(const p of this.particles){
    if(p.age<0)continue;const t=p.age/p.life;
    const perspective=p.burst?this.project(p):{x:p.x,y:p.y,scale:1};
    const size=p.size*perspective.scale;
-   if(perspective.x+size<0||perspective.x-size>this.canvas.width||perspective.y-size>this.canvas.height)continue;
+   if(perspective.x+size<0||perspective.x-size>this.width||perspective.y-size>this.height)continue;
    g.save();g.translate(perspective.x,perspective.y);g.rotate(p.angle);
    if(p.burst)g.scale(1,perspective.faceScale);
    g.globalAlpha=(p.burst?Math.min(1,(1-t)*5):Math.min(1,(1-t)*2.4))*.94;

@@ -5,7 +5,7 @@
 'use strict';
 const E=window.GlassEngine,R=window.EndlessRules,B=window.BlockItems,$=id=>document.getElementById(id);
 const canvas=$('board'),ctx=canvas.getContext('2d'),panel=$('panel'),KEY='glassfall-v1';
-const shatterFX=window.CrayonBloomFX?new window.CrayonBloomFX(canvas,{cellSize:36,maxParticles:180}):null;
+const shatterFX=window.CrayonBloomFX?new window.CrayonBloomFX(canvas,{cellSize:36,width:360,height:720,maxParticles:180}):null;
 const COLORS={I:['#77c9f4','#2f78c7'],O:['#ffd86e','#e8a72e'],T:['#caa0ef','#8156bd'],S:['#82d89b','#3a9b62'],Z:['#f58db8','#d64d88'],J:['#ffb09a','#dd6f67'],L:['#9fd8f6','#559ed2']};
 const systemReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}

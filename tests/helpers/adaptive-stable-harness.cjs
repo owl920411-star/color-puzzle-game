@@ -3,13 +3,14 @@
 // Optional real effect module supports input regression tests; single-mode runtime only.
 const vm=require('node:vm'),fs=require('node:fs');
 const E=require('../../dist/engine.js'),R=require('../../dist/endless-rules.js'),B=require('../../dist/block-items.js');
-function boot({initial={},appSource=null,Bridge=null,FX=null,Tutorial=null,Loading=null,AudioContext=null}={}){
+function boot({initial={},appSource=null,Bridge=null,FX=null,Tutorial=null,Loading=null,AudioContext=null,pixelRatio=1,random=null}={}){
  let now=0;const nodes=new Map(),store={...initial},timers=new Map(),downloads=[],documentEvents={},windowEvents={};let tid=0;
  const draw=new Proxy({createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),createLinearGradient:()=>({addColorStop(){}})},{get(t,k){return k in t?t[k]:()=>{};}});
  function node(id=''){if(nodes.has(id))return nodes.get(id);const events={};const n={id,dataset:{},innerHTML:'',style:{setProperty(){}},classList:{add(){},remove(){},toggle(){}},parentElement:{classList:{add(){},remove(){}}},clientWidth:390,clientHeight:740,offsetHeight:35,width:120,height:100,disabled:false,hidden:false,events,getContext:()=>draw,querySelectorAll:()=>[],addEventListener(t,f){(events[t]||=[]).push(f);},focus(){},getBoundingClientRect:()=>({left:0,top:0,width:270,height:540}),setPointerCapture(){},hasPointerCapture:()=>false,releasePointerCapture(){}};nodes.set(id,n);return n;}
  const actions=['hold','rotate','drop'].map(x=>{const n=node(x);n.dataset.action=x;return n;});
  const doc={body:{dataset:{},classList:{add(){},remove(){},toggle(){}}},documentElement:{style:{setProperty(){}}},getElementById:node,querySelector:node,createElement:()=>node('new'+nodes.size),querySelectorAll:s=>s==='[data-action]'?actions:[],addEventListener(t,f,options){(documentEvents[t]||=[]).push({f,capture:options===true||!!options?.capture});},hidden:false};
- const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:1,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(t,f){(windowEvents[t]||=[]).push(f);},crypto:{getRandomValues(a){a.fill(1);}},CrayonBloomFX:FX,GlassEngine:E,EndlessRules:R,BlockItems:B,AdaptiveDirector:require('../../dist/adaptive-director.js'),AdaptiveBridge:Bridge||require('../../dist/adaptive-bridge.js')};env.window=env;
+ const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:pixelRatio,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(t,f){(windowEvents[t]||=[]).push(f);},crypto:{getRandomValues(a){a.fill(1);}},CrayonBloomFX:FX,GlassEngine:E,EndlessRules:R,BlockItems:B,AdaptiveDirector:require('../../dist/adaptive-director.js'),AdaptiveBridge:Bridge||require('../../dist/adaptive-bridge.js')};env.window=env;
+ if(random)env.Math=Object.assign(Object.create(Math),{random});
  if(AudioContext){env.AudioContext=AudioContext;vm.runInNewContext(fs.readFileSync(require.resolve('../../dist/bloom-audio.js'),'utf8'),env);}
  if(Tutorial)env.BloomTutorial=Tutorial;
  if(Loading)env.BloomLoading=Loading;
@@ -27,4 +28,3 @@ function boot({initial={},appSource=null,Bridge=null,FX=null,Tutorial=null,Loadi
   gesture(x,y,dx,dy){for(const [type,xx,yy]of[['pointerdown',x,y],['pointermove',x+dx,y+dy],['pointerup',x+dx,y+dy]])for(const f of node('board').events[type]||[])f({button:0,pointerId:1,clientX:xx,clientY:yy,preventDefault(){}});}};
 }
 module.exports={boot,E,R,B};
-
