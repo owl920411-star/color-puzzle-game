@@ -16,7 +16,7 @@ let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=
 const celebration=window.BloomCelebration?.create({host:$('game-area'),reduced:()=>reduced});
 let startRequest=0,training=false,tutorial=null,tutorialInput={source:'other',gesture:'',inputState:''};
 const loading=window.BloomLoading?.create({show:html=>showPanel(html,'loading'),prepare:()=>celebration?.preload()??Promise.resolve(true),reduced:()=>reduced});
-let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu';
+let currentSeed='',recordBest=0,initialBest=0,finalSaved=false,recordAnnounced=false,lastSave=0,lastHUD=0,audio=null,previewReturn='menu',lastMoveSfx=0;
 const DESERT_LEVELS=[
  {at:0,lv:0,interval:Infinity,mult:1,label:'새 도화지'},
  {at:180000,lv:1,interval:45000,mult:1.10,label:'첫 낙서'},
@@ -237,7 +237,7 @@ function lockNormal(keep=false){
 function action(a){
  if(!canAct())return false;initAudio();let moved=false;
  const grounded=!run.fits(run.active,0,1);
- if(a==='left'||a==='right')moved=run.move(a==='left'?-1:1);
+ if(a==='left'||a==='right'){moved=run.move(a==='left'?-1:1);if(moved)moveTone();}
  else if(a==='rotate'||a==='rotateCCW'){
   const beforeX=run.active.x,hadDrag=!!drag,target=hadDrag&&Number.isFinite(drag.virtualX)?drag.virtualX:null;
   moved=a==='rotateCCW'&&run.rotateDir?run.rotateDir(-1):run.rotate();if(moved)tone('rotate');
@@ -266,6 +266,12 @@ function action(a){
 function initAudio(){window.BloomAudio?.configure(saved);window.BloomAudio?.unlock();}
 function vibrate(pattern){if(saved.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(pattern);}catch{}}
 function tone(type,power=1){window.BloomAudio?.effect(type,power);}
+function moveTone(){
+ const now=performance.now();
+ // Long-press moves every 29–38 ms; one soft paper tick per ~75 ms keeps speed feedback without machine-gun audio.
+ if(now-lastMoveSfx<75)return;
+ lastMoveSfx=now;window.BloomAudio?.effect('move');
+}
 function watchAudioRun(){const game=run,hold=game.hold;game.hold=function(...args){const ok=hold.apply(this,args);if(ok)tone('hold');return ok;};}
 function callout(title,sub){$('callout').innerHTML='<strong>'+title+'</strong><span>'+sub+'</span>';$('callout').classList.add('show');calloutTime=1000;}
 // Tutorial observes successful real-engine results. It owns no game input or timers.
