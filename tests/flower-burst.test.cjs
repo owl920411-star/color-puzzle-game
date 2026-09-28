@@ -21,7 +21,7 @@ test('forward flowers grow in perspective, tumble, sort by depth and fall',()=>{
  assert.ok(p.tilt>tilt+1.2,'flower tumbles after reaching the viewer');
  assert.ok(p.vy>0,'gravity turns flight downward after the approach');
  assert.ok(f.particles.every((p,i,ps)=>!i||ps[i-1].z<=p.z),'far particles draw before near ones');
- assert.ok(f.particles.every(p=>Number.isFinite(f.project(p).scale)&&f.project(p).scale<=4));
+ assert.ok(f.particles.every(p=>Number.isFinite(f.project(p).scale)&&p.size*f.project(p).scale<=f.cellSize*3),'foreground stays bounded on the phone playfield');
  f.draw();
 });
 test('projected burst stays centered with equal size on both sides throughout flight',()=>{
@@ -39,26 +39,30 @@ test('projected burst stays centered with equal size on both sides throughout fl
   }
  }
 });
-test('every cleared cell emits exactly three petals simultaneously from its own center',()=>{
+test('every cleared cell emits three particles simultaneously with the original flower and petal artwork',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.canvas.height=720;
  for(const lines of [1,2,3,4])for(const combo of [0,8]){
   f.clear();const source=cells.slice(0,lines*10);f.trigger(source,lines,combo);
   assert.equal(f.particles.length,lines*30);
   for(const c of source){const group=f.particles.filter(p=>p.col===c.col&&p.row===c.row);
    assert.equal(group.length,3);
-   for(const p of group){assert.equal(p.x,(c.col+.5)*36);assert.equal(p.y,(c.row+.5)*36);assert.equal(p.age,0);}
+   for(const p of group){const q=f.project(p);assert.equal(q.x,(c.col+.5)*36);assert.equal(q.y,(c.row+.5)*36);assert.equal(p.age,0);}
+   assert.equal(group.filter(p=>p.sprite===f.sprites.get('flower'+c.color)).length,1,'one original five-lobed flower anchors each source');
+   assert.equal(group.filter(p=>p.sprite===f.sprites.get('petal'+c.color)).length,2,'two small original petals accompany each flower');
   }
  }
 });
-test('each cell stays horizontally balanced through projection, including edge cells',()=>{
- const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,9);
- for(let frame=0;frame<20;frame++){
-  f.update(16);
-  for(const c of cells){const group=f.particles.filter(p=>p.col===c.col&&p.row===c.row);
-   const center=group.reduce((sum,p)=>sum+f.project(p).x,0)/3;
-   assert.ok(Math.abs(center-(c.col+.5)*36)<1e-8,'no sideways drift from a block');
-  }
- }
+test('approaching flowers separate across the screen instead of inflating at fixed block positions',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.canvas.height=720;
+ const source=cells.slice(0,10).map(c=>({...c,row:10}));f.trigger(source,1,0);
+ const left=f.particles.find(p=>p.col===3&&p.vx===0),right=f.particles.find(p=>p.col===6&&p.vx===0);
+ const initial=f.project(right).x-f.project(left).x;
+ f.update(80);const early=f.project(right).x-f.project(left).x;
+ f.update(80);const later=f.project(right).x-f.project(left).x;
+ assert.ok(early>initial,'source positions fan outward as the flowers approach');
+ assert.ok(later>early&&later>initial*1.15,'visible parallax continues across multiple frames');
+ assert.ok(Math.abs((f.project(left).x+f.project(right).x)/2-180)<1e-8,'shared expansion stays centered');
+ assert.equal(left.vy,0);assert.equal(right.vy,0,'depth flight precedes gravity');
 });
 
 test('neighboring cells vary naturally and enlargement remains visible over multiple frames',()=>{
@@ -72,16 +76,29 @@ test('neighboring cells vary naturally and enlargement remains visible over mult
  assert.ok(middle>early*1.4,'growth continues beyond the opening flash');
  assert.ok(late>middle*1.15,'the viewer can see continued approach before the fall');
  assert.ok(late<p.targetScale,'the approach has not already ended at 240 ms');
- f.update(80);const settled=f.project(p).scale;f.update(16);
- assert.ok(Math.abs(f.project(p).scale-settled)<1e-8,'no size snap or shrinking pulse at the handoff');
- assert.ok(settled<=3.2+1e-8,'large petals stay within the bounded foreground size');
+ f.update(80);const enteringFall=f.project(p).scale;f.update(16);
+ assert.ok(f.project(p).scale>enteringFall,'depth flight continues into the fall without a frozen-size stage');
+ assert.ok(p.size*f.project(p).scale<=f.cellSize*3,'large flowers stay within the bounded foreground size');
 });
 
-test('petals visibly enlarge from each block before any downward travel, then fall and expire',()=>{
+test('whole flowers approach closer than their petal accents to form separate depth layers',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.trigger(cells.slice(0,10),1,0);f.update(90);f.update(90);
+ for(const c of cells.slice(0,10)){
+  const group=f.particles.filter(p=>p.col===c.col&&p.row===c.row);
+  const flower=group.find(p=>p.sprite===f.sprites.get('flower'+c.color));
+  assert.ok(flower,'each source includes a foreground flower');
+  const petals=group.filter(p=>p!==flower);
+  const diameter=p=>p.size*f.project(p).scale*f.project(p).faceScale;
+  assert.ok(diameter(flower)>Math.max(...petals.map(diameter))*1.2,'foreground flower is visibly larger than both background petals');
+  assert.ok(group.every(p=>p.vy===0),'depth separation is visible before gravity begins');
+ }
+});
+
+test('flowers visibly approach before gravity takes over, never launch upward, then expire',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,0);
  const lastDiameter=new Map();
  for(const p of f.particles){const q=f.project(p);
-  assert.ok(q.scale<.7,'starts small at the distant block');
+  assert.ok(p.size*q.scale<f.cellSize/2,'starts smaller than its source block');
   lastDiameter.set(p,p.size*q.scale*q.faceScale);
  }
  for(let frame=0;frame<30;frame++){
@@ -91,8 +108,7 @@ test('petals visibly enlarge from each block before any downward travel, then fa
    if(p.age<=p.approachMs){
     const diameter=p.size*q.scale*q.faceScale;
     assert.ok(diameter>lastDiameter.get(p),'actual visible petal grows each frame before falling');
-    assert.ok(Math.abs(q.y-p.oy)<1e-8,'approach stays at the cleared block height');
-    assert.equal(p.vy,0,'no downward launch hidden underneath the enlargement');
+    assert.equal(p.vy,0,'gravity waits until the forward approach is visible');
     lastDiameter.set(p,diameter);
     if(p.age>=224)assert.ok(q.scale>1.6,'enlargement becomes clearly larger than its starting size');
    }

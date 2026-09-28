@@ -28,24 +28,27 @@ class CrayonBloomFX {
   const rows=[...new Set(sources.map(c=>c.row))].slice(0,4);
   this.blooms.push({rows,age:0,life:150,power});this.blooms=this.blooms.slice(-3);
   const seed=Math.random()*1000,columns=Math.round(this.canvas.width/this.cellSize);
+  const cameraX=this.canvas.width/2,cameraY=(Math.min(...rows)+.5)*this.cellSize;
   for(const cell of sources){
    const ox=(cell.col+.5)*this.cellSize,oy=(cell.row+.5)*this.cellSize;
    // Neighboring cells vary, while mirror columns share motion weight to avoid a sideways bias.
    const column=Math.min(cell.col,columns-1-cell.col),mirror=cell.col<(columns-1)/2?-1:1;
    const sample=n=>{const v=Math.sin(seed+column*53+cell.row*17+n*113)*43758.5453;return v-Math.floor(v);};
-   const spread=35+sample(1)*35;
+   const spread=4+sample(1)*5;
    for(const side of [-1,0,1]){
-    const middle=side===0,approachMs=260+sample(middle?3:4)*60;
-    const targetScale=middle?2.8+sample(20)*.4:2+sample(21)*.6;
+    const middle=side===0,approachMs=middle?220+sample(3)*120:190+sample(4)*140;
+    const targetScale=middle?4.8+sample(20)*1.4:1.8+sample(21)*.8;
+    const shape=middle?'flower':'petal';
     const angle=middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),tilt=sample(middle?11:12)*Math.PI;
     // Start all three at the actual block. Only their motion varies; no row-wise sweep or delay.
     this.particles.push({x:ox,y:oy,ox,oy,col:cell.col,row:cell.row,
-     vx:side*spread,launchVX:side*spread,vy:0,launchVY:middle?15+sample(2)*85:25+sample(5)*130,z:460*(1-1/.55),approachMs,targetScale,
-     gravity:middle?1000+sample(6)*2200:1400+sample(19)*3200,angle,startAngle:angle,
+     vx:side*spread,launchVX:side*spread,vy:0,z:0,depth:460*(1-1/targetScale),approachMs,targetScale,cameraX,cameraY,
+     flightY:middle?1+sample(2)*5:3+sample(5)*9,
+     gravity:middle?650+sample(6)*800:1400+sample(19)*2000,angle,startAngle:angle,
      spin:middle?mirror*(2+sample(9)*5):side*(4+sample(10)*5),
      tilt,startTilt:tilt,flip:7+sample(middle?13:14)*6,
-     age:0,life:approachMs+360+sample(middle?15:16)*100,size:middle?14+sample(17)*7:8+sample(18)*8,
-     phase:0,burst:true,sprite:this.sprite('petal',cell.color||PALETTE[0])});
+     age:0,life:approachMs+360+sample(middle?15:16)*100,size:middle?13+sample(17)*4:7+sample(18)*4,
+     phase:0,burst:true,shape,sprite:this.sprite(shape,cell.color||PALETTE[0])});
    }
   }
  }
@@ -67,15 +70,16 @@ class CrayonBloomFX {
    if(p.age<0){this.particles[n++]=p;continue;}
    const step=Math.min(dt,p.age)/1000;
    if(p.burst){
-    const time=p.age/1000,u=Math.min(1,p.age/p.approachMs);
-    const fall=Math.max(0,(p.age-p.approachMs)/1000),gravityTime=Math.max(0,fall-.055);
-    // First visibly approach the viewer. The downward clock starts only after that stage.
-    const scale=.55+(p.targetScale-.55)*u*u*(3-2*u);
-    p.z=460*(1-1/scale);
-    p.x=p.ox+p.launchVX*(1-Math.exp(-4*time))/4;
-    p.y=p.oy+p.launchVY*fall+.5*p.gravity*gravityTime*gravityTime;
-    p.vy=fall>0?p.launchVY+p.gravity*gravityTime:0;
-    p.angle=p.startAngle+p.spin*fall;p.tilt=p.startTilt+p.flip*fall;
+    const time=p.age/1000,travel=1-Math.exp(-3*p.age/p.approachMs);
+    const fall=Math.max(0,(p.age-p.approachMs)/1000);
+    // Travel through depth; enlargement comes from the camera projection below.
+    // The same flight continues into the fall, without a stationary size-only stage.
+    p.z=p.depth*travel;
+    p.x=p.ox+p.launchVX*travel;
+    p.y=p.oy+p.flightY*travel+.5*p.gravity*fall*fall;
+    p.vy=p.gravity*fall;
+    p.angle=p.startAngle+p.spin*(time*.18+fall*.82);
+    p.tilt=p.startTilt+p.flip*(time*.08+fall*.92);
    }else{
     p.vx*=Math.exp(-s*1.2);p.vy+=165*s;
     p.x+=p.vx*step+Math.sin(p.age*.006+p.phase)*step*12;p.y+=p.vy*step;
@@ -115,9 +119,12 @@ class CrayonBloomFX {
  }
  project(p){
   const scale=460/(460-p.z),fall=Math.max(0,p.age-p.approachMs);
-  // Keep the petal face visible during enlargement; introduce tumbling only as it falls.
-  const faceScale=1+(.24+.76*Math.abs(Math.cos(p.tilt))-1)*Math.min(1,fall/80);
-  return {x:p.ox+(p.x-p.ox)*scale,y:p.oy+(p.y-p.oy)*scale,scale,faceScale};
+  const faceScale=1+(.3+.7*Math.abs(Math.cos(p.tilt))-1)*Math.min(1,fall/100);
+  // Shared camera parallax moves the sources outward as they approach. Compress
+  // its field of view to bound the outward motion on a narrow phone.
+  const spread=1+(scale-1)*.16;
+  return {x:p.cameraX+(p.ox-p.cameraX)*spread+(p.x-p.ox)*scale,
+   y:p.cameraY+(p.oy-p.cameraY)*(1+(scale-1)*.12)+(p.y-p.oy)*scale,scale,faceScale};
  }
  clear(){this.particles.length=0;this.blooms.length=0;}
 }

@@ -5,8 +5,8 @@
 <div><button id="one">1줄 터뜨리기</button><button id="four">4줄 터뜨리기</button></div>
 <label>위치 <select id="position"><option value="middle">게임판 중간</option><option value="bottom">게임판 바닥</option></select></label>
 <canvas id="board" width="360" height="720" aria-label="꽃잎 연출 미리보기"></canvas>
-<button id="replay">다시 보기</button><p><a href="../?v=flower-approach10">게임에서 확인하기</a></p>
-</main><script src="../crayon-bloom-fx.js?v=cb-flower-approach10"></script><script>
+<button id="replay">다시 보기</button><p><a href="../?v=flower-camera11">게임에서 확인하기</a></p>
+</main><script src="../crayon-bloom-fx.js?v=cb-flower-camera11"></script><script>
 (()=>{'use strict';const canvas=document.getElementById('board'),g=canvas.getContext('2d'),fx=new CrayonBloomFX(canvas),colors=['#f58db8','#77c9f4','#ffd86e','#82d89b','#caa0ef'];let lines=1,rows=[],started=0,last=0,raf=0;
 function paint(t){g.fillStyle='#fffaf0';g.fillRect(0,0,360,720);g.strokeStyle='#e7dfd1';g.lineWidth=.6;for(let y=0;y<20;y++)for(let x=0;x<10;x++){g.strokeRect(x*36,y*36,36,36);if(y>=rows[0]&&(t<180||!rows.includes(y))){g.fillStyle=colors[(x+y)%5];g.fillRect(x*36+3,y*36+3,30,30);g.strokeStyle='#88677a';g.strokeRect(x*36+4,y*36+4,28,28);g.strokeStyle='#e7dfd1';}}}
 function frame(now){const t=now-started;paint(t);if(last<180&&t>=180)fx.trigger(rows.flatMap(row=>Array.from({length:10},(_,col)=>({col,row,color:colors[(col+row)%5]}))),lines,0);if(t>=180){fx.update(Math.min(32,t-Math.max(180,last)));fx.draw();}last=t;if(t<180||fx.particles.length)raf=requestAnimationFrame(frame);else raf=0;}
