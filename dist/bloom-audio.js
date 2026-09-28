@@ -10,10 +10,12 @@
     [4,2,3,1,2,4,1,-1],[2,1,0,2,3,1,4,-1],[1,3,4,2,1,0,2,-1],[2,4,3,1,0,1,0,-1]];
   const SCALE = [0,2,4,7,9];
   let context = null, master = null, musicBus = null, effectsBus = null, noiseBuffer = null;
-  let timer = null, scene = 'off', options = {sound:false,bgm:true,sfx:true};
+  let timer = null, scene = 'off', options = {sound:true,bgm:true,sfx:true};
   let unlocked = false, destroyed = false, resumePending = false, resumeBlocked = false;
   let beat = 0, nextBeatAt = 0, created = 0, peak = 0, scheduled = 0, dropped = 0;
   const voices = new Set();
+  let musicScheduled = 0, effectsScheduled = 0;
+  const effectEvents = {};
   const hidden = () => Boolean(global.document && global.document.hidden);
   const active = () => !destroyed && unlocked && options.sound && !hidden() && (scene === 'home' || scene === 'game' || scene === 'over');
   const musicActive = () => active() && options.bgm && scene !== 'over';
@@ -65,6 +67,7 @@
       const entry = {source,nodes,category};voices.add(entry);peak = Math.max(peak,voices.size);scheduled += 1;
       source.onended = () => disconnect(entry);
       source.start(at);source.stop(at + length + 0.025);
+      if (category === 'music') musicScheduled += 1; else effectsScheduled += 1;
     } catch (_) {
       if (source) for (const entry of Array.from(voices)) if (entry.source === source) disconnect(entry);
       for (const node of [source,gain,filter]) if (node) { try { node.disconnect(); } catch (_) {} }
@@ -143,15 +146,26 @@
   }
   function configure(saved) {
     if (destroyed) return;
-    const next = {sound:Boolean(saved && saved.sound),bgm:!saved || saved.bgm !== false,sfx:!saved || saved.sfx !== false};
+    const next = {sound:!saved || saved.sound !== false,bgm:!saved || saved.bgm !== false,sfx:!saved || saved.sfx !== false};
     if (next.sound === options.sound && next.bgm === options.bgm && next.sfx === options.sfx) return;
     options = next;
     sync();
   }
   function unlock() {
     if (destroyed || !options.sound) return false;
-    unlocked = true;resumeBlocked = false;
     if (!context && !makeContext()) return false;
+    unlocked = true;resumeBlocked = false;
+    // Resume directly in the gesture, even while a menu/loading scene is paused
+    // or an earlier policy-blocked resume promise is still pending.
+    if (context.state !== 'running' && typeof context.resume === 'function') {
+      resumePending = true;
+      try {
+        Promise.resolve(context.resume()).then(() => {
+          resumePending = false;resumeBlocked = context.state !== 'running';sync();
+        },() => { resumePending = false;resumeBlocked = true; });
+      } catch (_) { resumePending = false;resumeBlocked = true; }
+      return true;
+    }
     sync();return true;
   }
   function setScene(next) {
@@ -163,6 +177,7 @@
   function effect(type, power) {
     if (!options.sfx || !active() || !context || context.state !== 'running') return false;
     const at = context.currentTime + 0.003, strength = Math.max(1,Math.min(6,Number(power) || 1));
+    const before = effectsScheduled;
     const chime = (notes,volume=0.16) => notes.forEach((n,i) => note(n,at + i * 0.07,0.24,volume,'effect'));
     if (type === 'rotate') { voice('paper',2400,at,0.055,0.17,'effect');note(74,at,0.055,0.05,'effect'); }
     else if (type === 'hold') { voice('paper',1300,at,0.13,0.15,'effect');note(72,at + 0.025,0.1,0.075,'effect','pluck'); }
@@ -173,7 +188,9 @@
     else if (type === 'bad') { note(67,at,0.14,0.18,'effect','pluck');note(64,at + 0.09,0.16,0.16,'effect','pluck');voice('paper',900,at,0.07,0.1,'effect'); }
     else if (type === 'gameover' || type === 'over') chime([72,69,67,64],0.12);
     else return false; // Deliberately no movement / repeat-cell sound.
-    return true;
+    const count = effectsScheduled - before;
+    if (count) effectEvents[type] = (effectEvents[type] || 0) + count;
+    return count > 0;
   }
   function clear() { setScene('off'); }
   function visibility() { resumeBlocked = false;sync(); }
@@ -189,5 +206,6 @@
   global.BloomAudio = Object.freeze({configure,unlock,scene:setScene,effect,clear,destroy,
     stats:() => ({scene,contextsCreated:created,contextState:context ? context.state : 'unavailable',voices:voices.size,peakVoices:peak,
       timers:timer === null ? 0 : 1,scheduled,dropped,beat,cycleBeats:128,voiceLimit:LIMIT,unlocked,destroyed,
-      sound:options.sound,bgm:options.bgm,sfx:options.sfx})});
+      sound:options.sound,bgm:options.bgm,sfx:options.sfx,musicScheduled,effectsScheduled,effectEvents:{...effectEvents},
+      effectVoices:[...voices].filter(v => v.category === 'effect').length})});
 })(window);

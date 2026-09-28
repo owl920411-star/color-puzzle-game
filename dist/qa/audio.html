@@ -1,6 +1,25 @@
 <!doctype html>
 <html lang="ko">
 <head>
+<base href="../">
+<meta name="robots" content="noindex,nofollow">
+<meta name="rc-first-install" content="empty-memory-before-app">
+<script id="qa-first-install-storage">(() => {
+ 'use strict';
+ const data=new Map();let writes=0;
+ const choice=new URLSearchParams(location.search).get('case')||'new';
+ const seeds={on:{sound:true},off:{sound:false},missing:{},bgmOff:{bgm:false},sfxOff:{sfx:false}};
+ if(choice in seeds)data.set('glassfall-v1',JSON.stringify({...seeds[choice],tutorialCompleted:true,endlessV1:{normal:{best:123}},qaPreserved:'keep'}));
+ window.__AUDIO_QA_RESUMES__=[];
+ const Native=window.AudioContext||window.webkitAudioContext;
+ if(Native)window.AudioContext=class extends Native{resume(){window.__AUDIO_QA_RESUMES__.push({active:navigator.userActivation?.isActive,scene:window.BloomAudio?.stats().scene});return super.resume();}};
+ const memory={get length(){return data.size;},key:i=>[...data.keys()][i]??null,
+  getItem:k=>data.has(String(k))?data.get(String(k)):null,
+  setItem(k,v){writes++;data.set(String(k),String(v));},
+  removeItem(k){writes++;data.delete(String(k));},clear(){writes++;data.clear();}};
+ Object.defineProperty(window,'localStorage',{configurable:true,value:memory});
+ window.__BLOOM_FIRST_INSTALL_QA__=Object.freeze({stats:()=>({initialEntries:0,entries:data.size,writes,storage:'empty-memory-before-app'})});
+})();</script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fff7e8"><meta name="description" content="파스텔 크레용 손그림 세계에서 즐기는 귀여운 무한 블록 퍼즐">
 <meta name="crayon-build" content="CB-RC2-AUDIO1">
@@ -54,6 +73,7 @@
 <script src="bloom-tutorial.js?v=cb-rc2-audio1"></script>
 <script src="bloom-home.js?v=cb-rc2-audio1"></script>
 <script src="endless-app.js?v=cb-rc2-audio1"></script>
+<script src="qa/audio-qa.js?v=cb-rc2-audio1"></script>
 </body>
 </html>
 

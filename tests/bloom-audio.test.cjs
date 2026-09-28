@@ -37,7 +37,7 @@ const settle=async()=>{await Promise.resolve();await Promise.resolve();await Pro
 async function start(a,scene='home',settings={sound:true}){a.api.configure(settings);a.api.scene(scene);a.api.unlock();await settle();}
 
 test('audio remains lazy until enabled user interaction, and repeated config/unlock reuse one context',async()=>{
- const a=fixture();a.api.scene('home');assert.equal(a.api.unlock(),false);assert.equal(a.counts().contexts,0);
+ const a=fixture();a.api.scene('home');assert.equal(a.counts().contexts,0);a.api.configure({sound:false});assert.equal(a.api.unlock(),false);assert.equal(a.counts().contexts,0);
  const saved={sound:true,unrelated:'preserve'};a.api.configure(saved);assert.equal(a.counts().contexts,0);a.api.unlock();await settle();
  for(let i=0;i<1000;i++){a.api.configure(saved);a.api.unlock();}
  assert.equal(a.counts().contexts,1);assert.equal(a.counts().buffers,1);assert.equal(a.api.stats().timers,1);assert.equal(saved.unrelated,'preserve');
@@ -80,3 +80,4 @@ test('built module matches source and contains no pointer handlers, external sam
  assert.deepEqual(fs.readFileSync('src/bloom-audio.js'),fs.readFileSync('dist/bloom-audio.js'));
  const source=fs.readFileSync('src/bloom-audio.js','utf8');assert.doesNotMatch(source,/pointerdown|pointermove|setInterval\(|fetch\(|https?:/);
 });
+

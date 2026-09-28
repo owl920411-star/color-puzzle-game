@@ -148,7 +148,7 @@ function showMenu(){
  showPanel(window.CrayonHome.render({kind,best:recordBest}),'menu');
 }
 async function requestStart(retry=false,replay=false){
- if(state==='loading')return;const request=++startRequest;
+ if(state==='loading')return;initAudio();const request=++startRequest;
  if(playing()||state==='paused')rememberScore();clearInput();state='loading';
  const result=loading?await loading.run():{cancelled:false};
  if(result.cancelled||request!==startRequest)return;start(retry,!!tutorial&&(replay||saved.tutorialCompleted!==true));
@@ -170,16 +170,16 @@ function finish(reason='unknown',detail=null){
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
- const toggle=(key,label,on,disabled=false)=>`<button class="paper-toggle" data-menu="${key}" aria-pressed="${on}" ${disabled?'disabled':''}><span>${label}</span><span class="toggle-state">${key==='effects'?(on?'풍부':'간결'):(on?'켬':'끔')}</span><svg viewBox="0 0 28 28" aria-hidden="true"><path class="toggle-ring" d="M14 2C29 1 30 26 14 26 0 27-2 3 14 2Z"/><path class="toggle-check" d="m7 14 5 6L22 8"/></svg></button>`;
- showPanel(`<div class="paper-options"><header><img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="54" height="54"><div class="kicker">그림책 뒤쪽</div><h2>놀이 방법 · 설정</h2></header><h3>소리</h3>${toggle('sound','전체 소리',!!saved.sound)}${toggle('bgm','배경음',saved.bgm!==false)}${toggle('sfx','효과음',saved.sfx!==false)}<h3>느낌</h3>${toggle('haptics','진동',!!saved.haptics,typeof navigator.vibrate!=='function')}${toggle('effects','효과',!reduced,systemReduced)}<h3>도움</h3><button class="secondary" data-menu="tutorial">튜토리얼 다시 보기</button><details class="paper-rules"><summary>조작과 점수 알아보기</summary><p>짧게 톡! 한 칸 이동<br>꾹 누르면 휘리릭!<br>옆으로 슥! 회전 · 위로 보관 · 아래로 쏙!</p><div class="rule-box">${ruleHTML()}</div></details>${adaptive?.button()||''}<button class="text-button" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'기록은 이 기기·브라우저에 저장돼요.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p></div>`,'settings');hud();
+ const toggle=(key,label,on,disabled=false)=>`<button class="paper-toggle" data-menu="${key}" aria-pressed="${on}" ${disabled?'disabled':''}><span>${label}</span><span class="toggle-state">${key==='effects'?(on?'풍부':'간결'):(disabled&&(key==='bgm'||key==='sfx')?'전체 소리 꺼짐 · 저장 '+(on?'켬':'끔'):(on?'켬':'끔'))}</span><svg viewBox="0 0 28 28" aria-hidden="true"><path class="toggle-ring" d="M14 2C29 1 30 26 14 26 0 27-2 3 14 2Z"/><path class="toggle-check" d="m7 14 5 6L22 8"/></svg></button>`;
+ showPanel(`<div class="paper-options"><header><img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="54" height="54"><div class="kicker">그림책 뒤쪽</div><h2>놀이 방법 · 설정</h2></header><h3>소리</h3>${toggle('sound','전체 소리',saved.sound!==false)}${toggle('bgm','배경음',saved.bgm!==false,saved.sound===false)}${toggle('sfx','효과음',saved.sfx!==false,saved.sound===false)}${saved.sound===false?'<p role="status">전체 소리가 꺼져 있어요. 배경음·효과음 설정은 보관되며, 전체 소리를 켜면 적용돼요.</p>':''}<h3>느낌</h3>${toggle('haptics','진동',!!saved.haptics,typeof navigator.vibrate!=='function')}${toggle('effects','효과',!reduced,systemReduced)}<h3>도움</h3><button class="secondary" data-menu="tutorial">튜토리얼 다시 보기</button><details class="paper-rules"><summary>조작과 점수 알아보기</summary><p>짧게 톡! 한 칸 이동<br>꾹 누르면 휘리릭!<br>옆으로 슥! 회전 · 위로 보관 · 아래로 쏙!</p><div class="rule-box">${ruleHTML()}</div></details>${adaptive?.button()||''}<button class="text-button" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'기록은 이 기기·브라우저에 저장돼요.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p></div>`,'settings');hud();
 }
 panel.addEventListener('click',e=>{
  const relic=e.target.closest('[data-relic]');if(relic){if(!relic.disabled&&useRelic(relic.dataset.relic)){if(relicReturn==='dev')devPanel();else resume();}return;}
- const b=e.target.closest('button[data-menu]');if(!b||b.disabled)return;const a=b.dataset.menu;
+ const b=e.target.closest('button[data-menu]');if(!b||b.disabled)return;const a=b.dataset.menu;initAudio();
  if(a==='normal'){kind='normal';pref('material','glass');menu();}
  else if(a==='start'||a==='new')requestStart();else if(a==='retry')requestStart(true);else if(a==='resume')resume();else if(a==='menu')menu();else if(a==='settings')settings();
  else if(a==='tutorial')requestStart(false,true);
- else if(a==='sound'){pref('sound',!saved.sound);initAudio();settings();}else if(a==='bgm'||a==='sfx'){pref(a,saved[a]===false);window.BloomAudio?.configure(saved);initAudio();settings();}else if(a==='haptics'){pref('haptics',!saved.haptics);settings();}
+ else if(a==='sound'){pref('sound',saved.sound===false);initAudio();settings();}else if(a==='bgm'||a==='sfx'){pref(a,saved[a]===false);window.BloomAudio?.configure(saved);initAudio();settings();}else if(a==='haptics'){pref('haptics',!saved.haptics);settings();}
  else if(a==='effects'&&!systemReduced){reduced=!reduced;pref('effects',reduced?'light':'rich');settings();}
  else if(a==='touch-down'){pref('touchSensitivity10',Math.max(1,touchLevel()-1));settings();}
  else if(a==='touch-up'){pref('touchSensitivity10',Math.min(10,touchLevel()+1));settings();}
@@ -464,5 +464,11 @@ if(window.AdaptiveBridge&&window.AdaptiveDirector)adaptive=window.AdaptiveBridge
  download:(filename,text)=>{const blob=new Blob([text],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 });
 
+// Fill only absent audio keys; preserve explicit OFF and all unrelated records.
+if(['sound','bgm','sfx'].some(key=>saved[key]===undefined)){
+ writeStore(s=>{for(const key of ['sound','bgm','sfx'])if(s[key]===undefined)s[key]=true;});
+ for(const key of ['sound','bgm','sfx'])if(saved[key]===undefined)saved[key]=true;
+}
 document.addEventListener('pointerdown',initAudio,{capture:true,passive:true});window.BloomAudio?.configure(saved);celebration?.preload();menu();fit();$('boot').hidden=true;if(new URLSearchParams(location.search).get('play')==='1')start();requestAnimationFrame(frame);
 })();
+
