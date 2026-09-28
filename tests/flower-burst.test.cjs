@@ -64,7 +64,7 @@ test('each cell stays horizontally balanced through projection, including edge c
 test('neighboring cells vary naturally and depth growth slows smoothly without a hard stop',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.trigger(cells.slice(0,10),1,0);
  const centers=f.particles.filter(p=>p.vx===0);
- assert.ok(new Set(centers.map(p=>p.vy)).size>=4,'not a repeated identical launch');
+ assert.ok(new Set(centers.map(p=>p.approach)).size>=4,'not a repeated identical launch');
  assert.ok(new Set(centers.map(p=>p.tilt)).size>=4,'petals do not turn edge-on together');
  const p=centers[0];f.update(100);const first=p.z;
  f.update(100);const second=p.z-first;
@@ -72,4 +72,17 @@ test('neighboring cells vary naturally and depth growth slows smoothly without a
  for(let i=0;i<5;i++)f.update(100);const before=p.z;f.update(100);
  assert.ok(p.z>before&&p.z-before<second,'no abrupt perspective clamp');
  assert.ok(f.project(p).scale<2.6,'large petals do not blanket the next block');
+});
+
+test('petals spray toward the viewer without upward travel and only settle slightly late',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,0);
+ for(let frame=0;frame<50;frame++){
+  f.update(16);
+  for(const p of f.particles){const q=f.project(p);
+   assert.ok(q.y>=p.oy,'never rises above its launch point');
+   if(p.age<=250)assert.equal(q.y,p.oy,'initial burst goes straight forward');
+   assert.ok(q.y-p.oy<15,'only a slight late descent');
+   if(p.age>=200)assert.ok(q.scale>1.9,'initial burst visibly approaches viewer');
+  }
+ }
 });

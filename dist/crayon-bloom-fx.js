@@ -33,13 +33,13 @@ class CrayonBloomFX {
    // Neighboring cells vary, while mirror columns share motion weight to avoid a sideways bias.
    const column=Math.min(cell.col,columns-1-cell.col),mirror=cell.col<(columns-1)/2?-1:1;
    const sample=n=>{const v=Math.sin(seed+column*53+cell.row*17+n*113)*43758.5453;return v-Math.floor(v);};
-   const spread=18+sample(1)*12,lift=125+sample(2)*50;
+   const spread=18+sample(1)*12;
    for(const side of [-1,0,1]){
-    const middle=side===0,depth=middle?280:265,approach=7+sample(middle?3:4)*3;
+    const middle=side===0,depth=middle?280:265,approach=11+sample(middle?3:4)*4;
     // Start all three at the actual block. Only their motion varies; no row-wise sweep or delay.
     this.particles.push({x:ox,y:oy,ox,oy,col:cell.col,row:cell.row,
-     vx:side*spread,vy:middle?-(125+sample(5)*55):-lift,z:0,vz:depth*approach,depth,approach,
-     gravity:320+sample(6)*30,angle:middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),
+     vx:side*spread,vy:0,z:0,vz:depth*approach,depth,approach,
+     gravity:20+sample(6)*12,angle:middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),
      spin:middle?mirror*(sample(9)-.5)*3:side*(1.2+sample(10)*2.5),
      tilt:sample(middle?11:12)*Math.PI,flip:2.8+sample(middle?13:14)*1.8,
      age:0,life:900+sample(middle?15:16)*150,size:middle?14+sample(17)*4:11+sample(18)*4,
@@ -64,7 +64,7 @@ class CrayonBloomFX {
    p.age+=dt;if(p.age>=p.life)continue;
    if(p.age<0){this.particles[n++]=p;continue;}
    const step=Math.min(dt,p.age)/1000;
-   if(p.burst){p.z=p.depth*(1-Math.exp(-p.approach*p.age/1000));p.vx*=Math.exp(-step*2.4);p.vy+=p.gravity*step;p.tilt+=p.flip*step;}
+   if(p.burst){p.z=p.depth*(1-Math.exp(-p.approach*p.age/1000));p.vx*=Math.exp(-step*2.4);p.vy=p.gravity*Math.max(0,p.age-260)/1000;p.tilt+=p.flip*step;}
    else{p.vx*=Math.exp(-s*1.2);p.vy+=165*s;}
    p.x+=p.vx*step+(p.burst?0:Math.sin(p.age*.006+p.phase)*step*12);
    p.y+=p.vy*step;p.angle+=p.spin*step;this.particles[n++]=p;

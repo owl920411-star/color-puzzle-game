@@ -383,10 +383,11 @@ function normalPreview(g,p,w,h){if(!p)return;const minX=Math.min(...p.cells.map(
 function draw(){
  if(!run)return;ctx.clearRect(0,0,360,720);ctx.fillStyle='#2a1a10';ctx.fillRect(0,0,360,720);
  ctx.imageSmoothingEnabled=true;drawPyramidBackground(ctx);desertAtmosphere(ctx);ctx.strokeStyle='#8fbed109';ctx.lineWidth=1;ctx.beginPath();for(let x=1;x<10;x++){ctx.moveTo(x*36,0);ctx.lineTo(x*36,720);}for(let y=1;y<20;y++){ctx.moveTo(0,y*36);ctx.lineTo(360,y*36);}ctx.stroke();
+ // Keep the translucent drop trail behind solid tiles so it cannot wash out their colour.
+ if(trail&&!reduced){ctx.save();ctx.globalAlpha=trail.life/900;ctx.fillStyle='#c2fff2';for(const cell of trail.cells)ctx.fillRect(cell.x*36+5,cell.y*36,26,(trail.distance+1)*36);ctx.restore();}
  const map=new Map(falls.map(f=>[f.cell.id,f])),hot=new Set(pending?.rows||[]);
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const cell=run.board[y][x];if(!cell)continue;const f=map.get(cell.id),t=Math.min(1,phaseTime/200),yy=f&&phase==='fall'?f.from+(f.to-f.from)*(1-Math.pow(1-t,3)):y;normalCell(ctx,cell,x*36,yy*36,36,1,false,hot.has(y));}
  if(run.active){const p=run.active,d=run.dropDistance();for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y+d)*36,36,.75,true);for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y)*36);}
- if(trail&&!reduced){ctx.save();ctx.globalAlpha=trail.life/900;ctx.fillStyle='#c2fff2';for(const cell of trail.cells)ctx.fillRect(cell.x*36+5,cell.y*36,26,(trail.distance+1)*36);ctx.restore();}
  if(impact&&!reduced){const t=1-impact.life/impact.total;ctx.save();ctx.globalAlpha=(1-t)*.55;ctx.strokeStyle='#b7fff0';ctx.lineWidth=2*(1-t)+.5;ctx.beginPath();ctx.ellipse(impact.x,Math.min(714,impact.y),20+90*t,3+13*t,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  for(const p of fx){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.globalAlpha=Math.min(1,p.life/350);if(p.spark&&!reduced){ctx.strokeStyle=p.color;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-p.size*2,0);ctx.lineTo(p.size*2,0);ctx.moveTo(0,-p.size*2);ctx.lineTo(0,p.size*2);ctx.stroke();}ctx.fillStyle=p.color;ctx.beginPath();ctx.moveTo(-p.size,0);ctx.lineTo(p.size*.7,-p.size*.6);ctx.lineTo(p.size*.2,p.size);ctx.closePath();ctx.fill();ctx.restore();}
  if(!reduced)shatterFX?.draw();
