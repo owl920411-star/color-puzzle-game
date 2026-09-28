@@ -39,13 +39,24 @@ test('projected burst stays centered with equal size on both sides throughout fl
   }
  }
 });
-test('single-line clears are dense and four-line clears add a longer three-wave burst',()=>{
+test('every cleared cell emits exactly three petals simultaneously from its own center',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.canvas.height=720;
- f.trigger(cells.slice(0,10),1,0);assert.equal(f.particles.length,112);
- const singleDelay=Math.max(...f.particles.map(p=>-p.age));
- assert.ok(f.particles.every(p=>Math.abs(p.x-180)<=57),'launch stays centered');
- for(let i=0;i<3;i++)f.update(100);
- assert.ok(f.particles.filter(p=>{const q=f.project(p);return q.x>=0&&q.x<=360;}).length>=100,'dense burst stays on screen');
- f.clear();f.trigger(cells,4,0);assert.equal(f.particles.length,180);
- assert.ok(Math.max(...f.particles.map(p=>-p.age))>singleDelay+100,'four lines have a longer layered release');
+ for(const lines of [1,2,3,4])for(const combo of [0,8]){
+  f.clear();const source=cells.slice(0,lines*10);f.trigger(source,lines,combo);
+  assert.equal(f.particles.length,lines*30);
+  for(const c of source){const group=f.particles.filter(p=>p.col===c.col&&p.row===c.row);
+   assert.equal(group.length,3);
+   for(const p of group){assert.equal(p.x,(c.col+.5)*36);assert.equal(p.y,(c.row+.5)*36);assert.equal(p.age,0);}
+  }
+ }
+});
+test('each cell stays horizontally balanced through projection, including edge cells',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,9);
+ for(let frame=0;frame<50;frame++){
+  f.update(16);
+  for(const c of cells){const group=f.particles.filter(p=>p.col===c.col&&p.row===c.row);
+   const center=group.reduce((sum,p)=>sum+f.project(p).x,0)/3;
+   assert.ok(Math.abs(center-(c.col+.5)*36)<1e-8,'no sideways drift from a block');
+  }
+ }
 });

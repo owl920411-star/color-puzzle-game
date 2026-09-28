@@ -21,32 +21,21 @@ class CrayonBloomFX {
  }
  trigger(cells,lines=1,combo=0){
   if(!cells?.length)return;
-  const power=Math.min(4,Math.max(1,lines)),boost=Math.min(3,Math.max(0,combo-1));
-  // Project particles toward the viewer, rather than spreading flat on the board.
-  const count=Math.min(this.maxParticles,[0,112,136,158,180][power]+boost*4);
+  const power=Math.min(4,Math.max(1,lines));
+  // Exactly three petals per cleared block; retire old effects to make room.
+  const sources=cells.slice(0,Math.floor(this.maxParticles/3)),count=sources.length*3;
   this.particles.splice(0,Math.max(0,this.particles.length+count-this.maxParticles));
-  const rows=[...new Set(cells.map(c=>c.row))].slice(0,4);
-  const ox=this.canvas.width/2,oy=cells.reduce((v,c)=>v+(c.row+.5)*this.cellSize,0)/cells.length;
+  const rows=[...new Set(sources.map(c=>c.row))].slice(0,4);
   this.blooms.push({rows,age:0,life:150,power});this.blooms=this.blooms.slice(-3);
-  // Emit matched left/right pairs so foreground size and perspective cannot bias a burst.
-  for(let i=0;i<count;i+=2){
-   const pair=i/2,cell=cells[(pair*7+Math.floor(pair/5))%cells.length];
-   const near=pair%3===0,shape=near||pair%3===1?'flower':'petal';
-   // Keep the launch in the center so perspective does not eject most flowers offscreen.
-   const offset=5+Math.random()*(near?30:52);
-   const vx=8+Math.random()*(near?22:42),a=Math.random()*Math.PI*2;
-   const wave=pair%(power===4?3:2),delay=wave*(power===4?105:65);
-   const shared={y:oy+(Math.random()-.5)*this.cellSize*.9,ox,oy,vy:-80-Math.random()*95,
-    z:0,vz:near?600+Math.random()*100:190+Math.random()*250,
-    spin:(Math.random()-.5)*9,tilt:Math.random()*.6,flip:5+Math.random()*7,
-    age:-delay-Math.random()*25,life:near?950:1100+Math.random()*200,
-    size:near?23+Math.random()*9:shape==='flower'?16+Math.random()*8:10+Math.random()*7,
-    phase:a,burst:true};
-   for(const side of [-1,1]){
-    if(i+(side===1?1:0)>=count)break;
-    const x=ox+side*offset,source=cells.find(c=>c.row===cell.row&&Math.abs((c.col+.5)*this.cellSize-x)<.1)||cell;
-    this.particles.push({...shared,x,vx:side*vx,angle:side*a,spin:side*shared.spin,
-     sprite:this.sprite(shape,source.color||PALETTE[pair%6])});
+  for(const cell of sources){
+   const ox=(cell.col+.5)*this.cellSize,oy=(cell.row+.5)*this.cellSize;
+   for(const side of [-1,0,1]){
+    // Each block owns its projection center: no board-wide sideways sweep.
+    this.particles.push({x:ox,y:oy,ox,oy,col:cell.col,row:cell.row,
+     vx:side*11,vy:side===0?-90:-110,z:0,vz:side===0?640:540,
+     angle:side*.65,spin:side*3.5,tilt:side===0?.25:.6,flip:side===0?7:8,
+     age:0,life:1000,size:side===0?18:15,phase:0,burst:true,
+     sprite:this.sprite('petal',cell.color||PALETTE[0])});
    }
   }
  }
