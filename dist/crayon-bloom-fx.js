@@ -8,7 +8,7 @@ class CrayonBloomFX {
   const key=shape+color;if(this.sprites.has(key))return this.sprites.get(key);
   const c=document.createElement('canvas');c.width=c.height=48;const g=c.getContext('2d');g.translate(24,24);g.fillStyle=color;g.strokeStyle='#775477';g.lineWidth=1.4;g.lineJoin='round';g.beginPath();
   if(shape==='heart'){g.moveTo(0,15);g.bezierCurveTo(-27,-2,-13,-25,0,-10);g.bezierCurveTo(13,-25,27,-2,0,15);}
-  else if(shape==='flower'){for(let i=0;i<5;i++){const a=i*Math.PI*2/5;g.moveTo(Math.cos(a)*10+8,Math.sin(a)*10);g.arc(Math.cos(a)*10,Math.sin(a)*10,8,0,Math.PI*2);}}
+  else if(shape==='flower'){for(let i=0;i<=80;i++){const a=i*Math.PI*2/80-Math.PI/2,r=15+4*Math.cos(i*Math.PI*10/80),x=Math.cos(a)*r,y=Math.sin(a)*r;i?g.lineTo(x,y):g.moveTo(x,y);}g.closePath();}
   else if(shape==='star'){for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,r=i%2?8:19;g.lineTo(Math.cos(a)*r,Math.sin(a)*r);}g.closePath();}
   else if(shape==='cloud'){g.moveTo(-18,9);g.bezierCurveTo(-29,-2,-14,-15,-7,-9);g.bezierCurveTo(-5,-24,15,-20,15,-7);g.bezierCurveTo(28,-6,25,12,14,12);g.closePath();}
   else if(shape==='scribble'){g.moveTo(-17,8);g.bezierCurveTo(22,-25,-24,-21,-4,12);g.bezierCurveTo(23,23,25,-18,0,-10);g.bezierCurveTo(-18,2,2,19,18,0);}
@@ -22,19 +22,22 @@ class CrayonBloomFX {
  trigger(cells,lines=1,combo=0){
   if(!cells?.length)return;
   const power=Math.min(4,Math.max(1,lines)),boost=Math.min(3,Math.max(0,combo-1));
-  const count=Math.min(this.maxParticles,Math.round(32+power*24+boost*12));
+  // Flowers open on the cleared cells; the burst follows without delaying play.
+  const count=Math.min(this.maxParticles,44+power*22+boost*10);
   this.particles.splice(0,Math.max(0,this.particles.length+count-this.maxParticles));
-  const cy=cells.reduce((v,c)=>v+(c.row+.5)*this.cellSize,0)/cells.length;
-  const y=Math.max(46,Math.min(this.canvas.height-48,cy));
-  this.blooms.push({y,age:0,life:power===4?850:480,power});this.blooms=this.blooms.slice(-3);
+  const flowers=cells.slice(0,40).map((cell,i)=>({x:(cell.col+.5)*this.cellSize,y:(cell.row+.5)*this.cellSize,
+   delay:(cell.col%3)*16,angle:(i%5-2)*.14,sprite:this.sprite('flower',cell.color||PALETTE[i%6])}));
+  const rows=[...new Set(cells.map(c=>c.row))].slice(0,4);
+  this.blooms.push({flowers,rows,age:0,life:460,power});this.blooms=this.blooms.slice(-3);
   for(let i=0;i<count;i++){
-   const cell=cells[i%cells.length],shape=i%5===0?'crumb':['petal','star','heart','flower'][i%4];
-   const color=cell.color||PALETTE[i%PALETTE.length],a=Math.random()*Math.PI*2;
-   const speed=55+Math.random()*(85+power*24),fountain=power===4&&i%3===0;
-   this.particles.push({x:fountain?this.canvas.width/2:(cell.col+.5)*this.cellSize,y:(cell.row+.5)*this.cellSize,
-    vx:fountain?(Math.random()-.5)*270:Math.cos(a)*speed,vy:fountain?-220-Math.random()*170:Math.sin(a)*speed-100,
-    angle:a,spin:(Math.random()-.5)*5,age:0,life:650+Math.random()*600+power*70,
-    size:shape==='crumb'?5+Math.random()*5:11+Math.random()*8+power,phase:a,sprite:this.sprite(shape,color)});
+   const cell=cells[i%cells.length],shape=i%7===0?'flower':i%6===0?'crumb':'petal';
+   const color=cell.color||PALETTE[i%6],a=Math.random()*Math.PI*2;
+   const speed=110+Math.random()*(100+power*26),delay=45+(cell.col%3)*16;
+   this.particles.push({x:(cell.col+.5)*this.cellSize,y:(cell.row+.5)*this.cellSize,
+    vx:Math.cos(a)*speed,vy:-90-Math.random()*(110+power*22)+Math.sin(a)*speed*.35,
+    angle:a,spin:(Math.random()-.5)*8,age:-delay,life:720+Math.random()*420+power*45,
+    size:shape==='crumb'?4+Math.random()*4:shape==='flower'?21+Math.random()*10:12+Math.random()*11,
+    phase:a,burst:true,flutter:shape==='petal',sprite:this.sprite(shape,color)});
   }
  }
  item(event,definition){
@@ -50,7 +53,7 @@ class CrayonBloomFX {
  }
  update(ms){
   const dt=Math.max(0,Math.min(100,Number.isFinite(ms)?ms:0)),s=dt/1000;
-  let n=0;for(const p of this.particles){p.age+=dt;if(p.age>=p.life)continue;p.vx*=Math.exp(-s*1.2);p.vy+=165*s;p.x+=p.vx*s+Math.sin(p.age*.006+p.phase)*s*12;p.y+=p.vy*s;p.angle+=p.spin*s;this.particles[n++]=p;}this.particles.length=n;
+  let n=0;for(const p of this.particles){p.age+=dt;if(p.age>=p.life)continue;if(p.age<0){this.particles[n++]=p;continue;}p.vx*=Math.exp(-s*(p.burst?2.1:1.2));p.vy+=(p.burst?225:165)*s;p.x+=p.vx*s+Math.sin(p.age*.006+p.phase)*s*12;p.y+=p.vy*s;p.angle+=p.spin*s;this.particles[n++]=p;}this.particles.length=n;
   n=0;for(const b of this.blooms){b.age+=dt;if(b.age<b.life)this.blooms[n++]=b;}this.blooms.length=n;
   return false;
  }
@@ -64,11 +67,16 @@ class CrayonBloomFX {
      else{g.moveTo(b.x-15,b.y+i*5);g.bezierCurveTo(b.x+25,b.y-24,b.x-25,b.y+24,b.x+15,b.y+i*5);}g.stroke();
     }g.restore();continue;
    }
-   g.save();g.translate(this.canvas.width/2,b.y);g.globalAlpha=(1-t)*.65;g.lineWidth=2.3;g.strokeStyle=PALETTE[b.power%6];
-   g.beginPath();for(let i=0;i<=100;i++){const a=i*Math.PI*2/100,r=(12+95*t)*(1+.19*Math.cos(a*6)),x=Math.cos(a)*r,y=Math.sin(a)*r*.55;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
-   for(let i=0;i<8+b.power*2;i++){const a=i*Math.PI*2/(8+b.power*2),r=20+120*t;g.strokeStyle=PALETTE[i%6];g.beginPath();g.moveTo(Math.cos(a)*r,Math.sin(a)*r*.5);g.quadraticCurveTo(Math.cos(a+.15)*(r+12),Math.sin(a+.15)*(r+12)*.5,Math.cos(a)*(r+23),Math.sin(a)*(r+23)*.5);g.stroke();}g.restore();
+   // A short crayon stroke ties the row together. No full-screen flash or shake.
+   for(const row of b.rows){g.save();g.globalAlpha=Math.max(0,1-t*3)*.7;g.strokeStyle='#ffe5a0';g.lineWidth=3+8*(1-t);g.lineCap='round';g.beginPath();g.moveTo(6,(row+.5)*this.cellSize);g.lineTo(this.canvas.width-6,(row+.5)*this.cellSize);g.stroke();g.restore();}
+   for(const f of b.flowers){const age=b.age-f.delay;if(age<0)continue;
+    const open=Math.min(1,age/100),fade=Math.max(0,Math.min(1,(330-age)/180));
+    const pop=1+Math.sin(open*Math.PI)*.22,size=this.cellSize*1.16*(.18+.82*open)*pop;
+    g.save();g.translate(f.x,f.y);g.rotate(f.angle+age*.0005);g.globalAlpha=fade*.96;
+    g.drawImage(f.sprite,-size/2,-size/2,size,size);g.restore();}
+
   }
-  for(const p of this.particles){const t=p.age/p.life;g.save();g.translate(p.x,p.y);g.rotate(p.angle);g.globalAlpha=Math.min(1,(1-t)*2.4)*.94;const size=p.size*(.8+Math.min(1,t*8)*.2);g.drawImage(p.sprite,-size/2,-size/2,size,size);g.restore();}
+  for(const p of this.particles){if(p.age<0)continue;const t=p.age/p.life;g.save();g.translate(p.x,p.y);g.rotate(p.angle);if(p.flutter)g.scale(.55+.45*Math.abs(Math.cos(p.age*.008+p.phase)),1);g.globalAlpha=Math.min(1,(1-t)*2.4)*.94;const size=p.size*(.8+Math.min(1,t*8)*.2);g.drawImage(p.sprite,-size/2,-size/2,size,size);g.restore();}
   g.restore();
  }
  clear(){this.particles.length=0;this.blooms.length=0;}
