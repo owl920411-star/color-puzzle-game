@@ -92,7 +92,19 @@
       note(chord[part === 0 ? 0 : 2] - 12,at,0.4,0.10,'music','pluck');
       note(chord[1],at + 0.018,0.3,0.045,'music','pluck');
     }
-    if (game && (part === 1 || part === 3)) voice('paper',1800,at,0.045,0.07,'music');
+    if (game) {
+      // A quiet off-beat wooden pulse and alternating chord colour keep play lively
+      // without competing with movement/clear SFX.
+      if (part === 1 || part === 3) {
+        voice('paper',part === 1 ? 1950 : 1650,at,0.038,0.055,'music');
+        note(chord[(bar + part) % chord.length] + 12,at + beatLength * 0.48,0.12,0.035,'music','pluck');
+      }
+      if (part === 0 && bar % 2 === 1) {
+        note(chord[2] + 12,at + beatLength * 0.25,0.18,0.038,'music','pluck');
+        note(chord[1] + 12,at + beatLength * 0.75,0.16,0.030,'music','pluck');
+      }
+      if (part === 3 && bar % 4 === 3) note(chord[3] + 12,at + beatLength * 0.5,0.16,0.034,'music');
+    }
     if (!game && part === 3 && bar % 4 === 3) voice('paper',1100,at,0.065,0.035,'music');
   }
   function tick() {
