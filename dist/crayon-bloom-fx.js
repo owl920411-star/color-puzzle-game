@@ -27,15 +27,23 @@ class CrayonBloomFX {
   this.particles.splice(0,Math.max(0,this.particles.length+count-this.maxParticles));
   const rows=[...new Set(sources.map(c=>c.row))].slice(0,4);
   this.blooms.push({rows,age:0,life:150,power});this.blooms=this.blooms.slice(-3);
+  const seed=Math.random()*1000,columns=Math.round(this.canvas.width/this.cellSize);
   for(const cell of sources){
    const ox=(cell.col+.5)*this.cellSize,oy=(cell.row+.5)*this.cellSize;
+   // Neighboring cells vary, while mirror columns share motion weight to avoid a sideways bias.
+   const column=Math.min(cell.col,columns-1-cell.col),mirror=cell.col<(columns-1)/2?-1:1;
+   const sample=n=>{const v=Math.sin(seed+column*53+cell.row*17+n*113)*43758.5453;return v-Math.floor(v);};
+   const spread=18+sample(1)*12,lift=125+sample(2)*50;
    for(const side of [-1,0,1]){
-    // Each block owns its projection center: no board-wide sideways sweep.
+    const middle=side===0,depth=middle?280:265,approach=7+sample(middle?3:4)*3;
+    // Start all three at the actual block. Only their motion varies; no row-wise sweep or delay.
     this.particles.push({x:ox,y:oy,ox,oy,col:cell.col,row:cell.row,
-     vx:side*11,vy:side===0?-90:-110,z:0,vz:side===0?640:540,
-     angle:side*.65,spin:side*3.5,tilt:side===0?.25:.6,flip:side===0?7:8,
-     age:0,life:1000,size:side===0?18:15,phase:0,burst:true,
-     sprite:this.sprite('petal',cell.color||PALETTE[0])});
+     vx:side*spread,vy:middle?-(125+sample(5)*55):-lift,z:0,vz:depth*approach,depth,approach,
+     gravity:320+sample(6)*30,angle:middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),
+     spin:middle?mirror*(sample(9)-.5)*3:side*(1.2+sample(10)*2.5),
+     tilt:sample(middle?11:12)*Math.PI,flip:2.8+sample(middle?13:14)*1.8,
+     age:0,life:900+sample(middle?15:16)*150,size:middle?14+sample(17)*4:11+sample(18)*4,
+     phase:0,burst:true,sprite:this.sprite('petal',cell.color||PALETTE[0])});
    }
   }
  }
@@ -56,7 +64,7 @@ class CrayonBloomFX {
    p.age+=dt;if(p.age>=p.life)continue;
    if(p.age<0){this.particles[n++]=p;continue;}
    const step=Math.min(dt,p.age)/1000;
-   if(p.burst){p.z=Math.min(340,p.z+p.vz*step);p.vx*=Math.exp(-step*.65);p.vy+=420*step;p.tilt+=p.flip*step;}
+   if(p.burst){p.z=p.depth*(1-Math.exp(-p.approach*p.age/1000));p.vx*=Math.exp(-step*2.4);p.vy+=p.gravity*step;p.tilt+=p.flip*step;}
    else{p.vx*=Math.exp(-s*1.2);p.vy+=165*s;}
    p.x+=p.vx*step+(p.burst?0:Math.sin(p.age*.006+p.phase)*step*12);
    p.y+=p.vy*step;p.angle+=p.spin*step;this.particles[n++]=p;
@@ -85,10 +93,9 @@ class CrayonBloomFX {
    const size=p.size*perspective.scale;
    if(perspective.x+size<0||perspective.x-size>this.canvas.width||perspective.y-size>this.canvas.height)continue;
    g.save();g.translate(perspective.x,perspective.y);g.rotate(p.angle);
-   if(p.burst){const face=Math.cos(p.tilt);g.scale(1,Math.abs(face)<.1?(face<0?-.1:.1):face);}
-   g.globalAlpha=Math.min(1,(1-t)*(p.burst?4:2.4))*.94;
-   // A narrow offset edge makes a flipping flower read as a thick crayon cutout.
-   if(p.burst){g.globalAlpha*=.25;g.drawImage(p.sprite,-size/2+1.5,-size/2+2,size,size);g.globalAlpha=Math.min(1,(1-t)*4)*.94;}
+   if(p.burst)g.scale(1,.24+.76*Math.abs(Math.cos(p.tilt)));
+   g.globalAlpha=Math.min(1,(1-t)*(p.burst?2.5:2.4))*.94;
+
    g.drawImage(p.sprite,-size/2,-size/2,size,size);g.restore();
   }
   g.restore();

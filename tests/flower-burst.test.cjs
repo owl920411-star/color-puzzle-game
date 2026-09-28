@@ -17,8 +17,8 @@ test('forward flowers grow in perspective, tumble, sort by depth and fall',()=>{
  const a=boot({FX:'real'}),f=a.fx;
  f.trigger(cells,4,3);const p=f.particles.find(p=>p.vz>=600);const initial=f.project(p).scale,tilt=p.tilt;
  for(let i=0;i<6;i++)f.update(100);
- assert.ok(f.project(p).scale>initial*2.5,'foreground visibly grows toward viewer');
- assert.ok(p.tilt>tilt+2,'flower tumbles rather than only spinning flat');
+ assert.ok(f.project(p).scale>initial*2,'foreground visibly grows toward viewer');
+ assert.ok(p.tilt>tilt+1.2,'flower tumbles rather than only spinning flat');
  assert.ok(p.vy>0,'gravity turns flight downward');
  assert.ok(f.particles.every((p,i,ps)=>!i||ps[i-1].z<=p.z),'far particles draw before near ones');
  assert.ok(f.particles.every(p=>Number.isFinite(f.project(p).scale)&&f.project(p).scale<=4));
@@ -59,4 +59,17 @@ test('each cell stays horizontally balanced through projection, including edge c
    assert.ok(Math.abs(center-(c.col+.5)*36)<1e-8,'no sideways drift from a block');
   }
  }
+});
+
+test('neighboring cells vary naturally and depth growth slows smoothly without a hard stop',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.trigger(cells.slice(0,10),1,0);
+ const centers=f.particles.filter(p=>p.vx===0);
+ assert.ok(new Set(centers.map(p=>p.vy)).size>=4,'not a repeated identical launch');
+ assert.ok(new Set(centers.map(p=>p.tilt)).size>=4,'petals do not turn edge-on together');
+ const p=centers[0];f.update(100);const first=p.z;
+ f.update(100);const second=p.z-first;
+ assert.ok(second>0&&second<first,'growth smoothly eases after the initial pop');
+ for(let i=0;i<5;i++)f.update(100);const before=p.z;f.update(100);
+ assert.ok(p.z>before&&p.z-before<second,'no abrupt perspective clamp');
+ assert.ok(f.project(p).scale<2.6,'large petals do not blanket the next block');
 });
