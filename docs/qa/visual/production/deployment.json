@@ -1,0 +1,79 @@
+{
+  "build": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2",
+  "images": [
+    {
+      "loaded": true,
+      "src": "assets/bloom-happy.webp?v=cb-rc2"
+    },
+    {
+      "loaded": true,
+      "src": "assets/bloom-chick.webp?v=cb-rc2"
+    },
+    {
+      "loaded": true,
+      "src": "assets/bloom-chick.webp?v=cb-rc2"
+    },
+    {
+      "loaded": true,
+      "src": "assets/bloom-home-hero.webp?v=cb-rc2"
+    },
+    {
+      "loaded": true,
+      "src": "assets/bloom-home-logo.webp?v=cb-rc2"
+    },
+    {
+      "loaded": true,
+      "src": "assets/bloom-home-hero.webp?v=cb-rc2"
+    }
+  ],
+  "meta": "CB-RC2",
+  "scripts": [
+    "engine.js?v=cb-rc2",
+    "endless-rules.js?v=cb-rc2",
+    "bloom-item-art.js?v=cb-rc2",
+    "crayon-bloom-fx.js?v=cb-rc2",
+    "block-items.js?v=cb-rc2",
+    "adaptive-director.js?v=cb-rc2",
+    "adaptive-audit.js?v=cb-rc2",
+    "adaptive-bridge.js?v=cb-rc2",
+    "pointer-button-guard.js?v=cb-rc2",
+    "bloom-audio.js?v=cb-rc2",
+    "bloom-celebration.js?v=cb-rc2",
+    "bloom-loading.js?v=cb-rc2",
+    "bloom-tutorial.js?v=cb-rc2",
+    "bloom-home.js?v=cb-rc2",
+    "endless-app.js?v=cb-rc2"
+  ],
+  "styles": [
+    "endless.css?v=cb-rc2",
+    "bloom-home.css?v=cb-rc2",
+    "bloom-celebration.css?v=cb-rc2",
+    "bloom-loading.css?v=cb-rc2",
+    "bloom-tutorial.css?v=cb-rc2",
+    "bloom-visual.css?v=cb-rc2"
+  ],
+  "url": "https://owl920411-star.github.io/color-puzzle-game/dist/",
+  "sourceReleaseSha": "c8722bee68a9fd6c303d3f59cf87761165473aae",
+  "pagesWorkflow": {
+    "id": 36344207800,
+    "conclusion": "success",
+    "headSha": "c8722bee68a9fd6c303d3f59cf87761165473aae"
+  },
+  "productionScreenReview": {
+    "screens": [
+      "HOME",
+      "GAME",
+      "TUTORIAL",
+      "SETTINGS",
+      "GAME OVER"
+    ],
+    "viewports": [
+      "360x640",
+      "390x844",
+      "412x915"
+    ],
+    "result": "PASS",
+    "scope": "Live deployed /dist/ code; isolated QA scene fixtures for reproducible screenshots"
+  },
+  "contentHashesMatch": true
+}

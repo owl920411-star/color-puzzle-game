@@ -2,7 +2,7 @@
 
 ## 판정과 기준
 
-**상태: 자동·브라우저 시각·30분 리소스 검사 통과, Production 배포 확인 중. Android 실기기는 NOT VERIFIED.**
+**상태: VISUAL RC2 브라우저 QA 및 Production 확인 완료. Android 실기기는 NOT VERIFIED.**
 
 - 기준 main: `28036e15809a0269bd55a83dea15f5b352ea7e33`
 - 기준 버전: `RC1 · CONTROL 23 FINAL · HOME RC1`
@@ -209,7 +209,11 @@ Gaegu: JIKJI SOFT, SIL Open Font License. https://github.com/google/fonts/tree/m
 
 ## 14. DEPLOY / 캐시
 
-현재 정식 승격 대기. 최종 main HEAD, Pages workflow SHA/success, 실제 본편 다섯 화면 및 자산 버전은 배포 증거에 기록할 예정이다.
+릴리스 코드 SHA: `c8722bee68a9fd6c303d3f59cf87761165473aae`. GitHub Pages workflow `36344207800` success 확인. 정식 `/dist/`에 직접 접속하여 표시 버전과 자산 key를 확인했다. HOME/GAME/TUTORIAL/SETTINGS/GAME OVER를 배포된 본편 소스로 세 크기씩 다시 캡처·검수했다. [배포 증거](visual/production/deployment.json).
+
+[Production HOME](visual/production/home-all.jpg) · [GAME](visual/production/game-all.jpg) · [TUTORIAL](visual/production/tutorial-all.jpg) · [SETTINGS](visual/production/settings-all.jpg) · [GAME OVER](visual/production/over-all.jpg).
+
+HTML/주요 JS/CSS/HOME/새 마스코트의 Git blob SHA가 검증한 로컬 후보와 일치한다. 이후 증거 저장용 문서 커밋은 게임 파일을 변경하지 않는다. 최종 main/Pages SHA는 완료 메시지에서 별도로 제시한다(문서는 자기 자신의 commit SHA를 포함할 수 없음).
 
 후보의 최종 키 체계: HTML build `CB-RC2`, 표시 `RC2 · CONTROL 23 FINAL · HOME RC2`, JS/CSS/HOME 자산 query `cb-rc2`. 검수 경로의 `review6` suffix는 독립 검수 캐시이며 정식 본편 버전과 구분한다. query 변경만으로 배포 성공을 판단하지 않는다.
 
