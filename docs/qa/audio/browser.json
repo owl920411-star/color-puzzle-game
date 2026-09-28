@@ -1,0 +1,1128 @@
+{
+  "codeCommit": "19cd4d4b1079b34e9324c56ef1c71e10d02ca3b3",
+  "androidListening": "NOT VERIFIED",
+  "events": [
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 3,
+        "peakVoices": 6,
+        "timers": 1,
+        "scheduled": 177,
+        "dropped": 0,
+        "beat": 50,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 173,
+        "effectsScheduled": 4,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2
+        },
+        "effectVoices": 2
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "hold",
+        "scheduled": 2,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 2
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 3,
+        "peakVoices": 7,
+        "timers": 1,
+        "scheduled": 186,
+        "dropped": 0,
+        "beat": 52,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 180,
+        "effectsScheduled": 6,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 2
+        },
+        "effectVoices": 2
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "drop",
+        "scheduled": 2,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 2
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 6,
+        "peakVoices": 7,
+        "timers": 1,
+        "scheduled": 197,
+        "dropped": 0,
+        "beat": 54,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 187,
+        "effectsScheduled": 10,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 2,
+          "clear": 4
+        },
+        "effectVoices": 4
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "clear",
+        "scheduled": 4,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 4
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 36
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 36
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 16,
+        "peakVoices": 16,
+        "timers": 1,
+        "scheduled": 217,
+        "dropped": 0,
+        "beat": 56,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 193,
+        "effectsScheduled": 24,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 2,
+          "clear": 12,
+          "combo": 6
+        },
+        "effectVoices": 14
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "combo",
+        "scheduled": 14,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 8,
+          "combo": 6
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 36
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 36
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "clearing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 15,
+        "peakVoices": 16,
+        "timers": 1,
+        "scheduled": 233,
+        "dropped": 0,
+        "beat": 57,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 197,
+        "effectsScheduled": 36,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3
+        },
+        "effectVoices": 12
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "good",
+        "scheduled": 12,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 2,
+          "clear": 4,
+          "combo": 3,
+          "good": 3
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 6,
+        "peakVoices": 16,
+        "timers": 1,
+        "scheduled": 243,
+        "dropped": 0,
+        "beat": 59,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 204,
+        "effectsScheduled": 39,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3,
+          "bad": 3
+        },
+        "effectVoices": 3
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "bad",
+        "scheduled": 3,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 0,
+          "combo": 0,
+          "good": 0,
+          "bad": 3
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "over",
+      "audio": {
+        "scene": "over",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 4,
+        "peakVoices": 16,
+        "timers": 0,
+        "scheduled": 254,
+        "dropped": 0,
+        "beat": 0,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 211,
+        "effectsScheduled": 43,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3,
+          "bad": 3,
+          "over": 4
+        },
+        "effectVoices": 4
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "gameover",
+        "scheduled": 4,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 0,
+          "combo": 0,
+          "good": 0,
+          "bad": 0,
+          "over": 4
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "menu",
+      "audio": {
+        "scene": "home",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 0,
+        "peakVoices": 16,
+        "timers": 1,
+        "scheduled": 288,
+        "dropped": 0,
+        "beat": 13,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 245,
+        "effectsScheduled": 43,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3,
+          "bad": 3,
+          "over": 4
+        },
+        "effectVoices": 0
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "gameover",
+        "scheduled": 4,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 0,
+          "combo": 0,
+          "good": 0,
+          "bad": 0,
+          "over": 4
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 1,
+        "peakVoices": 16,
+        "timers": 1,
+        "scheduled": 331,
+        "dropped": 0,
+        "beat": 12,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 288,
+        "effectsScheduled": 43,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3,
+          "bad": 3,
+          "over": 4
+        },
+        "effectVoices": 0
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "gameover",
+        "scheduled": 4,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 0,
+          "combo": 0,
+          "good": 0,
+          "bad": 0,
+          "over": 4
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "paused",
+      "audio": {
+        "scene": "paused",
+        "contextsCreated": 1,
+        "contextState": "suspended",
+        "voices": 0,
+        "peakVoices": 16,
+        "timers": 0,
+        "scheduled": 331,
+        "dropped": 0,
+        "beat": 0,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 288,
+        "effectsScheduled": 43,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3,
+          "bad": 3,
+          "over": 4
+        },
+        "effectVoices": 0
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        }
+      ],
+      "lastEvent": {
+        "type": "gameover",
+        "scheduled": 4,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 0,
+          "combo": 0,
+          "good": 0,
+          "bad": 0,
+          "over": 4
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    },
+    {
+      "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+      "state": "playing",
+      "audio": {
+        "scene": "game",
+        "contextsCreated": 1,
+        "contextState": "running",
+        "voices": 1,
+        "peakVoices": 16,
+        "timers": 1,
+        "scheduled": 396,
+        "dropped": 0,
+        "beat": 19,
+        "cycleBeats": 128,
+        "voiceLimit": 28,
+        "unlocked": true,
+        "destroyed": false,
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "musicScheduled": 353,
+        "effectsScheduled": 43,
+        "effectEvents": {
+          "rotate": 2,
+          "hold": 2,
+          "drop": 4,
+          "clear": 16,
+          "combo": 9,
+          "good": 3,
+          "bad": 3,
+          "over": 4
+        },
+        "effectVoices": 0
+      },
+      "resumes": [
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "game"
+        },
+        {
+          "active": true,
+          "scene": "paused"
+        },
+        {
+          "active": true,
+          "scene": "paused"
+        }
+      ],
+      "lastEvent": {
+        "type": "gameover",
+        "scheduled": 4,
+        "eventVoices": {
+          "rotate": 0,
+          "hold": 0,
+          "drop": 0,
+          "clear": 0,
+          "combo": 0,
+          "good": 0,
+          "bad": 0,
+          "over": 4
+        }
+      },
+      "saved": {
+        "sound": true,
+        "bgm": true,
+        "sfx": true,
+        "tutorialCompleted": true,
+        "endlessV1": {
+          "normal": {
+            "best": 486
+          }
+        },
+        "desertSurvival": {
+          "bestTime": 1,
+          "maxLevel": 0,
+          "bestScore": 486
+        }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "case": "off",
+      "report": {
+        "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+        "state": "playing",
+        "audio": {
+          "scene": "game",
+          "contextsCreated": 0,
+          "contextState": "unavailable",
+          "voices": 0,
+          "peakVoices": 0,
+          "timers": 0,
+          "scheduled": 0,
+          "dropped": 0,
+          "beat": 0,
+          "cycleBeats": 128,
+          "voiceLimit": 28,
+          "unlocked": false,
+          "destroyed": false,
+          "sound": false,
+          "bgm": true,
+          "sfx": true,
+          "musicScheduled": 0,
+          "effectsScheduled": 0,
+          "effectEvents": {},
+          "effectVoices": 0
+        },
+        "resumes": [],
+        "lastEvent": {
+          "type": "rotate",
+          "scheduled": 0,
+          "eventVoices": {}
+        },
+        "saved": {
+          "sound": false,
+          "tutorialCompleted": true,
+          "endlessV1": {
+            "normal": {
+              "best": 123
+            }
+          },
+          "qaPreserved": "keep",
+          "bgm": true,
+          "sfx": true
+        }
+      }
+    },
+    {
+      "case": "on",
+      "report": {
+        "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+        "state": "playing",
+        "audio": {
+          "scene": "game",
+          "contextsCreated": 1,
+          "contextState": "running",
+          "voices": 6,
+          "peakVoices": 6,
+          "timers": 1,
+          "scheduled": 19,
+          "dropped": 0,
+          "beat": 3,
+          "cycleBeats": 128,
+          "voiceLimit": 28,
+          "unlocked": true,
+          "destroyed": false,
+          "sound": true,
+          "bgm": true,
+          "sfx": true,
+          "musicScheduled": 15,
+          "effectsScheduled": 4,
+          "effectEvents": {
+            "rotate": 4
+          },
+          "effectVoices": 2
+        },
+        "resumes": [
+          {
+            "active": true,
+            "scene": "game"
+          },
+          {
+            "active": true,
+            "scene": "game"
+          }
+        ],
+        "lastEvent": {
+          "type": "rotate",
+          "scheduled": 2,
+          "eventVoices": {
+            "rotate": 2
+          }
+        },
+        "saved": {
+          "sound": true,
+          "tutorialCompleted": true,
+          "endlessV1": {
+            "normal": {
+              "best": 123
+            }
+          },
+          "qaPreserved": "keep",
+          "bgm": true,
+          "sfx": true
+        }
+      }
+    },
+    {
+      "case": "missing",
+      "report": {
+        "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+        "state": "playing",
+        "audio": {
+          "scene": "game",
+          "contextsCreated": 1,
+          "contextState": "running",
+          "voices": 4,
+          "peakVoices": 5,
+          "timers": 1,
+          "scheduled": 22,
+          "dropped": 0,
+          "beat": 4,
+          "cycleBeats": 128,
+          "voiceLimit": 28,
+          "unlocked": true,
+          "destroyed": false,
+          "sound": true,
+          "bgm": true,
+          "sfx": true,
+          "musicScheduled": 18,
+          "effectsScheduled": 4,
+          "effectEvents": {
+            "rotate": 4
+          },
+          "effectVoices": 2
+        },
+        "resumes": [
+          {
+            "active": true,
+            "scene": "game"
+          },
+          {
+            "active": true,
+            "scene": "game"
+          }
+        ],
+        "lastEvent": {
+          "type": "rotate",
+          "scheduled": 2,
+          "eventVoices": {
+            "rotate": 2
+          }
+        },
+        "saved": {
+          "tutorialCompleted": true,
+          "endlessV1": {
+            "normal": {
+              "best": 123
+            }
+          },
+          "qaPreserved": "keep",
+          "sound": true,
+          "bgm": true,
+          "sfx": true
+        }
+      }
+    },
+    {
+      "case": "bgmOff",
+      "report": {
+        "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+        "state": "playing",
+        "audio": {
+          "scene": "game",
+          "contextsCreated": 1,
+          "contextState": "running",
+          "voices": 2,
+          "peakVoices": 2,
+          "timers": 0,
+          "scheduled": 4,
+          "dropped": 0,
+          "beat": 0,
+          "cycleBeats": 128,
+          "voiceLimit": 28,
+          "unlocked": true,
+          "destroyed": false,
+          "sound": true,
+          "bgm": false,
+          "sfx": true,
+          "musicScheduled": 0,
+          "effectsScheduled": 4,
+          "effectEvents": {
+            "rotate": 4
+          },
+          "effectVoices": 2
+        },
+        "resumes": [
+          {
+            "active": true,
+            "scene": "game"
+          },
+          {
+            "active": true,
+            "scene": "game"
+          }
+        ],
+        "lastEvent": {
+          "type": "rotate",
+          "scheduled": 2,
+          "eventVoices": {
+            "rotate": 2
+          }
+        },
+        "saved": {
+          "bgm": false,
+          "tutorialCompleted": true,
+          "endlessV1": {
+            "normal": {
+              "best": 123
+            }
+          },
+          "qaPreserved": "keep",
+          "sound": true,
+          "sfx": true
+        }
+      }
+    },
+    {
+      "case": "sfxOff",
+      "report": {
+        "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+        "state": "playing",
+        "audio": {
+          "scene": "game",
+          "contextsCreated": 1,
+          "contextState": "running",
+          "voices": 3,
+          "peakVoices": 5,
+          "timers": 1,
+          "scheduled": 18,
+          "dropped": 0,
+          "beat": 4,
+          "cycleBeats": 128,
+          "voiceLimit": 28,
+          "unlocked": true,
+          "destroyed": false,
+          "sound": true,
+          "bgm": true,
+          "sfx": false,
+          "musicScheduled": 18,
+          "effectsScheduled": 0,
+          "effectEvents": {},
+          "effectVoices": 0
+        },
+        "resumes": [
+          {
+            "active": true,
+            "scene": "game"
+          },
+          {
+            "active": true,
+            "scene": "game"
+          }
+        ],
+        "lastEvent": {
+          "type": "rotate",
+          "scheduled": 0,
+          "eventVoices": {}
+        },
+        "saved": {
+          "sfx": false,
+          "tutorialCompleted": true,
+          "endlessV1": {
+            "normal": {
+              "best": 123
+            }
+          },
+          "qaPreserved": "keep",
+          "sound": true,
+          "bgm": true
+        }
+      }
+    }
+  ],
+  "masterOff": {
+    "version": "CRAYON BLOOM · RC2 · CONTROL 23 FINAL · HOME RC2 · AUDIO 1",
+    "state": "menu",
+    "audio": {
+      "scene": "paused",
+      "contextsCreated": 0,
+      "contextState": "unavailable",
+      "voices": 0,
+      "peakVoices": 0,
+      "timers": 0,
+      "scheduled": 0,
+      "dropped": 0,
+      "beat": 0,
+      "cycleBeats": 128,
+      "voiceLimit": 28,
+      "unlocked": false,
+      "destroyed": false,
+      "sound": false,
+      "bgm": true,
+      "sfx": true,
+      "musicScheduled": 0,
+      "effectsScheduled": 0,
+      "effectEvents": {},
+      "effectVoices": 0
+    },
+    "resumes": [],
+    "lastEvent": null,
+    "saved": {
+      "sound": false,
+      "tutorialCompleted": true,
+      "endlessV1": {
+        "normal": {
+          "best": 123
+        }
+      },
+      "qaPreserved": "keep",
+      "bgm": true,
+      "sfx": true
+    }
+  }
+}
