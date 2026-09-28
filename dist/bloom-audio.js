@@ -179,7 +179,7 @@
     const at = context.currentTime + 0.003, strength = Math.max(1,Math.min(6,Number(power) || 1));
     const before = effectsScheduled;
     const chime = (notes,volume=0.16) => notes.forEach((n,i) => note(n,at + i * 0.07,0.24,volume,'effect'));
-    if (type === 'move') { voice('paper',1850,at,0.032,0.075,'effect');note(67,at,0.028,0.018,'effect','pluck'); }
+    if (type === 'move') { voice('paper',2050,at,0.022,0.055,'effect'); }
     else if (type === 'rotate') { voice('paper',2400,at,0.055,0.17,'effect');note(74,at,0.055,0.05,'effect'); }
     else if (type === 'hold') { voice('paper',1300,at,0.13,0.15,'effect');note(72,at + 0.025,0.1,0.075,'effect','pluck'); }
     else if (type === 'drop') { voice('bell',230,at,0.10,0.34,'effect',125);voice('paper',700,at,0.045,0.20,'effect'); }
