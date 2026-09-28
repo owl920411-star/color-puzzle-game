@@ -15,11 +15,11 @@ test('flower effects clear on reset and do not create input timers',()=>{
 });
 test('forward flowers grow in perspective, tumble, sort by depth and fall',()=>{
  const a=boot({FX:'real'}),f=a.fx;
- f.trigger(cells,4,3);const p=f.particles.find(p=>p.vz>=600);const initial=f.project(p).scale,tilt=p.tilt;
- for(let i=0;i<2;i++)f.update(100);
+ f.trigger(cells,4,3);const p=f.particles[0];const initial=f.project(p).scale,tilt=p.tilt;
+ for(let i=0;i<5;i++)f.update(100);
  assert.ok(f.project(p).scale>initial*1.6,'foreground visibly grows toward viewer');
- assert.ok(p.tilt>tilt+1.2,'flower tumbles rather than only spinning flat');
- assert.ok(p.vy>0,'gravity turns flight downward');
+ assert.ok(p.tilt>tilt+1.2,'flower tumbles after reaching the viewer');
+ assert.ok(p.vy>0,'gravity turns flight downward after the approach');
  assert.ok(f.particles.every((p,i,ps)=>!i||ps[i-1].z<=p.z),'far particles draw before near ones');
  assert.ok(f.particles.every(p=>Number.isFinite(f.project(p).scale)&&f.project(p).scale<=4));
  f.draw();
@@ -61,35 +61,54 @@ test('each cell stays horizontally balanced through projection, including edge c
  }
 });
 
-test('neighboring cells vary naturally and depth growth slows smoothly without a hard stop',()=>{
+test('neighboring cells vary naturally and enlargement remains visible over multiple frames',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.trigger(cells.slice(0,10),1,0);
  const centers=f.particles.filter(p=>p.vx===0);
- assert.ok(new Set(centers.map(p=>p.approach)).size>=4,'not a repeated identical launch');
+ assert.ok(new Set(centers.map(p=>p.approachMs)).size>=4,'not a repeated identical launch');
  assert.ok(new Set(centers.map(p=>p.tilt)).size>=4,'petals do not turn edge-on together');
- const p=centers[0];f.update(40);const first=p.z;
- f.update(40);const second=p.z-first;
- assert.ok(second>0&&second<first,'growth smoothly eases after the initial pop');
- for(let i=0;i<3;i++)f.update(40);const before=p.z;f.update(40);
- assert.ok(p.z>before&&p.z-before<second,'no abrupt perspective clamp');
- assert.ok(f.project(p).scale<3,'large petals do not blanket the next block');
+ const p=centers[0];f.update(80);const early=f.project(p).scale;
+ f.update(80);const middle=f.project(p).scale;
+ f.update(80);const late=f.project(p).scale;
+ assert.ok(middle>early*1.4,'growth continues beyond the opening flash');
+ assert.ok(late>middle*1.15,'the viewer can see continued approach before the fall');
+ assert.ok(late<p.targetScale,'the approach has not already ended at 240 ms');
+ f.update(80);const settled=f.project(p).scale;f.update(16);
+ assert.ok(Math.abs(f.project(p).scale-settled)<1e-8,'no size snap or shrinking pulse at the handoff');
+ assert.ok(settled<=3.2+1e-8,'large petals stay within the bounded foreground size');
 });
 
-test('reference burst grows quickly, never rises and exits in under half a second',()=>{
+test('petals visibly enlarge from each block before any downward travel, then fall and expire',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,0);
- for(let frame=0;frame<20;frame++){
+ const lastDiameter=new Map();
+ for(const p of f.particles){const q=f.project(p);
+  assert.ok(q.scale<.7,'starts small at the distant block');
+  lastDiameter.set(p,p.size*q.scale*q.faceScale);
+ }
+ for(let frame=0;frame<30;frame++){
   f.update(16);
   for(const p of f.particles){const q=f.project(p);
    assert.ok(q.y>=p.oy,'never rises above its launch point');
-   if(p.age>=80)assert.ok(q.scale>1.4,'rapid forward pop at varied depths');
-   if(p.age>=224)assert.ok(q.y-p.oy>30,'detaches and showers downward instead of hovering');
+   if(p.age<=p.approachMs){
+    const diameter=p.size*q.scale*q.faceScale;
+    assert.ok(diameter>lastDiameter.get(p),'actual visible petal grows each frame before falling');
+    assert.ok(Math.abs(q.y-p.oy)<1e-8,'approach stays at the cleared block height');
+    assert.equal(p.vy,0,'no downward launch hidden underneath the enlargement');
+    lastDiameter.set(p,diameter);
+    if(p.age>=224)assert.ok(q.scale>1.6,'enlargement becomes clearly larger than its starting size');
+   }
+   if(p.age>=p.approachMs+100){
+    assert.ok(q.y-p.oy>10,'petals start their downward shower after the approach');
+    assert.ok(p.vy>0,'fall has positive downward velocity');
+   }
   }
  }
- f.update(100);f.update(100);assert.equal(f.particles.length,0,'short burst clears the view');
+ for(let frame=30;frame<50;frame++)f.update(16);
+ assert.equal(f.particles.length,0,'the approach and fall both finish within 800 ms');
 });
 
-test('the burst becomes a dispersed cloud rather than another moving horizontal strip',()=>{
+test('after approaching, the burst becomes a dispersed falling cloud',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.trigger(cells.slice(0,10),1,0);
- f.update(100);f.update(100);
+ for(let i=0;i<5;i++)f.update(100);
  const ys=f.particles.map(p=>f.project(p).y);
  assert.ok(Math.max(...ys)-Math.min(...ys)>50,'near/far petals visibly separate vertically');
 });

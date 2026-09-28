@@ -35,14 +35,16 @@ class CrayonBloomFX {
    const sample=n=>{const v=Math.sin(seed+column*53+cell.row*17+n*113)*43758.5453;return v-Math.floor(v);};
    const spread=35+sample(1)*35;
    for(const side of [-1,0,1]){
-    const middle=side===0,depth=middle?300:200+sample(20)*85,approach=24+sample(middle?3:4)*10;
+    const middle=side===0,approachMs=260+sample(middle?3:4)*60;
+    const targetScale=middle?2.8+sample(20)*.4:2+sample(21)*.6;
+    const angle=middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),tilt=sample(middle?11:12)*Math.PI;
     // Start all three at the actual block. Only their motion varies; no row-wise sweep or delay.
     this.particles.push({x:ox,y:oy,ox,oy,col:cell.col,row:cell.row,
-     vx:side*spread,launchVX:side*spread,vy:0,launchVY:middle?15+sample(2)*85:25+sample(5)*130,z:0,vz:depth*approach,depth,approach,
-     gravity:middle?1000+sample(6)*2200:1400+sample(19)*3200,angle:middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),
+     vx:side*spread,launchVX:side*spread,vy:0,launchVY:middle?15+sample(2)*85:25+sample(5)*130,z:460*(1-1/.55),approachMs,targetScale,
+     gravity:middle?1000+sample(6)*2200:1400+sample(19)*3200,angle,startAngle:angle,
      spin:middle?mirror*(2+sample(9)*5):side*(4+sample(10)*5),
-     tilt:sample(middle?11:12)*Math.PI,flip:7+sample(middle?13:14)*6,
-     age:0,life:360+sample(middle?15:16)*100,size:middle?14+sample(17)*7:8+sample(18)*8,
+     tilt,startTilt:tilt,flip:7+sample(middle?13:14)*6,
+     age:0,life:approachMs+360+sample(middle?15:16)*100,size:middle?14+sample(17)*7:8+sample(18)*8,
      phase:0,burst:true,sprite:this.sprite('petal',cell.color||PALETTE[0])});
    }
   }
@@ -65,17 +67,20 @@ class CrayonBloomFX {
    if(p.age<0){this.particles[n++]=p;continue;}
    const step=Math.min(dt,p.age)/1000;
    if(p.burst){
-    const time=p.age/1000,fall=Math.max(0,time-.055);
-    p.z=p.depth*(1-Math.exp(-p.approach*time));
-    // Fast forward impulse, then a short downward shower (reference clip: ~0.4s).
+    const time=p.age/1000,u=Math.min(1,p.age/p.approachMs);
+    const fall=Math.max(0,(p.age-p.approachMs)/1000),gravityTime=Math.max(0,fall-.055);
+    // First visibly approach the viewer. The downward clock starts only after that stage.
+    const scale=.55+(p.targetScale-.55)*u*u*(3-2*u);
+    p.z=460*(1-1/scale);
     p.x=p.ox+p.launchVX*(1-Math.exp(-4*time))/4;
-    p.y=p.oy+p.launchVY*time+.5*p.gravity*fall*fall;
-    p.vy=p.launchVY+p.gravity*fall;p.tilt+=p.flip*step;
+    p.y=p.oy+p.launchVY*fall+.5*p.gravity*gravityTime*gravityTime;
+    p.vy=fall>0?p.launchVY+p.gravity*gravityTime:0;
+    p.angle=p.startAngle+p.spin*fall;p.tilt=p.startTilt+p.flip*fall;
    }else{
     p.vx*=Math.exp(-s*1.2);p.vy+=165*s;
     p.x+=p.vx*step+Math.sin(p.age*.006+p.phase)*step*12;p.y+=p.vy*step;
    }
-   p.angle+=p.spin*step;this.particles[n++]=p;
+   if(!p.burst)p.angle+=p.spin*step;this.particles[n++]=p;
   }this.particles.length=n;
   // Far flowers paint first; close flowers overlap them, reinforcing depth.
   this.particles.sort((a,b)=>(a.z||0)-(b.z||0));
@@ -101,7 +106,7 @@ class CrayonBloomFX {
    const size=p.size*perspective.scale;
    if(perspective.x+size<0||perspective.x-size>this.canvas.width||perspective.y-size>this.canvas.height)continue;
    g.save();g.translate(perspective.x,perspective.y);g.rotate(p.angle);
-   if(p.burst)g.scale(1,.24+.76*Math.abs(Math.cos(p.tilt)));
+   if(p.burst)g.scale(1,perspective.faceScale);
    g.globalAlpha=(p.burst?Math.min(1,(1-t)*5):Math.min(1,(1-t)*2.4))*.94;
 
    g.drawImage(p.sprite,-size/2,-size/2,size,size);g.restore();
@@ -109,10 +114,10 @@ class CrayonBloomFX {
   g.restore();
  }
  project(p){
-  const scale=460/(460-p.z);
-  // A brief size-only front pop: the approved trajectory and timing stay unchanged.
-  const kick=p.burst&&p.age>0&&p.age<140?1+.24*Math.sin(Math.PI*p.age/140)**2:1;
-  return {x:p.ox+(p.x-p.ox)*scale,y:p.oy+(p.y-p.oy)*scale,scale:scale*kick};
+  const scale=460/(460-p.z),fall=Math.max(0,p.age-p.approachMs);
+  // Keep the petal face visible during enlargement; introduce tumbling only as it falls.
+  const faceScale=1+(.24+.76*Math.abs(Math.cos(p.tilt))-1)*Math.min(1,fall/80);
+  return {x:p.ox+(p.x-p.ox)*scale,y:p.oy+(p.y-p.oy)*scale,scale,faceScale};
  }
  clear(){this.particles.length=0;this.blooms.length=0;}
 }
