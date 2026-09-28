@@ -77,38 +77,28 @@
     voice(kind || 'bell',frequency(midi),at,length,volume,category);
   }
   function score(b, at, beatLength) {
-    const game = scene === 'game', position = b % 128, bar = Math.floor(position / 4), part = position % 4;
-    const chord = CHORDS[Math.floor(bar / 2) % CHORDS.length], motif = MOTIFS[Math.floor(position / 8) % MOTIFS.length];
-    const degree = motif[position % 8], variation = Math.floor(position / 32), energy = game ? intensity : 0;
-    if (!game) {
-      if (degree >= 0 && part !== 3) {
-        const root=chord[0]+12, melody=root+SCALE[(degree+(variation===2?1:0))%SCALE.length];
-        note(melody,at,0.42,0.11,'music');note(melody+12,at,0.10,0.014,'music');
-      }
-      if(part===0||part===2){note(chord[part===0?0:2]-12,at,0.36,0.085,'music','pluck');note(chord[1],at+0.018,0.27,0.038,'music','pluck');}
-      if(part===3&&bar%4===3)voice('paper',1100,at,0.06,0.03,'music');
-      return;
+    const game = scene === 'game', position = b % 128, bar = Math.floor(position / 4);
+    const chord = CHORDS[Math.floor(bar / 2) % CHORDS.length], part = position % 4;
+    const motif = MOTIFS[Math.floor(position / 8) % MOTIFS.length];
+    const degree = motif[position % 8], variation = Math.floor(position / 32);
+    if (degree >= 0 && (game || part !== 3)) {
+      const root = chord[0] + 12, melody = root + SCALE[(degree + (variation === 2 ? 1 : 0)) % SCALE.length];
+      note(melody,at,0.47,game ? 0.13 : 0.115,'music');
+      // A quiet upper partial gives a small wooden/toy mallet rather than a pure beep.
+      note(melody + 12,at,0.11,0.015,'music');
+      if (game && part === 2 && bar % 2 === 1) note(root + SCALE[(degree + 1) % 5],at + beatLength / 2,0.24,0.065,'music','pluck');
     }
-    // AUDIO 5 game score: short toy-band phrases, syncopated bass and paper/wood percussion.
-    // Intensity follows BLOOM without changing game timing or controller code.
-    const root=chord[0]+12, melody=root+SCALE[(Math.max(0,degree)+(bar%2?1:0)+(variation===2?1:0))%SCALE.length];
-    if(degree>=0){note(melody,at,0.22,0.125,'music','pluck');if(part===0||part===2)note(melody+12,at,0.095,0.026,'music');}
-    // Bass pulse on every beat, alternating root/fifth to keep forward motion.
-    note(chord[part%2?2:0]-12,at,0.20,part===0?0.115:0.082,'music','pluck');
-    // Off-beat toy percussion and answer notes make the groove feel active rather than sleepy.
-    voice('paper',part%2?2200:1450,at+beatLength*0.48,0.030,part%2?0.072:0.050,'music');
-    if(part===1||part===3)note(chord[(bar+part)%4]+12,at+beatLength*0.50,0.10,0.047,'music','pluck');
-    if(part===0&&bar%2===1){note(chord[1]+12,at+beatLength*0.25,0.11,0.040,'music','pluck');note(chord[2]+12,at+beatLength*0.75,0.11,0.038,'music','pluck');}
-    // BLOOM layers: increasingly busy but bounded; no extra timers or persistent voices.
-    if(energy>=2&&(part===0||part===2))voice('paper',2850,at+beatLength*0.24,0.022,0.043,'music');
-    if(energy>=4){voice('paper',3200,at+beatLength*0.73,0.020,0.040,'music');if(part===3)note(chord[3]+24,at+beatLength*0.72,0.08,0.030,'music');}
-    if(energy>=6&&part%2===0)note(chord[(bar+1)%4]+12,at+beatLength*0.50,0.085,0.035,'music','pluck');
-    if(energy>=8&&part===3){note(root+12,at+beatLength*0.25,0.075,0.030,'music');note(root+16,at+beatLength*0.75,0.075,0.028,'music');}
+    if (part === 0 || part === 2) {
+      note(chord[part === 0 ? 0 : 2] - 12,at,0.4,0.10,'music','pluck');
+      note(chord[1],at + 0.018,0.3,0.045,'music','pluck');
+    }
+    if (game && (part === 1 || part === 3)) voice('paper',1800,at,0.045,0.07,'music');
+    if (!game && part === 3 && bar % 4 === 3) voice('paper',1100,at,0.065,0.035,'music');
   }
   function tick() {
     timer = null;
     if (!musicActive() || context.state !== 'running') return;
-    const now = context.currentTime, beatLength = 60 / (scene === 'game' ? 118 : 86);
+    const now = context.currentTime, beatLength = 60 / (scene === 'game' ? 101 : 86);
     // A stalled tab never catches up by bursting all the missed notes.
     if (nextBeatAt < now - AHEAD) nextBeatAt = now + 0.025;
     let count = 0;
@@ -178,7 +168,6 @@
     }
     sync();return true;
   }
-  function setIntensity(next) { intensity = Math.max(0,Math.min(8,Math.round(Number(next)||0))); }
   function setScene(next) {
     if (destroyed) return;
     const valid = ['home','game','paused','over','off'].includes(next) ? next : 'off';
@@ -215,7 +204,7 @@
     noiseBuffer = null;
   }
   if (global.document && global.document.addEventListener) global.document.addEventListener('visibilitychange',visibility);
-  global.BloomAudio = Object.freeze({configure,unlock,scene:setScene,intensity:setIntensity,effect,clear,destroy,
+  global.BloomAudio = Object.freeze({configure,unlock,scene:setScene,effect,clear,destroy,
     stats:() => ({scene,contextsCreated:created,contextState:context ? context.state : 'unavailable',voices:voices.size,peakVoices:peak,
       timers:timer === null ? 0 : 1,scheduled,dropped,beat,cycleBeats:128,voiceLimit:LIMIT,unlocked,destroyed,
       sound:options.sound,bgm:options.bgm,sfx:options.sfx,musicScheduled,effectsScheduled,effectEvents:{...effectEvents},
