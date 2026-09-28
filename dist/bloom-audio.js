@@ -77,28 +77,36 @@
     voice(kind || 'bell',frequency(midi),at,length,volume,category);
   }
   function score(b, at, beatLength) {
-    const game = scene === 'game', position = b % 128, bar = Math.floor(position / 4);
-    const chord = CHORDS[Math.floor(bar / 2) % CHORDS.length], part = position % 4;
-    const motif = MOTIFS[Math.floor(position / 8) % MOTIFS.length];
+    const game = scene === 'game', position = b % 128, bar = Math.floor(position / 4), part = position % 4;
+    const chord = CHORDS[Math.floor(bar / 2) % CHORDS.length], motif = MOTIFS[Math.floor(position / 8) % MOTIFS.length];
     const degree = motif[position % 8], variation = Math.floor(position / 32);
-    if (degree >= 0 && (game || part !== 3)) {
-      const root = chord[0] + 12, melody = root + SCALE[(degree + (variation === 2 ? 1 : 0)) % SCALE.length];
-      note(melody,at,0.47,game ? 0.13 : 0.115,'music');
-      // A quiet upper partial gives a small wooden/toy mallet rather than a pure beep.
-      note(melody + 12,at,0.11,0.015,'music');
-      if (game && part === 2 && bar % 2 === 1) note(root + SCALE[(degree + 1) % 5],at + beatLength / 2,0.24,0.065,'music','pluck');
+    if (!game) {
+      if (degree >= 0 && part !== 3) {
+        const root=chord[0]+12, melody=root+SCALE[(degree+(variation===2?1:0))%SCALE.length];
+        note(melody,at,0.42,0.115,'music');note(melody+12,at,0.10,0.015,'music');
+      }
+      if(part===0||part===2){note(chord[part===0?0:2]-12,at,0.38,0.095,'music','pluck');note(chord[1],at+0.018,0.28,0.042,'music','pluck');}
+      if(part===3&&bar%4===3)voice('paper',1100,at,0.065,0.035,'music');
+      return;
     }
-    if (part === 0 || part === 2) {
-      note(chord[part === 0 ? 0 : 2] - 12,at,0.4,0.10,'music','pluck');
-      note(chord[1],at + 0.018,0.3,0.045,'music','pluck');
-    }
-    if (game && (part === 1 || part === 3)) voice('paper',1800,at,0.045,0.07,'music');
-    if (!game && part === 3 && bar % 4 === 3) voice('paper',1100,at,0.065,0.035,'music');
+    // AUDIO 6: fixed, upbeat toy-band groove. Music-only change; no game-state coupling.
+    const root=chord[0]+12, safeDegree=degree<0?((bar+part)%5):degree;
+    const melody=root+SCALE[(safeDegree+(bar%2?1:0)+(variation===2?1:0))%5];
+    // Short notes leave room for movement/drop/clear SFX while keeping the melody bouncing.
+    if(degree>=0||part!==3){note(melody,at,0.20,0.12,'music','pluck');if(part===0||part===2)note(melody+12,at,0.075,0.021,'music');}
+    // Root/fifth bass on every beat gives continuous forward motion.
+    note(chord[part%2?2:0]-12,at,0.18,part===0?0.105:0.075,'music','pluck');
+    // Paper/wood off-beats: steady enough to feel energetic, quiet enough not to become percussion noise.
+    voice('paper',part%2?2150:1500,at+beatLength*0.48,0.026,part%2?0.060:0.043,'music');
+    if(part===1||part===3)note(chord[(bar+part)%4]+12,at+beatLength*0.50,0.09,0.041,'music','pluck');
+    // A small two-note answer every other bar keeps the 128-beat loop from feeling flat.
+    if(part===0&&bar%2===1){note(chord[1]+12,at+beatLength*0.25,0.10,0.034,'music','pluck');note(chord[2]+12,at+beatLength*0.75,0.10,0.032,'music','pluck');}
+    if(part===3&&bar%4===3)note(root+12,at+beatLength*0.50,0.10,0.030,'music');
   }
   function tick() {
     timer = null;
     if (!musicActive() || context.state !== 'running') return;
-    const now = context.currentTime, beatLength = 60 / (scene === 'game' ? 101 : 86);
+    const now = context.currentTime, beatLength = 60 / (scene === 'game' ? 114 : 86);
     // A stalled tab never catches up by bursting all the missed notes.
     if (nextBeatAt < now - AHEAD) nextBeatAt = now + 0.025;
     let count = 0;
