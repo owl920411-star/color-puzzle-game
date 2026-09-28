@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>크레용 블룸 · 꽃잎 미리보기</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#fff7e8;color:#65505a;font-family:system-ui,sans-serif;text-align:center}main{max-width:420px;margin:auto;padding:14px}h1{font-size:20px;margin:4px 0 12px}p{font-size:13px;margin:10px 0}canvas{display:block;width:auto;max-width:100%;height:62vh;max-height:720px;margin:12px auto;border:3px solid #b4bfc0;border-radius:12px;background:#fffaf0}button,select{font:inherit;border:2px solid #ac9589;border-radius:12px;background:#fffdf4;color:#65505a;padding:10px 14px;margin:3px;min-height:44px}button:active{background:#ffe09a}a{color:#9c496b}label{font-size:14px}</style></head><body><main>
+<h1>꽃잎 연출 미리보기</h1><p>줄을 지우지 않아도 버튼으로 바로 확인할 수 있어요.</p>
+<div><button id="one">1줄 터뜨리기</button><button id="four">4줄 터뜨리기</button></div>
+<label>위치 <select id="position"><option value="middle">게임판 중간</option><option value="bottom">게임판 바닥</option></select></label>
+<canvas id="board" width="360" height="720" aria-label="꽃잎 연출 미리보기"></canvas>
+<button id="replay">다시 보기</button><p><a href="../?v=flower-spray8">게임에서 확인하기</a></p>
+</main><script src="../crayon-bloom-fx.js?v=cb-flower-spray8"></script><script>
+(()=>{'use strict';const canvas=document.getElementById('board'),g=canvas.getContext('2d'),fx=new CrayonBloomFX(canvas),colors=['#f58db8','#77c9f4','#ffd86e','#82d89b','#caa0ef'];let lines=1,rows=[],started=0,last=0,raf=0;
+function paint(t){g.fillStyle='#fffaf0';g.fillRect(0,0,360,720);g.strokeStyle='#e7dfd1';g.lineWidth=.6;for(let y=0;y<20;y++)for(let x=0;x<10;x++){g.strokeRect(x*36,y*36,36,36);if(y>=rows[0]&&(t<180||!rows.includes(y))){g.fillStyle=colors[(x+y)%5];g.fillRect(x*36+3,y*36+3,30,30);g.strokeStyle='#88677a';g.strokeRect(x*36+4,y*36+4,28,28);g.strokeStyle='#e7dfd1';}}}
+function frame(now){const t=now-started;paint(t);if(last<180&&t>=180)fx.trigger(rows.flatMap(row=>Array.from({length:10},(_,col)=>({col,row,color:colors[(col+row)%5]}))),lines,0);if(t>=180){fx.update(Math.min(32,t-Math.max(180,last)));fx.draw();}last=t;if(t<180||fx.particles.length)raf=requestAnimationFrame(frame);else raf=0;}
+function play(n=lines){cancelAnimationFrame(raf);lines=n;fx.clear();const bottom=document.getElementById('position').value==='bottom'?19:11;rows=Array.from({length:lines},(_,i)=>bottom-lines+1+i);started=performance.now();last=0;raf=requestAnimationFrame(frame);}
+document.getElementById('one').onclick=()=>play(1);document.getElementById('four').onclick=()=>play(4);document.getElementById('replay').onclick=()=>play();document.getElementById('position').onchange=()=>play();rows=[11];paint(0);
+})();
+</script></body></html>

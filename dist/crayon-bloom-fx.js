@@ -33,16 +33,16 @@ class CrayonBloomFX {
    // Neighboring cells vary, while mirror columns share motion weight to avoid a sideways bias.
    const column=Math.min(cell.col,columns-1-cell.col),mirror=cell.col<(columns-1)/2?-1:1;
    const sample=n=>{const v=Math.sin(seed+column*53+cell.row*17+n*113)*43758.5453;return v-Math.floor(v);};
-   const spread=18+sample(1)*12;
+   const spread=35+sample(1)*35;
    for(const side of [-1,0,1]){
-    const middle=side===0,depth=middle?280:265,approach=11+sample(middle?3:4)*4;
+    const middle=side===0,depth=middle?300:200+sample(20)*85,approach=24+sample(middle?3:4)*10;
     // Start all three at the actual block. Only their motion varies; no row-wise sweep or delay.
     this.particles.push({x:ox,y:oy,ox,oy,col:cell.col,row:cell.row,
-     vx:side*spread,vy:0,z:0,vz:depth*approach,depth,approach,
-     gravity:20+sample(6)*12,angle:middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),
-     spin:middle?mirror*(sample(9)-.5)*3:side*(1.2+sample(10)*2.5),
-     tilt:sample(middle?11:12)*Math.PI,flip:2.8+sample(middle?13:14)*1.8,
-     age:0,life:900+sample(middle?15:16)*150,size:middle?14+sample(17)*4:11+sample(18)*4,
+     vx:side*spread,launchVX:side*spread,vy:0,launchVY:middle?15+sample(2)*85:25+sample(5)*130,z:0,vz:depth*approach,depth,approach,
+     gravity:middle?1000+sample(6)*2200:1400+sample(19)*3200,angle:middle?mirror*sample(7)*Math.PI:side*(.3+sample(8)*1.8),
+     spin:middle?mirror*(2+sample(9)*5):side*(4+sample(10)*5),
+     tilt:sample(middle?11:12)*Math.PI,flip:7+sample(middle?13:14)*6,
+     age:0,life:360+sample(middle?15:16)*100,size:middle?14+sample(17)*7:8+sample(18)*8,
      phase:0,burst:true,sprite:this.sprite('petal',cell.color||PALETTE[0])});
    }
   }
@@ -64,10 +64,18 @@ class CrayonBloomFX {
    p.age+=dt;if(p.age>=p.life)continue;
    if(p.age<0){this.particles[n++]=p;continue;}
    const step=Math.min(dt,p.age)/1000;
-   if(p.burst){p.z=p.depth*(1-Math.exp(-p.approach*p.age/1000));p.vx*=Math.exp(-step*2.4);p.vy=p.gravity*Math.max(0,p.age-260)/1000;p.tilt+=p.flip*step;}
-   else{p.vx*=Math.exp(-s*1.2);p.vy+=165*s;}
-   p.x+=p.vx*step+(p.burst?0:Math.sin(p.age*.006+p.phase)*step*12);
-   p.y+=p.vy*step;p.angle+=p.spin*step;this.particles[n++]=p;
+   if(p.burst){
+    const time=p.age/1000,fall=Math.max(0,time-.055);
+    p.z=p.depth*(1-Math.exp(-p.approach*time));
+    // Fast forward impulse, then a short downward shower (reference clip: ~0.4s).
+    p.x=p.ox+p.launchVX*(1-Math.exp(-4*time))/4;
+    p.y=p.oy+p.launchVY*time+.5*p.gravity*fall*fall;
+    p.vy=p.launchVY+p.gravity*fall;p.tilt+=p.flip*step;
+   }else{
+    p.vx*=Math.exp(-s*1.2);p.vy+=165*s;
+    p.x+=p.vx*step+Math.sin(p.age*.006+p.phase)*step*12;p.y+=p.vy*step;
+   }
+   p.angle+=p.spin*step;this.particles[n++]=p;
   }this.particles.length=n;
   // Far flowers paint first; close flowers overlap them, reinforcing depth.
   this.particles.sort((a,b)=>(a.z||0)-(b.z||0));
@@ -94,7 +102,7 @@ class CrayonBloomFX {
    if(perspective.x+size<0||perspective.x-size>this.canvas.width||perspective.y-size>this.canvas.height)continue;
    g.save();g.translate(perspective.x,perspective.y);g.rotate(p.angle);
    if(p.burst)g.scale(1,.24+.76*Math.abs(Math.cos(p.tilt)));
-   g.globalAlpha=Math.min(1,(1-t)*(p.burst?2.5:2.4))*.94;
+   g.globalAlpha=(p.burst?Math.min(1,(1-t)*5):Math.min(1,(1-t)*2.4))*.94;
 
    g.drawImage(p.sprite,-size/2,-size/2,size,size);g.restore();
   }

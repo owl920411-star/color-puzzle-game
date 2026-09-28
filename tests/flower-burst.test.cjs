@@ -16,8 +16,8 @@ test('flower effects clear on reset and do not create input timers',()=>{
 test('forward flowers grow in perspective, tumble, sort by depth and fall',()=>{
  const a=boot({FX:'real'}),f=a.fx;
  f.trigger(cells,4,3);const p=f.particles.find(p=>p.vz>=600);const initial=f.project(p).scale,tilt=p.tilt;
- for(let i=0;i<6;i++)f.update(100);
- assert.ok(f.project(p).scale>initial*2,'foreground visibly grows toward viewer');
+ for(let i=0;i<2;i++)f.update(100);
+ assert.ok(f.project(p).scale>initial*1.6,'foreground visibly grows toward viewer');
  assert.ok(p.tilt>tilt+1.2,'flower tumbles rather than only spinning flat');
  assert.ok(p.vy>0,'gravity turns flight downward');
  assert.ok(f.particles.every((p,i,ps)=>!i||ps[i-1].z<=p.z),'far particles draw before near ones');
@@ -52,7 +52,7 @@ test('every cleared cell emits exactly three petals simultaneously from its own 
 });
 test('each cell stays horizontally balanced through projection, including edge cells',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,9);
- for(let frame=0;frame<50;frame++){
+ for(let frame=0;frame<20;frame++){
   f.update(16);
   for(const c of cells){const group=f.particles.filter(p=>p.col===c.col&&p.row===c.row);
    const center=group.reduce((sum,p)=>sum+f.project(p).x,0)/3;
@@ -66,23 +66,30 @@ test('neighboring cells vary naturally and depth growth slows smoothly without a
  const centers=f.particles.filter(p=>p.vx===0);
  assert.ok(new Set(centers.map(p=>p.approach)).size>=4,'not a repeated identical launch');
  assert.ok(new Set(centers.map(p=>p.tilt)).size>=4,'petals do not turn edge-on together');
- const p=centers[0];f.update(100);const first=p.z;
- f.update(100);const second=p.z-first;
+ const p=centers[0];f.update(40);const first=p.z;
+ f.update(40);const second=p.z-first;
  assert.ok(second>0&&second<first,'growth smoothly eases after the initial pop');
- for(let i=0;i<5;i++)f.update(100);const before=p.z;f.update(100);
+ for(let i=0;i<3;i++)f.update(40);const before=p.z;f.update(40);
  assert.ok(p.z>before&&p.z-before<second,'no abrupt perspective clamp');
- assert.ok(f.project(p).scale<2.6,'large petals do not blanket the next block');
+ assert.ok(f.project(p).scale<3,'large petals do not blanket the next block');
 });
 
-test('petals spray toward the viewer without upward travel and only settle slightly late',()=>{
+test('reference burst grows quickly, never rises and exits in under half a second',()=>{
  const a=boot({FX:'real'}),f=a.fx;f.trigger(cells,4,0);
- for(let frame=0;frame<50;frame++){
+ for(let frame=0;frame<20;frame++){
   f.update(16);
   for(const p of f.particles){const q=f.project(p);
    assert.ok(q.y>=p.oy,'never rises above its launch point');
-   if(p.age<=250)assert.equal(q.y,p.oy,'initial burst goes straight forward');
-   assert.ok(q.y-p.oy<15,'only a slight late descent');
-   if(p.age>=200)assert.ok(q.scale>1.9,'initial burst visibly approaches viewer');
+   if(p.age>=80)assert.ok(q.scale>1.4,'rapid forward pop at varied depths');
+   if(p.age>=224)assert.ok(q.y-p.oy>30,'detaches and showers downward instead of hovering');
   }
  }
+ f.update(100);f.update(100);assert.equal(f.particles.length,0,'short burst clears the view');
+});
+
+test('the burst becomes a dispersed cloud rather than another moving horizontal strip',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.trigger(cells.slice(0,10),1,0);
+ f.update(100);f.update(100);
+ const ys=f.particles.map(p=>f.project(p).y);
+ assert.ok(Math.max(...ys)-Math.min(...ys)>50,'near/far petals visibly separate vertically');
 });
