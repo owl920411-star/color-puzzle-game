@@ -28,16 +28,24 @@ class CrayonBloomFX {
   const rows=[...new Set(cells.map(c=>c.row))].slice(0,4);
   const ox=this.canvas.width/2,oy=cells.reduce((v,c)=>v+(c.row+.5)*this.cellSize,0)/cells.length;
   this.blooms.push({rows,age:0,life:150,power});this.blooms=this.blooms.slice(-3);
-  for(let i=0;i<count;i++){
-   const cell=cells[(i*7+Math.floor(i/5))%cells.length],near=i%5===0,shape=near||i%3===0?'flower':'petal';
-   const color=cell.color||PALETTE[i%6],a=Math.random()*Math.PI*2;
-   this.particles.push({x:(cell.col+.5)*this.cellSize,y:(cell.row+.5)*this.cellSize,ox,oy,
-    vx:(Math.random()-.5)*(near?60:95),vy:-65-Math.random()*90,
+  // Emit matched left/right pairs so foreground size and perspective cannot bias a burst.
+  for(let i=0;i<count;i+=2){
+   const pair=i/2,cell=cells[(pair*7+Math.floor(pair/5))%cells.length];
+   const near=pair%5===0,shape=near||pair%3===0?'flower':'petal';
+   const offset=Math.abs((cell.col+.5)*this.cellSize-ox);
+   const vx=(Math.random()-.5)*(near?60:95),a=Math.random()*Math.PI*2;
+   const shared={y:(cell.row+.5)*this.cellSize,ox,oy,vy:-65-Math.random()*90,
     z:0,vz:near?600+Math.random()*100:190+Math.random()*250,
-    angle:a,spin:(Math.random()-.5)*9,tilt:Math.random()*.6,flip:5+Math.random()*7,
+    spin:(Math.random()-.5)*9,tilt:Math.random()*.6,flip:5+Math.random()*7,
     age:-Math.random()*32,life:near?820:950+Math.random()*200,
     size:near?18+Math.random()*7:shape==='flower'?11+Math.random()*5:7+Math.random()*6,
-    phase:a,burst:true,sprite:this.sprite(shape,color)});
+    phase:a,burst:true};
+   for(const side of [-1,1]){
+    if(i+(side===1?1:0)>=count)break;
+    const x=ox+side*offset,source=cells.find(c=>c.row===cell.row&&Math.abs((c.col+.5)*this.cellSize-x)<.1)||cell;
+    this.particles.push({...shared,x,vx:side*vx,angle:side*a,spin:side*shared.spin,
+     sprite:this.sprite(shape,source.color||PALETTE[pair%6])});
+   }
   }
  }
  item(event,definition){

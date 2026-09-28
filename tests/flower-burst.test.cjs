@@ -24,3 +24,18 @@ test('forward flowers grow in perspective, tumble, sort by depth and fall',()=>{
  assert.ok(f.particles.every(p=>Number.isFinite(f.project(p).scale)&&f.project(p).scale<=4));
  f.draw();
 });
+test('projected burst stays centered with equal size on both sides throughout flight',()=>{
+ const a=boot({FX:'real'}),f=a.fx;f.canvas.width=360;f.canvas.height=720;
+ for(const lines of [1,2,4]){
+  f.clear();f.trigger(cells.slice(0,lines*10),lines,4);
+  for(let frame=0;frame<60;frame++){
+   f.update(16);
+   let weight=0,moment=0;
+   for(const p of f.particles){if(p.age<0)continue;const q=f.project(p),size=p.size*q.scale;
+    if(q.x+size<0||q.x-size>360||q.y-size>720)continue;
+    const w=size*size;weight+=w;moment+=(q.x-180)*w;
+   }
+   if(weight)assert.ok(Math.abs(moment/weight)<1e-8,'visible size-weighted center remains at board center');
+  }
+ }
+});
