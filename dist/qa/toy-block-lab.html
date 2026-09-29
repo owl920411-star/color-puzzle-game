@@ -1,90 +1,13 @@
 <!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CRAYON BLOOM · 장난감 블록 실험실</title>
-<style>
-:root{--paper:#fffaf0;--ink:#443b3a;--pink:#f58faf;--blue:#77c9f4;--yellow:#ffd86b;--mint:#91d8b4}
-*{box-sizing:border-box}body{margin:0;background:#efe7d6;color:var(--ink);font-family:system-ui,sans-serif;display:flex;justify-content:center;min-height:100vh}
-.wrap{width:min(100%,460px);padding:14px 14px 28px}.paper{background:var(--paper);border:3px solid #6c5b54;border-radius:18px;padding:12px;box-shadow:4px 6px 0 #cbbda7}
-h1{font-size:22px;margin:0 0 4px}.sub{font-size:13px;margin:0 0 10px;color:#756761}.stage{position:relative;width:min(90vw,360px);height:min(180vw,720px);max-height:66vh;margin:auto;background:#fffdf7;border:4px solid #66534c;border-radius:10px;overflow:hidden;touch-action:none}
-canvas{width:100%;height:100%;display:block}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-button{border:3px solid #66534c;border-radius:14px;background:#fff7cf;color:var(--ink);font-weight:800;padding:10px 5px;font-size:14px;box-shadow:0 3px 0 #b9a88f}button:active{transform:translateY(2px);box-shadow:0 1px 0 #b9a88f}
-.levels{display:flex;gap:7px;margin-top:9px}.levels button{flex:1;background:#f8efe2}.levels button.on{background:#ffd86b}
-.note{font-size:12px;line-height:1.45;margin:9px 2px 0}.badge{display:inline-block;background:#ffd86b;border:2px solid #66534c;border-radius:12px;padding:2px 8px;font-weight:800}
-</style></head>
-<body><main class="wrap"><section class="paper">
-<h1>장난감 블록 실험실</h1><p class="sub">본게임과 분리된 물리 장난 프로토타입 · <span class="badge" id="toyName">뚱뚱이 블록</span></p>
-<div class="stage"><canvas id="game" width="360" height="720"></canvas></div>
-<div class="controls"><button id="left">← 한 칸</button><button id="drop">쏙! 떨어뜨리기</button><button id="right">한 칸 →</button><button id="new">새 통통 블록</button><button id="fill">바닥 만들기</button><button id="clear">보드 비우기</button></div>
-<p class="note">뚱뚱이만 연속으로 나옵니다. 내려올 때는 평범하지만 착지 순간 “뿌웅!” 하고 좌우 빈칸으로 실제 몸집이 퍼집니다.</p>
-</section></main>
-<script>
-const c=document.querySelector('#game'),x=c.getContext('2d'),COLS=10,ROWS=20,S=36;
-let board=Array.from({length:ROWS},()=>Array(COLS).fill(null)), bounce='normal', toy='fat', p;
-const shapes=[[[0,0],[1,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[3,0]],[[1,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[1,1],[2,1]]];
-const colors=['#f58faf','#77c9f4','#ffd86b','#91d8b4'];
-function spawn(){let a=shapes[Math.floor(Math.random()*shapes.length)];p={cells:a.map(q=>[...q]),cx:3,cy:0,color:colors[Math.floor(Math.random()*colors.length)],vy:0,state:'fall',bounced:false,squash:0,fattened:false};}
-function hit(nx,ny){return p.cells.some(([dx,dy])=>{let X=nx+dx,Y=Math.floor(ny+dy);return X<0||X>=COLS||Y>=ROWS||(Y>=0&&board[Y][X]);});}
-function lock(){p.cells.forEach(([dx,dy])=>{let Y=Math.floor(p.cy+dy),X=p.cx+dx;if(Y>=0&&Y<ROWS)board[Y][X]=p.color});setTimeout(spawn,170);}
-function prankSideStep(){
-  const first=Math.random()<.5?-1:1, second=-first;
-  if(!hit(p.cx+first,p.cy)){p.cx+=first;p.prankDir=first;return}
-  if(!hit(p.cx+second,p.cy)){p.cx+=second;p.prankDir=second;return}
-  p.prankDir=0;
-}
-function canRollDrop(dir){
-  if(!dir)return false;
-  return !hit(p.cx,p.cy+1);
-}
-function startRollDrop(){
-  if(!canRollDrop(p.prankDir))return false;
-  p.state='roll';
-  p.rollT=0;
-  p.rollDir=p.prankDir;
-  return true;
-}
-function fatten(){
-  if(p.fattened)return;
-  p.fattened=true;
-  const occupied=new Set(p.cells.map(([dx,dy])=>dx+','+dy));
-  const extras=[];
-  for(const [dx,dy] of p.cells){
-    for(const side of [-1,1]){
-      const nx=dx+side, key=nx+','+dy;
-      if(occupied.has(key)||extras.some(([a,b])=>a===nx&&b===dy))continue;
-      const X=p.cx+nx,Y=Math.floor(p.cy+dy);
-      if(X>=0&&X<COLS&&Y>=0&&Y<ROWS&&!board[Y][X])extras.push([nx,dy]);
-    }
-  }
-  p.cells.push(...extras);
-}
-function land(){
-  if(toy==='fat'){
-    if(p.fattened)return lock();
-    p.state='squash';p.squash=1;
-    setTimeout(()=>{fatten();p.state='fatpop';p.squash=1;setTimeout(lock,260)},100);
-    return;
-  }
-  if(p.bounced)return lock();p.bounced=true;p.state='squash';p.squash=1;setTimeout(()=>{prankSideStep();p.state='bounce';p.vy=bounce==='soft'?-4.7:bounce==='wild'?-9.5:-7.2},95)
-}
-function move(d){if(!hit(p.cx+d,p.cy))p.cx+=d}
-function hard(){while(!hit(p.cx,p.cy+1))p.cy++;land()}
-function fill(){for(let r=17;r<20;r++)for(let q=0;q<COLS;q++)if(Math.random()>.22)board[r][q]=colors[(q+r)%colors.length];spawn()}
-function clear(){board=Array.from({length:ROWS},()=>Array(COLS).fill(null));spawn()}
-function cell(px,py,col,scale=1){let pad=3+(1-scale)*S/2,w=(S-6)*scale,ox=px*S+(S-w)/2,oy=py*S+(S-w)/2;x.fillStyle=col;x.strokeStyle='#604e49';x.lineWidth=2.4;x.beginPath();x.roundRect(ox,oy,w,w,6);x.fill();x.stroke();x.globalAlpha=.18;x.fillStyle='#fff';x.fillRect(ox+5,oy+5,w-10,4);x.globalAlpha=1}
-let last=performance.now(),acc=0;
-function tick(t){let dt=Math.min(32,t-last);last=t;acc+=dt;if(p){
- if(p.state==='fall'&&acc>360){acc=0;if(hit(p.cx,p.cy+1))land();else p.cy++}
- else if(p.state==='bounce'){p.vy+=0.035*dt;let ny=p.cy+p.vy*dt/100;if(p.vy>0&&hit(p.cx,ny+0.22)){p.cy=Math.floor(p.cy);if(!startRollDrop()){p.state='settle';p.squash=.72;setTimeout(lock,105)}}else if(!hit(p.cx,ny))p.cy=ny}
- else if(p.state==='roll'){p.rollT+=dt;let ny=p.cy+dt/115;if(!hit(p.cx,ny))p.cy=ny;else{p.cy=Math.floor(p.cy);p.state='settle';p.squash=.72;setTimeout(lock,105)}}
- if(p.squash>0)p.squash=Math.max(0,p.squash-dt/180)
- }draw();requestAnimationFrame(tick)}
-function draw(){x.clearRect(0,0,360,720);x.fillStyle='#fffdf7';x.fillRect(0,0,360,720);x.strokeStyle='rgba(80,65,60,.08)';x.lineWidth=1;for(let i=1;i<COLS;i++){x.beginPath();x.moveTo(i*S,0);x.lineTo(i*S,720);x.stroke()}for(let i=1;i<ROWS;i++){x.beginPath();x.moveTo(0,i*S);x.lineTo(360,i*S);x.stroke()}
- for(let r=0;r<ROWS;r++)for(let q=0;q<COLS;q++)if(board[r][q])cell(q,r,board[r][q]);
- if(p){let sc=p.state==='squash'?1-.12*p.squash:p.state==='fatpop'?1+.18*p.squash:p.state==='settle'?1+.09*p.squash:1;p.cells.forEach(([dx,dy])=>cell(p.cx+dx,p.cy+dy,p.color,sc));if(p.state==='bounce'){x.font='bold 22px system-ui';x.fillStyle='#66534c';let msg=p.prankDir<0?'통! ←':p.prankDir>0?'→ 통!':'통!';x.fillText(msg,p.cx*S+24,Math.max(30,p.cy*S-8))}if(p.state==='fatpop'){x.font='bold 22px system-ui';x.fillStyle='#66534c';x.fillText('뿌웅!',p.cx*S+32,Math.max(30,p.cy*S-8))}if(p.state==='roll'){x.save();x.translate((p.cx+1.5)*S,(p.cy+1)*S);x.rotate((p.rollT/110)*p.rollDir);x.font='bold 20px system-ui';x.fillStyle='#66534c';x.fillText('데굴!',-26,-34);x.restore()}}
-}
-document.querySelector('#left').onclick=()=>move(-1);document.querySelector('#right').onclick=()=>move(1);document.querySelector('#drop').onclick=hard;document.querySelector('#new').onclick=spawn;document.querySelector('#fill').onclick=fill;document.querySelector('#clear').onclick=clear;
-let sx=0;c.addEventListener('pointerdown',e=>sx=e.clientX);c.addEventListener('pointerup',e=>{let d=e.clientX-sx;if(Math.abs(d)>28)move(d>0?1:-1);else hard()});
-spawn();requestAnimationFrame(tick);
-</script></body></html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fffaf0"><link rel="icon" href="data:,"><title>CRAYON BLOOM · 뚱뚱이 전용 실험실 · TOY V2</title><link rel="stylesheet" href="toy-lab.css?v=toy-v2"></head>
+<body data-toy="fat"><main class="wrap"><section class="paper">
+<header><h1>뚱뚱이의 장난 시간</h1><span>TOY V2 · 뚱뚱이</span></header><p class="sub">CRAYON BLOOM · 뚱뚱이 전용 실험실</p>
+<div class="modes" aria-label="확인 방식"><button data-mode="repeat" aria-pressed="true">바로 반복</button><button data-mode="cycle" aria-pressed="false">1분 주기</button></div>
+<div class="clockline"><span id="clock">바로 반복 · 매번 장난 블록</span><button id="pause">잠깐 쉬기</button></div>
+<div class="stage"><canvas id="game" width="360" height="720" tabindex="0" aria-label="뚱뚱이 블록 10열 20행. 아래 버튼으로 조작하세요."></canvas></div>
+<div class="controls"><button id="left">← 한 칸</button><button id="drop">쏙! 떨어뜨리기</button><button id="right">한 칸 →</button><button id="new">새 뚱뚱이</button><button id="fill">바닥 만들기</button><button id="clear">보드 비우기</button></div>
+<p class="note">처음부터 빵빵한 볼과 배, <strong>뿌웅! → 짜잔!</strong><br>착지하면 원래 몸의 좌우 빈칸으로 한 번만 퍼져요.</p>
+<p class="hint">보드를 톡 / 아래 스와이프: 쏙! · 좌우 스와이프: 한 칸<br>바닥 만들기·보드 비우기·방식 전환은 시간을 0부터 다시 시작해요.</p>
+<details><summary>모습 비교 · 재현용 바닥</summary><canvas id="compare" class="compare" width="360" height="130" aria-label="같은 색과 모양의 일반 블록과 뚱뚱이 비교"></canvas><div class="compare-labels"><span>일반 블록</span><span>뚱뚱이</span></div><p class="hint">아래 버튼도 보드와 1분 주기를 다시 시작해요.</p><div class="terrains"><button data-terrain="flat">평평한 바닥</button><button data-terrain="steps">계단</button><button data-terrain="wall">한쪽 벽</button><button data-terrain="blocked">양쪽 막힘</button><button data-terrain="lower">옆이 낮음</button></div><button id="restart">다시 시작</button><p id="status" class="status" role="status" aria-live="polite"></p></details>
+</section><footer>TOY V2 · 독립 프로토타입 · 자동 줄 제거 없음 · 기록 저장 안 함</footer></main>
+<script src="toy-lab-core.js?v=toy-v2"></script><script src="toy-lab-view.js?v=toy-v2"></script><script src="toy-lab-ui.js?v=toy-v2"></script></body></html>

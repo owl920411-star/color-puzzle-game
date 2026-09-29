@@ -19,10 +19,16 @@ class ToyPainter{
         else if(phase==='fall')c.scale(1,1-.025*Math.sin(age/190));
       }
       c.translate(-18,-18);c.beginPath();c.moveTo(11,3);c.bezierCurveTo(23,1,31,4,33,13);c.bezierCurveTo(35,25,30,32,23,33);c.bezierCurveTo(11,35,4,31,3,24);c.bezierCurveTo(1,13,4,5,11,3);c.closePath();
+    }else if(type==='fat'){
+      if(phase==='fatSquash'&&!this.reduced){c.translate(0,4);c.scale(1,.88);}
+      c.beginPath();c.moveTo(10,2);c.bezierCurveTo(21,0,32,1,34,10);c.bezierCurveTo(35,18,36,30,27,33);c.bezierCurveTo(18,36,4,35,2,27);c.bezierCurveTo(0,18,0,5,10,2);c.closePath();
     }else if(this.kind==='bouncy'||this.kind==='fat'){c.beginPath();c.roundRect(3,3,30,30,6);}
     else{path(c,[[4,5],[31,3],[33,31],[5,33]]);c.closePath();}
     if(!ghost)c.fill();c.stroke();
-    if(!ghost){
+    if(!ghost&&type==='normal'){
+      if(this.kind==='bouncy'||this.kind==='fat'){c.globalAlpha=.18;c.fillStyle='#fff';c.fillRect(8,8,20,4);}
+      else{c.strokeStyle='rgba(255,255,255,.4)';c.lineWidth=2;stroke(c,[[8,10],[28,8]]);stroke(c,[[9,16],[28,14]]);}
+    }else if(!ghost){
       c.save();c.clip();c.strokeStyle='rgba(255,250,234,.42)';c.lineWidth=1.4;
       for(let i=0;i<6;i++)stroke(c,[[4,8+i*4],[30,4+i*4]]);
       c.strokeStyle='rgba(104,75,61,.11)';c.lineWidth=.65;
@@ -41,6 +47,13 @@ class ToyPainter{
       c.beginPath();c.moveTo(-6,6);c.quadraticCurveTo(0,15,7,5);c.quadraticCurveTo(0,10,-6,6);c.fill();
       c.fillStyle='#fff4d9';stroke(c,[[-10,-7],[-5,-8]]);
       c.fillStyle='#f5b09f';ellipse(c,-11,5,3,1.9,true);ellipse(c,11,5,3,1.9,true);
+    }else if(type==='fat'){
+      c.fillStyle='#e98ba5';c.globalAlpha=.6;ellipse(c,-10,5,5,4,true);ellipse(c,10,5,5,4,true);c.globalAlpha=1;c.fillStyle=INK;c.lineWidth=1.5;
+      stroke(c,[[-6,0],[-4,-1],[-2,0]]);stroke(c,[[2,0],[4,-1],[6,0]]);
+      c.beginPath();c.moveTo(-3,5);c.quadraticCurveTo(0,8,3,5);c.stroke();
+      c.strokeStyle='#aa7068';c.lineWidth=1.5;c.beginPath();c.moveTo(-10,10);c.bezierCurveTo(-8,20,10,20,11,10);c.stroke();
+      c.fillStyle='#b47c72';ellipse(c,1,13,1,1,true);
+      if(phase==='fatpop'){stroke(c,[[-6,-4],[-2,-5]]);stroke(c,[[2,-5],[6,-4]]);}
     }
     c.restore();
   }

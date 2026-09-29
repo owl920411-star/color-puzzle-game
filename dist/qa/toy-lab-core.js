@@ -3,8 +3,8 @@
 'use strict';
 const COLS=10,ROWS=20,S=36,EPS=1e-7,STEP=5;
 const SHAPES=[[[0,0],[1,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[3,0]],[[1,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[1,1],[2,1]]];
-const PALETTES={bouncy:['#f58faf','#77c9f4','#ffd86b','#91d8b4']};
-const WORDS={bounce:{text:'통!',colour:'#a64a6f',ms:520},roll:{text:'데굴~',colour:'#a64a6f',ms:520},land:{text:'톡!',colour:'#81634c',ms:340}};
+const PALETTES={bouncy:['#f58faf','#77c9f4','#ffd86b','#91d8b4'],fat:['#f58faf','#77c9f4','#ffd86b','#91d8b4']};
+const WORDS={bounce:{text:'통!',colour:'#a64a6f',ms:520},roll:{text:'데굴~',colour:'#a64a6f',ms:520},land:{text:'톡!',colour:'#81634c',ms:340},expand:{text:'뿌웅!',colour:'#ae5974',ms:550},taDa:{text:'짜잔!',colour:'#986038',ms:350},noSpace:{text:'낑…',colour:'#88694b',ms:550}};
 const empty=()=>Array.from({length:ROWS},()=>Array(COLS).fill(null));
 const copy=v=>JSON.parse(JSON.stringify(v));
 function seeded(seed){return()=>{let t=seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
@@ -83,7 +83,17 @@ class ToyLab{
   land(){
     const p=this.p;if(p.locked)return;
     if(p.type==='bouncy'&&!p.used){p.used=true;this.transition('squash');return;}
+    if(p.type==='fat'&&!p.used){p.used=true;this.transition('fatSquash');return;}
     this.lock();
+  }
+  fatten(){
+    const p=this.p,seen=new Set(p.original.map(c=>c.join(','))),extras=[];
+    for(const [dx,dy] of p.original)for(const side of [-1,1]){
+      const nx=dx+side,key=nx+','+dy,X=p.x+nx,Y=p.y+dy;
+      if(seen.has(key)||X<0||X>=COLS||Y<0||Y>=ROWS||this.board[Y][X])continue;
+      seen.add(key);extras.push([nx,dy]);
+    }
+    p.extra=extras;p.cells=copy(p.original).concat(extras);this.transition('fatpop');this.say(extras.length?'expand':'noSpace');
   }
   lock(){
     const p=this.p;if(p.locked)return false;
@@ -91,7 +101,7 @@ class ToyLab{
     p.y=Math.round(p.y);p.locked=true;
     for(const [dx,dy] of p.cells)this.board[p.y+dy][p.x+dx]={kind:'block',colour:p.colour,owner:p.id,toy:p.type};
     this.locks++;this.lastLock={id:p.id,type:p.type,x:p.x,y:p.y,cells:copy(p.cells),original:copy(p.original),automaticMoves:p.automaticMoves,userMoves:p.userMoves,extra:copy(p.extra),added:[]};
-    this.transition('settle');if(p.type==='bouncy')this.say('land',true);return true;
+    this.transition('settle');if(p.type==='bouncy')this.say('land',true);if(p.type==='fat'&&p.extra.length)this.say('taDa',true);return true;
   }
   update(delta){
     if(this.paused||this.p.state==='full'||!Number.isFinite(delta)||delta<=0)return;
@@ -110,7 +120,9 @@ class ToyLab{
       const goal=this.landingY(),speed=p.type==='bouncy'||this.kind==='fat'?1000/360:4.8;
       p.y=Math.min(goal,p.y+speed*dt/1000);
       if(p.y>=goal-EPS){p.y=goal;this.land();}
-    }else if(p.state==='squash'&&p.ms>=95){
+    }else if(p.state==='fatSquash'&&p.ms>=100)this.fatten();
+    else if(p.state==='fatpop'&&p.ms>=260)this.lock();
+    else if(p.state==='squash'&&p.ms>=95){
       p.dir=this.chooseSide();if(p.dir){p.x+=p.dir;p.automaticMoves++;}
       p.bounceY=p.y;p.vy={soft:-47,normal:-72,wild:-95}[this.bounce];this.transition('bounce');this.say('bounce');
     }else if(p.state==='bounce'){
