@@ -13,8 +13,8 @@ class ToyPainter{
   constructor(canvas,kind,reduced=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.kind=kind;this.reduced=reduced;this.scale=1;}
   resize(dpr=1){dpr=Math.max(1,Math.min(3,dpr));this.canvas.width=360*dpr;this.canvas.height=720*dpr;this.ctx.setTransform(dpr,0,0,dpr,0,0);this.scale=(this.canvas.getBoundingClientRect?.().width||360)/360;}
   cell(col,row,colour,type='normal',phase='fall',age=0,dir=0,ghost=false){
-    const c=this.ctx;c.save();c.translate(col*S,row*S);c.strokeStyle=INK;c.fillStyle=colour;c.lineWidth=1.8;c.lineJoin='round';
-    if(ghost){c.globalAlpha=.46;c.setLineDash([4,4]);c.strokeStyle='#ad9184';}
+    const c=this.ctx;c.save();c.translate(col*S,row*S);c.strokeStyle=INK;c.fillStyle=colour;c.lineWidth=type==='normal'?(['bouncy','fat'].includes(this.kind)?2.4:2):1.8;c.lineJoin='round';
+    if(ghost){c.globalAlpha=.46;c.setLineDash([4,4]);c.strokeStyle='#ad9184';c.lineWidth=1.7;}
     if(type==='bouncy'){
       c.translate(18,18);
       if(!this.reduced){
@@ -57,8 +57,8 @@ class ToyPainter{
       c.fillStyle='#f5b09f';ellipse(c,-11,5,3,1.9,true);ellipse(c,11,5,3,1.9,true);
     }else if(type==='fat'){
       c.fillStyle='#e98ba5';c.globalAlpha=.6;ellipse(c,-10,5,5,4,true);ellipse(c,10,5,5,4,true);c.globalAlpha=1;c.fillStyle=INK;c.lineWidth=1.5;
-      stroke(c,[[-6,0],[-4,-1],[-2,0]]);stroke(c,[[2,0],[4,-1],[6,0]]);
-      c.beginPath();c.moveTo(-3,5);c.quadraticCurveTo(0,8,3,5);c.stroke();
+      if(phase==='straining'){stroke(c,[[-6,-3],[-3,-1],[-6,1]]);stroke(c,[[6,-3],[3,-1],[6,1]]);stroke(c,[[-3,6],[0,5],[3,6]]);}
+      else{stroke(c,[[-6,0],[-4,-1],[-2,0]]);stroke(c,[[2,0],[4,-1],[6,0]]);c.beginPath();c.moveTo(-3,5);c.quadraticCurveTo(0,8,3,5);c.stroke();}
       c.strokeStyle='#aa7068';c.lineWidth=1.5;c.beginPath();c.moveTo(-10,10);c.bezierCurveTo(-8,20,10,20,11,10);c.stroke();
       c.fillStyle='#b47c72';ellipse(c,1,13,1,1,true);
       if(phase==='fatpop'){stroke(c,[[-6,-4],[-2,-5]]);stroke(c,[[2,-5],[6,-4]]);}
@@ -73,7 +73,7 @@ class ToyPainter{
       stroke(c,[[-11,-7],[-5,-10]]);stroke(c,[[3,-5],[10,-4]]);
       ellipse(c,-6,0,1.7,3,true);
       if(['draw','doodleRest'].includes(phase)){stroke(c,[[4,-1],[8,1],[4,3]]);}else{ellipse(c,7,1,1.7,2.5,true);}
-      c.beginPath();c.moveTo(-6,7);c.quadraticCurveTo(1,15,10,5);c.stroke();stroke(c,[[9,4],[11,6]]);
+      c.beginPath();c.moveTo(-6,7);c.quadraticCurveTo(1,phase==='noInk'?3:15,10,5);c.stroke();if(phase!=='noInk')stroke(c,[[9,4],[11,6]]);
       c.strokeStyle='#d97193';c.lineWidth=2;stroke(c,[[-13,6],[-9,4],[-12,9],[-8,7]]);
     }
     c.restore();
@@ -85,7 +85,7 @@ class ToyPainter{
     // Keep tiny anxious motion inside the occupied cell, including at a wall.
     if(p.type==='coward'&&!this.reduced&&['panic','blocked'].includes(phase))c.translate(Math.sin(p.ms*.085)*.7,0);
     for(const [dx,dy] of p.cells)this.cell(vx+dx,p.y+dy,p.colour,p.type,phase,p.ms,p.dir);
-    const [fx,fy]=p.original[0];this.face(vx+fx,p.y+fy,p.type,phase,p.ms,p.dir);
+    const [fx,fy]=p.original[0],expression=p.type==='fat'&&phase==='fatpop'&&!p.extra?.length?'straining':p.type==='doodle'&&phase==='doodleRest'&&!p.targets?.length?'noInk':phase;this.face(vx+fx,p.y+fy,p.type,expression,p.ms,p.dir);
     if(p.type==='doodle'&&phase!=='draw'){
       const [dx,dy]=p.original[1]||p.original[0];this.crayon((vx+dx)*S+24,(p.y+dy)*S+26,'#d75c86',-2.15);
     }

@@ -1,0 +1,143 @@
+[
+  {
+    "age": 280,
+    "dx": 65,
+    "dy": 0,
+    "expected": "no-rotation",
+    "calls": [
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": false
+      }
+    ]
+  },
+  {
+    "age": 40,
+    "dx": 65,
+    "dy": 0,
+    "expected": "CW",
+    "calls": [
+      {
+        "name": "rotateDir",
+        "args": [
+          1
+        ],
+        "result": true
+      }
+    ]
+  },
+  {
+    "age": 40,
+    "dx": -65,
+    "dy": 0,
+    "expected": "CCW",
+    "calls": [
+      {
+        "name": "rotateDir",
+        "args": [
+          -1
+        ],
+        "result": true
+      }
+    ]
+  },
+  {
+    "age": 220,
+    "dx": 0,
+    "dy": -65,
+    "expected": "HOLD",
+    "calls": [
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "hold",
+        "args": [],
+        "result": true
+      }
+    ]
+  },
+  {
+    "age": 220,
+    "dx": 0,
+    "dy": 65,
+    "expected": "drop",
+    "calls": [
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          0,
+          18
+        ],
+        "result": true
+      },
+      {
+        "name": "lock",
+        "args": []
+      }
+    ]
+  }
+]

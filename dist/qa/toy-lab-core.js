@@ -140,6 +140,9 @@ class ToyLab{
   update(delta){
     if(this.paused||this.p.state==='full'||!Number.isFinite(delta)||delta<=0)return;
     const target=this.clock.elapsed+delta;
+    // A long active-tab stall advances the real clock, but does not replay
+    // minutes of unseen drops. Missed reservations coalesce in ToyClock.
+    if(delta>2000){this.clock.advanceTo(target-100);this.simTime=Math.floor(this.clock.elapsed/STEP)*STEP;}
     // Fixed physical steps give identical behaviour at 30/60/120 Hz. The active
     // clock is elapsed time, never a clamped frame counter.
     while(this.simTime+STEP<=target+EPS){

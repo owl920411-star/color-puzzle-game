@@ -10,12 +10,12 @@ function pauseState(){game.paused=manualPaused||background;}
 function draw(){
   painter.draw(game);
   label.textContent=manualPaused?'잠깐 쉬는 중 · 시간도 멈춤':game.p.state==='full'?'보드가 꽉 참 · 시간 멈춤':game.mode==='repeat'?'바로 반복 · 매번 장난 블록':game.clock.pending?'다음 블록에 장난쟁이!':`다음 장난 ${String(Math.floor(Math.ceil((game.clock.next-game.clock.elapsed)/1000)/60)).padStart(2,'0')}:${String(Math.ceil((game.clock.next-game.clock.elapsed)/1000)%60).padStart(2,'0')}`;
-  $('new').disabled=game.mode==='cycle';$('pause').textContent=manualPaused?'계속하기':'잠깐 쉬기';status.textContent=game.message;
+  $('new').disabled=game.mode==='cycle'||manualPaused;for(const id of ['left','right','drop'])$(id).disabled=manualPaused;$('pause').textContent=manualPaused?'계속하기':'잠깐 쉬기';status.textContent=game.message;
   document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===game.mode)));
 }
 function cancelInputs(){pointer=null;captures.forEach(f=>f());}
 function reset(mode=game.mode,terrain='empty'){cancelInputs();game.reset(mode,terrain);manualPaused=false;pauseState();last=performance.now();draw();}
-function act(fn){syncTime();if(!manualPaused&&!background){fn();draw();}}
+function act(fn){syncTime();if(fn===actions.fill||fn===actions.clear||!manualPaused&&!background){fn();draw();}}
 const actions={left:()=>game.move(-1),right:()=>game.move(1),drop:()=>game.drop(),new:()=>game.newToy(),fill:()=>{const names=['lower','flat','steps','wall','blocked'];reset(game.mode,names[game.terrain++%5]);},clear:()=>reset()};
 // Every gesture captures the piece ID and its input eligibility at pointer-down.
 // Cancel, outside release and compatibility clicks cannot leak into a new piece.

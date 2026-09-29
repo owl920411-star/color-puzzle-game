@@ -84,3 +84,10 @@ test('one-or-two doodles follow the requested count and completed ink persists t
 test('doodle new/reset during a stroke leaves no late ink or duplicate body locks',()=>{
  for(const reset of [false,true]){const g=lab('doodle');g.drop();g.update(250);const targets=g.p.targets;for(let i=0;i<30;i++)assert.equal(g.drop(),false);if(reset)g.clear();else g.newToy();g.update(600);for(const{x,y}of targets)assert.notEqual(g.board[y][x]?.kind,'ink');assert.equal(g.locks,reset?0:1);}
 });
+for(const kind of ['bouncy','fat','coward','doodle'])test(`${kind}: all four shapes, both walls and five terrains preserve occupied tiles and bounds`,()=>{
+ for(const shape of SHAPES)for(const terrain of ['flat','steps','lower','wall','blocked'])for(const side of [0,1]){
+  const g=lab(kind,side?.8:0);g.reset('repeat',terrain);g.p.cells=shape.map(c=>c.slice());g.p.original=shape.map(c=>c.slice());g.p.x=side?9-Math.max(...shape.map(c=>c[0])):0;const before=JSON.parse(JSON.stringify(g.board));g.drop();locked(g);g.update(kind==='doodle'?650:0);
+  assert.equal(g.locks,1);for(let y=0;y<20;y++)for(let x=0;x<10;x++)if(before[y][x])assert.deepEqual(g.board[y][x],before[y][x]);
+  assert.ok(g.lastLock.cells.every(([x,y])=>g.lastLock.x+x>=0&&g.lastLock.x+x<10&&g.lastLock.y+y>=0&&g.lastLock.y+y<20));if(kind!=='fat')assert.equal(g.lastLock.cells.length,4);assert.ok(g.lastLock.automaticMoves<=1);
+ }
+});

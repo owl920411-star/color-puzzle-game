@@ -1,0 +1,150 @@
+[
+  {
+    "kind": "bouncy",
+    "wallMs": 61085,
+    "activeMs": 61085.500000000095,
+    "events": [
+      {
+        "event": "spawn",
+        "reservedAt": 0,
+        "reason": "initial",
+        "spawnedAt": 0,
+        "id": 2
+      },
+      {
+        "event": "reserve",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "observedAt": 60000
+      },
+      {
+        "event": "spawn",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "spawnedAt": 61070,
+        "id": 20
+      }
+    ],
+    "trace": [
+      {
+        "wall": 59010.19999999972,
+        "active": 59002.20000000009,
+        "periodic": 0
+      }
+    ],
+    "state": "fall",
+    "locks": 18,
+    "focus": true
+  },
+  {
+    "kind": "fat",
+    "wallMs": 61105.39999999991,
+    "activeMs": 61106.3,
+    "events": [
+      {
+        "event": "spawn",
+        "reservedAt": 0,
+        "reason": "initial",
+        "spawnedAt": 0,
+        "id": 2
+      },
+      {
+        "event": "reserve",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "observedAt": 60000
+      },
+      {
+        "event": "spawn",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "spawnedAt": 61100,
+        "id": 12
+      }
+    ],
+    "trace": [
+      {
+        "wall": 59010.200000000186,
+        "active": 59006.40000000001,
+        "periodic": 0
+      }
+    ],
+    "state": "fall",
+    "locks": 10,
+    "focus": true
+  },
+  {
+    "kind": "coward",
+    "wallMs": 60652.60000000009,
+    "activeMs": 60652.8,
+    "events": [
+      {
+        "event": "spawn",
+        "reservedAt": 0,
+        "reason": "initial",
+        "spawnedAt": 0,
+        "id": 2
+      },
+      {
+        "event": "reserve",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "observedAt": 60000
+      },
+      {
+        "event": "spawn",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "spawnedAt": 60650,
+        "id": 22
+      }
+    ],
+    "trace": [
+      {
+        "wall": 59010.299999999814,
+        "active": 59002.9,
+        "periodic": 0
+      }
+    ],
+    "state": "fall",
+    "locks": 20,
+    "focus": true
+  },
+  {
+    "kind": "doodle",
+    "wallMs": 60819.5,
+    "activeMs": 60818.9,
+    "events": [
+      {
+        "event": "spawn",
+        "reservedAt": 0,
+        "reason": "initial",
+        "spawnedAt": 0,
+        "id": 2
+      },
+      {
+        "event": "reserve",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "observedAt": 60000
+      },
+      {
+        "event": "spawn",
+        "reservedAt": 60000,
+        "reason": "periodic",
+        "spawnedAt": 60810,
+        "id": 21
+      }
+    ],
+    "trace": [
+      {
+        "wall": 59010.19999999972,
+        "active": 59002.3,
+        "periodic": 0
+      }
+    ],
+    "state": "fall",
+    "locks": 19,
+    "focus": true
+  }
+]
