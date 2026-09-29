@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff9ed">
+<link rel="icon" href="data:,">
+<title>CRAYON BLOOM · 낙서 블록 전용 실험실</title>
+<style>
+:root{--paper:#fff9ed;--ink:#514741;--purple:#91d5bf;--yellow:#ffdb78;--blue:#9fd5ee}
+*{box-sizing:border-box}body{overscroll-behavior-y:contain;margin:0;background:#eee6d6;color:var(--ink);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.wrap{width:min(100%,440px);margin:auto;padding:12px 12px max(18px,env(safe-area-inset-bottom))}.paper{padding:13px;background:var(--paper);border:2px solid #7a695c;border-radius:3px 7px 4px 8px;box-shadow:3px 4px 0 #cdbfa9}
+header{display:flex;align-items:center;justify-content:space-between;gap:6px}h1{font-size:21px;letter-spacing:-.8px;margin:0}header span{font-size:10px;white-space:nowrap;transform:rotate(3deg);padding:5px;background:#d8efe5;border:1px dashed #6c9c8a}.sub{font-size:12px;margin:6px 0 7px;color:#74675b}.status{min-height:25px;margin:0 0 7px;text-align:center;font-size:13px;font-weight:bold}
+.stage{box-sizing:content-box;position:relative;width:min(100%,310px,calc((100svh - 282px)/2));min-width:min(100%,150px);aspect-ratio:1/2;margin:auto;border:3px solid #736052;border-radius:4px 7px 3px 6px;background:#fffdf7;overflow:hidden;touch-action:none}
+canvas{display:block;width:100%;height:100%;touch-action:none}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}button{min-height:44px;border:2px solid #786556;border-radius:4px 7px 5px 3px;background:#fff5da;font-size:12px;font-weight:800;padding:7px 2px;user-select:none;box-shadow:0 2px 0 #bbaa90}button:active{transform:translateY(2px);box-shadow:none}button:focus-visible,canvas:focus-visible{outline:3px solid #9170af;outline-offset:2px}#drop{background:var(--yellow)}#new{background:#d8efe5}.note{font-size:12px;line-height:1.6;margin:10px 0 0}.hint{font-size:10px;line-height:1.5;color:#7d7165;margin:5px 0 0}footer{font-size:10px;text-align:center;margin-top:9px;color:#857869}
+@media(max-height:550px){.stage{width:min(60%,220px);min-width:155px}}@media(prefers-reduced-motion:reduce){button:active{transform:none}}
+</style>
+</head>
+<body>
+<main class="wrap"><section class="paper">
+<header><h1>낙서 블록 전용 실험실</h1><span>DOODLE 1</span></header>
+<p class="sub">낙서 블록만 등장 · 본게임과 분리된 테스트</p>
+<p id="status" class="status" role="status" aria-live="polite">빈칸이 보이면… 낙서하고 싶어!</p>
+<div class="stage"><canvas id="game" width="360" height="720" tabindex="0" aria-label="낙서 블록 10열 20행 실험판. 아래의 이동과 떨어뜨리기 버튼으로 조작하세요."></canvas></div>
+<div class="controls">
+<button id="left" type="button">← 한 칸</button><button id="drop" type="button">쏙! 떨어뜨리기</button><button id="right" type="button">한 칸 →</button>
+<button id="new" type="button">새 낙서쟁이</button><button id="fill" type="button">바닥 만들기</button><button id="clear" type="button">보드 비우기</button>
+</div>
+<p class="note"><strong>착지 → 크레용으로 슥슥 → 빈칸에 낙서 1~2개!</strong><br>낙서도 한 칸을 차지해 다음 블록을 막아요. 몸집은 그대로예요.</p>
+<p class="hint">좌우 버튼 또는 보드 좌우를 톡: 이동 · 아래로 스와이프: 쏙!<br>낙서할 빈칸이 없으면 그냥 착지해요. 보드 비우기로 다시 시험하세요.</p>
+</section><footer>CRAYON BLOOM · 낙서 블록 프로토타입 1 · 기록·설정 저장 안 함 · 자동 줄 제거 없음</footer></main>
+<script id="doodle-engine">
+/* Independent prototype: no imports, persistence, production hooks, or delayed callbacks. */
+(function(root){
+'use strict';
+const COLS=10,ROWS=20,EPS=1e-7,INK_MS=260;
+const SHAPES=[[[0,0],[1,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[3,0]],[[1,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[1,1],[2,1]]];
+const COLOURS=['#91d5bf','#a7cfea','#ecadc0','#f1d17b'];
+const INKS=['#d75c86','#3c98b7','#a86fc2','#b38322'];
+const empty=()=>Array.from({length:ROWS},()=>Array(COLS).fill(null));
+class DoodleLab{
+  constructor(rng=Math.random){
+    if(typeof rng!=='function')throw new TypeError('rng must be a function');
+    this.rng=rng;this.board=empty();this.serial=0;this.locks=0;this.terrain=0;this.lastLock=null;this.message='';this.spawn();
+  }
+  random(){const n=Number(this.rng());return Number.isFinite(n)?Math.max(0,Math.min(.999999999,n)):0;}
+  spawn(){
+    const cells=SHAPES[Math.floor(this.random()*SHAPES.length)].map(c=>c.slice());
+    const width=Math.max(...cells.map(c=>c[0]))+1;
+    // Replacing this object also cancels unfinished drawing. Nothing can mutate a later piece.
+    this.p={id:++this.serial,type:'doodle',cells,x:Math.floor((COLS-width)/2),y:0,colour:COLOURS[Math.floor(this.random()*COLOURS.length)],state:'fall',ms:0,targets:[],inkIndex:0,added:[]};
+    this.message='빈칸이 보이면… 낙서하고 싶어!';
+    if(this.hit(this.p.x,0)){this.p.state='full';this.message='보드가 꽉 찼어요. 보드 비우기를 눌러주세요.';}
+  }
+  hit(x,y,cells=this.p.cells){
+    if(!Number.isInteger(x)||!Number.isFinite(y))return true;
+    return cells.some(([dx,dy])=>{
+      const col=x+dx,top=y+dy;
+      if(col<0||col>=COLS||top<-EPS||top+1>ROWS+EPS)return true;
+      const first=Math.max(0,Math.floor(top+EPS)),last=Math.min(ROWS-1,Math.floor(top+1-EPS));
+      for(let row=first;row<=last;row++)if(this.board[row][col])return true;
+      return false;
+    });
+  }
+  landingY(){let y=Math.floor(this.p.y+EPS);while(y<ROWS&&!this.hit(this.p.x,y+1))y++;return y;}
+  move(dir){
+    if(this.p.state!=='fall'||(dir!==-1&&dir!==1)||this.hit(this.p.x+dir,this.p.y))return false;
+    this.p.x+=dir;return true;
+  }
+  drop(){if(this.p.state!=='fall')return false;this.p.y=this.landingY();return this.lock();}
+  candidates(){
+    const p=this.p,seen=new Set(),out=[];
+    // Only empty orthogonal neighbours of the ORIGINAL piece. New ink cannot spread again.
+    for(const [dx,dy] of p.cells)for(const [ox,oy] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const x=p.x+dx+ox,y=p.y+dy+oy,key=x+','+y;
+      if(x<0||x>=COLS||y<0||y>=ROWS||this.board[y][x]||seen.has(key))continue;
+      seen.add(key);out.push({x,y});
+    }
+    return out;
+  }
+  lock(){
+    const p=this.p;if(p.state!=='fall')return false;
+    if(this.hit(p.x,p.y)||Math.abs(p.y-Math.round(p.y))>EPS||!this.hit(p.x,p.y+1))throw new Error('Invalid or unsupported lock');
+    p.y=Math.round(p.y);
+    for(const [dx,dy] of p.cells)this.board[p.y+dy][p.x+dx]={kind:'block',colour:p.colour,owner:p.id};
+    this.locks++;this.lastLock={id:p.id,type:p.type,x:p.x,y:p.y,cells:p.cells.map(c=>c.slice()),added:[]};
+    const choices=this.candidates(),wanted=this.random()<.5?1:2;
+    for(let i=0;i<wanted&&choices.length;i++){
+      const target=choices.splice(Math.floor(this.random()*choices.length),1)[0];
+      p.targets.push({...target,kind:'ink',colour:INKS[Math.floor(this.random()*INKS.length)],pattern:Math.floor(this.random()*3),owner:p.id});
+    }
+    p.state='ready';p.ms=0;this.message=p.targets.length?'여기에도 그려야지… 히히!':'낙서할 빈칸이 없네…';return true;
+  }
+  finishStroke(){
+    const p=this.p,target=p.targets[p.inkIndex];
+    if(target&&!this.board[target.y][target.x]){
+      const {x,y,...ink}=target;this.board[y][x]=ink;p.added.push({x,y});
+      if(this.lastLock&&this.lastLock.id===p.id)this.lastLock.added.push({x,y});
+    }
+    p.inkIndex++;p.ms=0;
+    if(p.inkIndex>=p.targets.length){p.state='rest';this.message='히히! 낙서 '+p.added.length+'칸을 남겼어요.';}
+    else this.message='한 군데 더… 슥슥!';
+  }
+  update(delta){
+    if(!Number.isFinite(delta)||delta<=0)return;
+    // Bounded substeps: no tunnelling or catch-up burst after returning to this tab.
+    let left=Math.min(delta,64);while(left>0){const dt=Math.min(left,16);this.step(dt);left-=dt;}
+  }
+  step(dt){
+    const p=this.p;p.ms+=dt;
+    if(p.state==='fall'){
+      const goal=this.landingY();p.y=Math.min(goal,p.y+4.8*dt/1000);
+      if(p.y>=goal-EPS){p.y=goal;this.lock();}
+    }else if(p.state==='ready'&&p.ms>=130){p.state=p.targets.length?'draw':'rest';p.ms=0;if(p.targets.length)this.message='슥슥… 내 그림 어때?';}
+    else if(p.state==='draw'&&p.ms>=INK_MS){this.finishStroke();}
+    else if(p.state==='rest'&&p.ms>=200){this.spawn();}
+  }
+  clear(){this.board=empty();this.locks=0;this.lastLock=null;this.spawn();}
+  fill(){
+    const presets=[[2,2,4,4,2,2,1,1,3,3],[4,4,1,1,3,3,1,1,4,4],[1,1,5,5,2,2,4,4,1,1]];
+    const heights=presets[this.terrain++%presets.length];this.board=empty();this.locks=0;this.lastLock=null;
+    heights.forEach((h,x)=>{for(let y=ROWS-h;y<ROWS;y++)this.board[y][x]={kind:'block',colour:COLOURS[(x+y)%COLOURS.length],owner:0};});this.spawn();
+  }
+  snapshot(){return JSON.parse(JSON.stringify({p:this.p,board:this.board,locks:this.locks,lastLock:this.lastLock,message:this.message}));}
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={DoodleLab,SHAPES,COLS,ROWS,INK_MS};else root.DoodleLab=DoodleLab;
+})(typeof window!=='undefined'?window:globalThis);
+</script>
+<script id="doodle-ui">
+(function(){
+'use strict';
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
+const game=new window.DoodleLab(),S=36,INK_MS=260;
+let last=0,paused=document.hidden,pointer=null,previousMessage='';
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const patterns=[[],[],[]];
+for(let i=0;i<16;i++)patterns[0].push([i%2?28:8,7+i*1.45]);
+for(let i=0;i<42;i++){const a=i*.47,r=11-i*.20;patterns[1].push([18+Math.cos(a)*r,18+Math.sin(a)*r]);}
+for(let i=0;i<40;i++)patterns[2].push([7+i*.56,18+Math.sin(i*.95)*9]);
+function resize(){const dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1));canvas.width=Math.round(360*dpr);canvas.height=Math.round(720*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
+function cell(col,row,colour,ghost=false){
+  const px=col*S+3,py=row*S+3;
+  ctx.save();ctx.fillStyle=colour||'#ffffff';ctx.strokeStyle=ghost?'#a5b7b0':'#685652';ctx.lineWidth=ghost?1.7:2;
+  if(ghost){ctx.setLineDash([4,4]);ctx.globalAlpha=.55;}
+  ctx.beginPath();ctx.moveTo(px+1,py+2);ctx.lineTo(px+28,py);ctx.lineTo(px+30,py+28);ctx.lineTo(px+2,py+30);ctx.closePath();
+  if(!ghost)ctx.fill();ctx.stroke();
+  if(!ghost){ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+5,py+7);ctx.lineTo(px+25,py+5);ctx.moveTo(px+6,py+13);ctx.lineTo(px+25,py+11);ctx.stroke();}
+  ctx.restore();
+}
+function inkCell(col,row,ink,progress=1){
+  const points=patterns[ink.pattern%3],end=Math.max(0,Math.min(1,progress))*(points.length-1),idx=Math.floor(end),t=end-idx;
+  const a=points[idx],b=points[Math.min(idx+1,points.length-1)],tip=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+  ctx.save();ctx.translate(col*S,row*S);ctx.fillStyle=ink.colour;ctx.globalAlpha=.13;ctx.fillRect(3,3,30,30);ctx.globalAlpha=1;
+  ctx.strokeStyle=ink.colour;ctx.lineWidth=1.2;ctx.setLineDash([2,3]);ctx.strokeRect(3.5,3.5,29,29);ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<=idx;i++)ctx.lineTo(...points[i]);ctx.lineTo(...tip);
+  ctx.lineJoin='round';ctx.lineCap='round';ctx.lineWidth=3.5;ctx.globalAlpha=.83;ctx.stroke();
+  ctx.lineWidth=.9;ctx.strokeStyle='#fff9ed';ctx.globalAlpha=.4;ctx.stroke();ctx.restore();
+  return [col*S+tip[0],row*S+tip[1]];
+}
+function crayon(px,py,colour,small=false){
+  ctx.save();ctx.translate(px,py);ctx.rotate(.55);if(small)ctx.scale(.55,.55);
+  ctx.fillStyle=colour;ctx.strokeStyle='#66564c';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-6,-9);ctx.lineTo(-6,-39);ctx.lineTo(6,-39);ctx.lineTo(6,-9);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff6db';ctx.fillRect(-5,-30,10,16);ctx.strokeRect(-5,-30,10,16);ctx.beginPath();ctx.moveTo(-3,-26);ctx.lineTo(3,-26);ctx.moveTo(-3,-22);ctx.lineTo(3,-22);ctx.stroke();ctx.restore();
+}
+function face(px,py,busy){
+  ctx.save();ctx.translate(px,py);ctx.strokeStyle='#514741';ctx.fillStyle='#514741';ctx.lineWidth=1.8;
+  for(const side of [-1,1]){ctx.beginPath();if(busy&&side===1){ctx.moveTo(3,-1);ctx.lineTo(8,1);ctx.lineTo(3,3);ctx.stroke();}else{ctx.ellipse(side*6,1,1.8,3.1,0,0,Math.PI*2);ctx.fill();}}
+  ctx.beginPath();ctx.moveTo(-5,8);ctx.quadraticCurveTo(0,15,6,7);ctx.stroke();ctx.fillStyle='#e88398';ctx.globalAlpha=.6;ctx.beginPath();ctx.ellipse(-10,6,3,2,0,0,Math.PI*2);ctx.ellipse(10,6,3,2,0,0,Math.PI*2);ctx.fill();ctx.restore();
+}
+function draw(){
+  ctx.clearRect(0,0,360,720);ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,360,720);ctx.strokeStyle='rgba(100,77,61,.08)';ctx.lineWidth=1;
+  for(let col=1;col<10;col++){ctx.beginPath();ctx.moveTo(col*S,0);ctx.lineTo(col*S,720);ctx.stroke();}
+  for(let row=1;row<20;row++){ctx.beginPath();ctx.moveTo(0,row*S);ctx.lineTo(360,row*S);ctx.stroke();}
+  const p=game.p;
+  if(p.state==='fall'){const ly=game.landingY();if(ly>p.y+.3)for(const [dx,dy] of p.cells)cell(p.x+dx,ly+dy,'',true);}
+  for(let row=0;row<20;row++)for(let col=0;col<10;col++){
+    const tile=game.board[row][col];if(!tile)continue;
+    if(tile.kind==='ink')inkCell(col,row,tile);else cell(col,row,tile.colour);
+  }
+  if(p.state==='fall')for(const [dx,dy] of p.cells)cell(p.x+dx,p.y+dy,p.colour);
+  if(p.state!=='full'){
+    const [fx,fy]=p.cells[0];face((p.x+fx+.5)*S,(p.y+fy+.4)*S,p.state!=='fall');
+    if(p.state==='fall')crayon((p.x+fx+.87)*S,(p.y+fy+.83)*S,'#d75c86',true);
+  }
+  if(p.state==='draw'){
+    const target=p.targets[p.inkIndex],progress=Math.min(1,p.ms/INK_MS);
+    const tip=inkCell(target.x,target.y,target,reduced.matches?1:progress);
+    if(!reduced.matches)crayon(tip[0],tip[1],target.colour);
+  }
+  if(['ready','draw','rest'].includes(p.state)){
+    ctx.font='bold 21px sans-serif';ctx.textAlign='center';ctx.fillStyle='#537e6d';
+    ctx.fillText(p.state==='draw'?'슥슥!':p.targets.length?'히히!':'빈칸이 없네…',Math.max(78,Math.min(282,(p.x+1)*S)),Math.max(27,p.y*S-43));
+  }
+  if(p.state==='full'){
+    ctx.fillStyle='rgba(255,249,237,.94)';ctx.fillRect(20,286,320,128);ctx.fillStyle='#514741';ctx.textAlign='center';ctx.font='bold 24px sans-serif';ctx.fillText('보드가 꽉 찼어요',180,337);ctx.font='17px sans-serif';ctx.fillText('아래의 보드 비우기를 눌러주세요',180,375);
+  }
+  if(game.message!==previousMessage){status.textContent=game.message;previousMessage=game.message;}
+}
+function act(fn){if(!paused){fn();draw();}}
+const actions={left:()=>game.move(-1),right:()=>game.move(1),drop:()=>game.drop(),new:()=>game.spawn(),fill:()=>game.fill(),clear:()=>game.clear()};
+const resets=[];
+Object.entries(actions).forEach(([id,fn])=>{
+  const button=document.getElementById(id);let touch=null,ignoreClickUntil=0;
+  resets.push(()=>{touch=null;});
+  button.addEventListener('pointerdown',e=>{
+    if((e.pointerType==='touch'||e.pointerType==='pen')&&touch===null){
+      touch={id:e.pointerId,piece:game.p.id,allowed:['new','fill','clear'].includes(id)||game.p.state==='fall'};
+      button.setPointerCapture(e.pointerId);
+    }
+  });
+  button.addEventListener('pointerup',e=>{
+    if(!touch||e.pointerId!==touch.id)return;const start=touch;touch=null;e.preventDefault();
+    const r=button.getBoundingClientRect();ignoreClickUntil=performance.now()+600;
+    const valid=['new','fill','clear'].includes(id)||(start.piece===game.p.id&&start.allowed);
+    if(valid&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)act(fn);
+  });
+  const cancel=()=>{if(touch){touch=null;ignoreClickUntil=performance.now()+600;}};
+  button.addEventListener('pointercancel',cancel);button.addEventListener('lostpointercapture',cancel);
+  button.addEventListener('click',e=>{
+    if(performance.now()<ignoreClickUntil&&(e.detail!==0||e.pointerType==='touch'||e.pointerType==='pen')){e.preventDefault();return;}act(fn);
+  });
+});
+canvas.addEventListener('pointerdown',e=>{
+  if(pointer||e.button>0)return;e.preventDefault();const rect=canvas.getBoundingClientRect();
+  pointer={id:e.pointerId,x:e.clientX,y:e.clientY,rect,piece:game.p.id,allowed:game.p.state==='fall'};canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointerup',e=>{
+  if(!pointer||pointer.id!==e.pointerId)return;e.preventDefault();const start=pointer;pointer=null;
+  if(!start.allowed||game.p.id!==start.piece||paused)return;
+  const dx=e.clientX-start.x,dy=e.clientY-start.y;
+  if(dy>28&&dy>Math.abs(dx))act(actions.drop);
+  else if(Math.abs(dx)>24&&Math.abs(dx)>Math.abs(dy))act(dx>0?actions.right:actions.left);
+  else if(Math.abs(dx)<14&&Math.abs(dy)<14)act(e.clientX<start.rect.left+start.rect.width/2?actions.left:actions.right);
+});
+function cancelPointer(e){if(!e||pointer&&pointer.id===e.pointerId)pointer=null;}
+canvas.addEventListener('pointercancel',cancelPointer);canvas.addEventListener('lostpointercapture',cancelPointer);
+window.addEventListener('keydown',e=>{
+  if(e.target instanceof HTMLButtonElement&&[' ','Enter'].includes(e.key))return;
+  const action={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'drop',' ':'drop',n:'new',N:'new',c:'clear',C:'clear'}[e.key];
+  if(action){e.preventDefault();if(!e.repeat||action==='left'||action==='right')act(actions[action]);}
+});
+function suspend(value){paused=value;pointer=null;resets.forEach(fn=>fn());last=0;}
+document.addEventListener('visibilitychange',()=>suspend(document.hidden));
+window.addEventListener('blur',()=>suspend(true));window.addEventListener('focus',()=>suspend(document.hidden));
+window.addEventListener('resize',resize);
+function frame(now){const dt=last?Math.min(32,now-last):0;last=now;if(!paused)game.update(dt);draw();requestAnimationFrame(frame);}
+if(new URLSearchParams(location.search).has('qa')||window.__DOODLE_QA__===true)window.__doodleLab={game,draw,pause:()=>suspend(true),resume:()=>suspend(false)};
+resize();requestAnimationFrame(frame);
+})();
+</script>
+</body></html>
