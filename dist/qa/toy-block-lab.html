@@ -14,16 +14,14 @@ button{border:3px solid #66534c;border-radius:14px;background:#fff7cf;color:var(
 .note{font-size:12px;line-height:1.45;margin:9px 2px 0}.badge{display:inline-block;background:#ffd86b;border:2px solid #66534c;border-radius:12px;padding:2px 8px;font-weight:800}
 </style></head>
 <body><main class="wrap"><section class="paper">
-<h1>장난감 블록 실험실</h1><p class="sub">본게임과 분리된 물리 장난 프로토타입 · <span class="badge" id="toyName">통통 블록</span></p>
-<div class="levels"><button class="on" data-toy="bouncy">통통이</button><button data-toy="fat">뚱뚱이</button></div>
+<h1>장난감 블록 실험실</h1><p class="sub">본게임과 분리된 물리 장난 프로토타입 · <span class="badge" id="toyName">뚱뚱이 블록</span></p>
 <div class="stage"><canvas id="game" width="360" height="720"></canvas></div>
 <div class="controls"><button id="left">← 한 칸</button><button id="drop">쏙! 떨어뜨리기</button><button id="right">한 칸 →</button><button id="new">새 통통 블록</button><button id="fill">바닥 만들기</button><button id="clear">보드 비우기</button></div>
-<div class="levels"><button data-b="soft">살짝</button><button class="on" data-b="normal">통통+옆</button><button data-b="wild">대놓고 장난</button></div>
-<p class="note">통통이: 옆치기 후 빈 곳이면 한 번 데굴. · 뚱뚱이: 내려올 때는 평범하지만 착지 순간 “뿌웅!” 하고 좌우 빈칸으로 실제 몸집이 퍼집니다.</p>
+<p class="note">뚱뚱이만 연속으로 나옵니다. 내려올 때는 평범하지만 착지 순간 “뿌웅!” 하고 좌우 빈칸으로 실제 몸집이 퍼집니다.</p>
 </section></main>
 <script>
 const c=document.querySelector('#game'),x=c.getContext('2d'),COLS=10,ROWS=20,S=36;
-let board=Array.from({length:ROWS},()=>Array(COLS).fill(null)), bounce='normal', toy='bouncy', p;
+let board=Array.from({length:ROWS},()=>Array(COLS).fill(null)), bounce='normal', toy='fat', p;
 const shapes=[[[0,0],[1,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[3,0]],[[1,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[1,1],[2,1]]];
 const colors=['#f58faf','#77c9f4','#ffd86b','#91d8b4'];
 function spawn(){let a=shapes[Math.floor(Math.random()*shapes.length)];p={cells:a.map(q=>[...q]),cx:3,cy:0,color:colors[Math.floor(Math.random()*colors.length)],vy:0,state:'fall',bounced:false,squash:0,fattened:false};}
@@ -87,8 +85,6 @@ function draw(){x.clearRect(0,0,360,720);x.fillStyle='#fffdf7';x.fillRect(0,0,36
  if(p){let sc=p.state==='squash'?1-.12*p.squash:p.state==='fatpop'?1+.18*p.squash:p.state==='settle'?1+.09*p.squash:1;p.cells.forEach(([dx,dy])=>cell(p.cx+dx,p.cy+dy,p.color,sc));if(p.state==='bounce'){x.font='bold 22px system-ui';x.fillStyle='#66534c';let msg=p.prankDir<0?'통! ←':p.prankDir>0?'→ 통!':'통!';x.fillText(msg,p.cx*S+24,Math.max(30,p.cy*S-8))}if(p.state==='fatpop'){x.font='bold 22px system-ui';x.fillStyle='#66534c';x.fillText('뿌웅!',p.cx*S+32,Math.max(30,p.cy*S-8))}if(p.state==='roll'){x.save();x.translate((p.cx+1.5)*S,(p.cy+1)*S);x.rotate((p.rollT/110)*p.rollDir);x.font='bold 20px system-ui';x.fillStyle='#66534c';x.fillText('데굴!',-26,-34);x.restore()}}
 }
 document.querySelector('#left').onclick=()=>move(-1);document.querySelector('#right').onclick=()=>move(1);document.querySelector('#drop').onclick=hard;document.querySelector('#new').onclick=spawn;document.querySelector('#fill').onclick=fill;document.querySelector('#clear').onclick=clear;
-document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{bounce=b.dataset.b;document.querySelectorAll('[data-b]').forEach(v=>v.classList.toggle('on',v===b))});
-document.querySelectorAll('[data-toy]').forEach(b=>b.onclick=()=>{toy=b.dataset.toy;document.querySelectorAll('[data-toy]').forEach(v=>v.classList.toggle('on',v===b));document.querySelector('#toyName').textContent=toy==='fat'?'뚱뚱이 블록':'통통 블록';spawn()});
 let sx=0;c.addEventListener('pointerdown',e=>sx=e.clientX);c.addEventListener('pointerup',e=>{let d=e.clientX-sx;if(Math.abs(d)>28)move(d>0?1:-1);else hard()});
 spawn();requestAnimationFrame(tick);
 </script></body></html>
