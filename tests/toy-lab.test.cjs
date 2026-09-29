@@ -54,3 +54,19 @@ test('fat respects one or both walls and never overwrites existing cells',()=>{
 test('fat expansion is solid for the next piece and rapid drops/reset do not expand twice',()=>{
  const g=lab('fat');g.drop();g.update(100);for(let i=0;i<12;i++)assert.equal(g.drop(),false);locked(g);assert.equal(g.locks,1);assert.equal(g.hit(3,18,[[0,0]]),true);g.clear();g.update(500);assert.equal(g.locks,0);assert.equal(g.p.cells.length,4);
 });
+test('coward panics one cell BEFORE landing, retains 200/170ms phases and escapes once',()=>{
+ for(const direction of [-1,1]){
+  const g=lab('coward',direction<0?0:.8),x=g.p.x,goal=g.landingY();g.drop();assert.equal(g.p.y,goal-1);assert.equal(g.p.state,'panic');assert.equal(g.locks,0);
+  g.update(199);assert.equal(g.p.state,'panic');g.update(1);assert.equal(g.p.state,'escape');assert.equal(g.p.x,x);g.update(169);assert.equal(g.p.x,x);g.update(1);assert.equal(g.p.x,x+direction);assert.equal(g.p.automaticMoves,1);
+  const r=locked(g);assert.equal(r.automaticMoves,1);assert.equal(r.cells.length,4);assert.ok(g.effects.some(e=>e.text==='휴우~'));
+ }
+});
+test('coward falls after fleeing a higher ledge without another fright or bounce',()=>{
+ const g=lab('coward');g.board[15][5]=tile();g.drop();const y=g.p.y;locked(g);assert.equal(g.lastLock.y,18);assert.ok(g.lastLock.y>y+1);assert.equal(g.lastLock.automaticMoves,1);assert.equal(g.lastLock.extra.length,0);
+});
+test('coward checks the opposite side, or trembles when both sides are blocked',()=>{
+ for(const both of [false,true]){const g=lab('coward');g.board[17][3]=tile();if(both)g.board[17][6]=tile();g.drop();g.update(200);assert.equal(g.p.state,both?'blocked':'escape');assert.equal(g.effects[0].text,both?'벌벌…':'후다닥!');const r=locked(g);assert.equal(r.x,both?4:5);assert.equal(r.automaticMoves,both?0:1);}
+});
+test('coward drop spam cannot skip panic; replacing the piece cancels the escape',()=>{
+ const g=lab('coward');g.drop();for(let i=0;i<30;i++)assert.equal(g.drop(),false);g.update(220);g.newToy();const id=g.p.id;g.update(500);assert.equal(g.p.id,id);assert.equal(g.p.used,false);assert.equal(g.locks,0);
+});

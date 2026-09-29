@@ -1,4 +1,4 @@
-@font-face{font-family:Gaegu;src:url('../assets/fonts/gaegu-bold.woff') format('woff');font-style:normal;font-weight:700;font-display:swap}
+@font-face{font-family:Gaegu;src:url('toy-assets/gaegu-lab-bold.woff') format('woff');font-style:normal;font-weight:700;font-display:swap}
 :root{color-scheme:light;--ink:#604e46;--paper:#fffaf0;--accent:#f5b6c7;--edge:#927364}
 *{box-sizing:border-box}body{margin:0;background:#eee5d6;color:var(--ink);font-family:'Malgun Gothic','Apple SD Gothic Neo',system-ui,Gaegu,sans-serif}
 .wrap{width:min(100%,458px);margin:auto;padding:12px 14px max(18px,env(safe-area-inset-bottom))}.paper{padding:14px;background:var(--paper);border:2px solid var(--edge);border-radius:6px 16px 8px 13px;box-shadow:4px 5px 0 #d3c4ad}

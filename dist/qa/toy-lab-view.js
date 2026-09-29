@@ -22,6 +22,8 @@ class ToyPainter{
     }else if(type==='fat'){
       if(phase==='fatSquash'&&!this.reduced){c.translate(0,4);c.scale(1,.88);}
       c.beginPath();c.moveTo(10,2);c.bezierCurveTo(21,0,32,1,34,10);c.bezierCurveTo(35,18,36,30,27,33);c.bezierCurveTo(18,36,4,35,2,27);c.bezierCurveTo(0,18,0,5,10,2);c.closePath();
+    }else if(type==='coward'){
+      c.beginPath();c.moveTo(10,5);c.quadraticCurveTo(18,10,26,5);c.quadraticCurveTo(32,12,32,29);c.quadraticCurveTo(18,35,4,30);c.quadraticCurveTo(4,13,10,5);c.closePath();
     }else if(this.kind==='bouncy'||this.kind==='fat'){c.beginPath();c.roundRect(3,3,30,30,6);}
     else{path(c,[[4,5],[31,3],[33,31],[5,33]]);c.closePath();}
     if(!ghost)c.fill();c.stroke();
@@ -54,13 +56,24 @@ class ToyPainter{
       c.strokeStyle='#aa7068';c.lineWidth=1.5;c.beginPath();c.moveTo(-10,10);c.bezierCurveTo(-8,20,10,20,11,10);c.stroke();
       c.fillStyle='#b47c72';ellipse(c,1,13,1,1,true);
       if(phase==='fatpop'){stroke(c,[[-6,-4],[-2,-5]]);stroke(c,[[2,-5],[6,-4]]);}
+    }else if(type==='coward'){
+      const scared=['panic','escape','blocked'].includes(phase),rest=phase==='settle';
+      c.lineWidth=1.45;c.fillStyle='#fffdf6';
+      for(const x of [-6,6]){ellipse(c,x,1,scared?4.6:4,scared?6.3:4.8,true);ellipse(c,x,1,scared?4.6:4,scared?6.3:4.8,false);c.fillStyle=INK;ellipse(c,x+dir*.6,3,1.3,1.9,true);c.fillStyle='#fffdf6';}
+      stroke(c,[[-11,-6],[-5,-9]]);stroke(c,[[5,-9],[11,-6]]);
+      if(scared)ellipse(c,0,11,2.5,3.3,false);else if(rest){c.beginPath();c.moveTo(-3,10);c.quadraticCurveTo(0,13,3,10);c.stroke();}else stroke(c,[[-4,10],[-2,9],[0,11],[2,9],[4,10]]);
+      c.fillStyle='#8bccdf';c.beginPath();c.moveTo(13,-6);c.quadraticCurveTo(8,2,13,3);c.quadraticCurveTo(17,2,13,-6);c.fill();c.stroke();
     }
     c.restore();
   }
   piece(p){
     const c=this.ctx,phase=p.state;c.save();
-    for(const [dx,dy] of p.cells)this.cell(p.x+dx,p.y+dy,p.colour,p.type,phase,p.ms,p.dir);
-    const [fx,fy]=p.original[0];this.face(p.x+fx,p.y+fy,p.type,phase,p.ms,p.dir);
+    let vx=p.x;
+    if(phase==='escape')vx=p.fromX+(p.toX-p.fromX)*(1-(1-Math.min(1,p.ms/170))**3);
+    // Keep tiny anxious motion inside the occupied cell, including at a wall.
+    if(p.type==='coward'&&!this.reduced&&['panic','blocked'].includes(phase))c.translate(Math.sin(p.ms*.085)*.7,0);
+    for(const [dx,dy] of p.cells)this.cell(vx+dx,p.y+dy,p.colour,p.type,phase,p.ms,p.dir);
+    const [fx,fy]=p.original[0];this.face(vx+fx,p.y+fy,p.type,phase,p.ms,p.dir);
     c.restore();
   }
   word(e,time,p){
