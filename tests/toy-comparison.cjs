@@ -1,6 +1,6 @@
 /* Deterministic enlarged art comparison using the exact game renderer. */
 'use strict';
-const fs=require('node:fs'),path=require('node:path'),{createCanvas,GlobalFonts}=require('@napi-rs/canvas'),{ToyPainter}=require('../dist/qa/toy-lab-view.js');
+const fs=require('node:fs'),path=require('node:path'),{createCanvas,GlobalFonts}=require('@napi-rs/canvas'),{ToyPainter}=require('../dist/toy-blocks-view.js');
 GlobalFonts.registerFromPath(path.join(__dirname,'../dist/qa/toy-assets/gaegu-lab-bold.woff'),'Gaegu');
 const canvas=createCanvas(1080,690),c=canvas.getContext('2d');c.fillStyle='#fff8ec';c.fillRect(0,0,1080,690);c.fillStyle='#624e48';c.textAlign='center';c.font='700 32px Gaegu';c.fillText('CRAYON BLOOM · TOY V2',540,43);
 const names=['통통이','뚱뚱이','겁쟁이','낙서쟁이'];

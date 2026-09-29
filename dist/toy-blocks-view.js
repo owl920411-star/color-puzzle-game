@@ -1,4 +1,4 @@
-/* Hand-drawn laboratory renderer. No random calls, input or game mutations. */
+/* Shared hand-drawn toy renderer. No random calls, input or game mutations. */
 (function(root){
 'use strict';
 const S=36,INK='#624e48',PAPER='#fffaf0';
@@ -105,7 +105,7 @@ class ToyPainter{
     let age=time-e.born;if(age<0||age>=e.ms)return;
     const c=this.ctx,t=age/e.ms,secondary=e.secondary;
     const font=Math.min(40,Math.max(26,(secondary?17:22)/this.scale));
-    c.save();c.font=`700 ${font}px Gaegu, 'Malgun Gothic', sans-serif`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
+    c.save();c.font=`700 ${font}px 'Gaegu Toys', Gaegu, 'Malgun Gothic', sans-serif`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
     const width=c.measureText(e.text).width,pop=this.reduced?1:age<95?.9+.18*age/95:age<190?1.08-.08*(age-95)/95:1;
     let px=e.x,py=e.y-(secondary?19:53);
     if(!this.reduced&&['roll','escape'].includes(e.key))px+=e.dir*Math.min(11,age/35);
@@ -130,7 +130,7 @@ class ToyPainter{
     if(p.state==='draw'){const target=p.targets[p.inkIndex];this.inkCell(target.x,target.y,target,Math.min(1,p.ms/260),!this.reduced);}
     for(const e of game.effects)this.word(e,game.clock.elapsed,p);
     if(p.state==='full'){
-      c.save();c.fillStyle='rgba(255,249,237,.95)';c.fillRect(20,284,320,138);c.fillStyle=INK;c.textAlign='center';c.font='700 30px Gaegu,sans-serif';c.fillText('보드가 꽉 찼어요',180,333);c.font='18px sans-serif';c.fillText('보드 비우기로 다시 시작해요',180,376);c.restore();
+      c.save();c.fillStyle='rgba(255,249,237,.95)';c.fillRect(20,284,320,138);c.fillStyle=INK;c.textAlign='center';c.font="700 30px 'Gaegu Toys', Gaegu,sans-serif";c.fillText('보드가 꽉 찼어요',180,333);c.font='18px sans-serif';c.fillText('보드 비우기로 다시 시작해요',180,376);c.restore();
     }
   }
 }

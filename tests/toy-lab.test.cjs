@@ -1,6 +1,6 @@
 'use strict';
 const{test}=require('node:test'),assert=require('node:assert/strict');
-const{ToyLab,ToyClock,SHAPES,seeded}=require('../dist/qa/toy-lab-core.js');
+const{ToyLab,ToyClock,SHAPES,seeded}=require('../dist/toy-blocks-core.js');
 function lab(kind='bouncy',value=0){return new ToyLab(kind,{rng:()=>value,normalRng:seeded(15)});}
 function until(g,condition,limit=10000){for(let t=0;t<limit&&!condition();t+=5)g.update(5);assert.ok(condition(),'state reached within bound');}
 function locked(g){until(g,()=>!!g.lastLock);return g.lastLock;}

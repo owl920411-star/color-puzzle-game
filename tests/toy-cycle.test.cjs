@@ -1,6 +1,6 @@
 'use strict';
 const{test}=require('node:test'),assert=require('node:assert/strict');
-const{ToyLab,seeded}=require('../dist/qa/toy-lab-core.js');
+const{ToyLab,seeded}=require('../dist/toy-blocks-core.js');
 const kinds=['bouncy','fat','coward','doodle'];
 const make=kind=>new ToyLab(kind,{rng:seeded(71),normalRng:seeded(8)});
 function advanceClockOnly(g,ms){const step=g.step;g.step=()=>{};g.update(ms);g.step=step;}

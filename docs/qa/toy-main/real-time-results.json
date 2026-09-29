@@ -1,0 +1,63 @@
+{
+  "state": "clearing",
+  "time": 181161.8999999989,
+  "events": [
+    {
+      "event": "spawn",
+      "reservedAt": 0,
+      "reason": "initial",
+      "spawnedAt": 0,
+      "id": 21
+    },
+    {
+      "event": "reserve",
+      "reservedAt": 60000,
+      "reason": "periodic",
+      "observedAt": 60016.69999999888
+    },
+    {
+      "event": "spawn",
+      "reservedAt": 60000,
+      "reason": "periodic",
+      "spawnedAt": 60349.99999999888,
+      "id": 753
+    },
+    {
+      "event": "reserve",
+      "reservedAt": 120000,
+      "reason": "periodic",
+      "observedAt": 120014.29999999888
+    },
+    {
+      "event": "spawn",
+      "reservedAt": 120000,
+      "reason": "periodic",
+      "spawnedAt": 120264.29999999888,
+      "id": 1428
+    },
+    {
+      "event": "reserve",
+      "reservedAt": 180000,
+      "reason": "periodic",
+      "observedAt": 180011.8999999989
+    },
+    {
+      "event": "spawn",
+      "reservedAt": 180000,
+      "reason": "periodic",
+      "spawnedAt": 180345.19999999888,
+      "id": 2128
+    }
+  ],
+  "busy": false,
+  "lines": 208,
+  "pieces": 528,
+  "wallMs": 181172,
+  "types": [
+    "bouncy",
+    "fat",
+    "coward",
+    "doodle"
+  ],
+  "errors": []
+}

@@ -1,4 +1,4 @@
-/* TOY V2 — laboratory only. Never imported by the production game. */
+/* Shared toy behaviour for CRAYON BLOOM and the comparison laboratories. */
 (function(root){
 'use strict';
 const COLS=10,ROWS=20,S=36,EPS=1e-7,STEP=5;

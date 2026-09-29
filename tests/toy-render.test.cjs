@@ -1,6 +1,6 @@
 'use strict';
 const{test}=require('node:test'),assert=require('node:assert/strict'),{createCanvas,GlobalFonts}=require('@napi-rs/canvas');
-const{ToyLab,seeded}=require('../dist/qa/toy-lab-core.js'),{ToyPainter}=require('../dist/qa/toy-lab-view.js');
+const{ToyLab,seeded}=require('../dist/toy-blocks-core.js'),{ToyPainter}=require('../dist/toy-blocks-view.js');
 GlobalFonts.registerFromPath(require('node:path').join(__dirname,'../dist/qa/toy-assets/gaegu-lab-bold.woff'),'Gaegu');
 for(const kind of ['bouncy','fat','coward','doodle'])test(`${kind}: DPR/reduced-motion/extra draw calls do not mutate physics or gameplay RNG`,()=>{
  const results=[];for(const dpr of [1,2,3])for(const reduced of [false,true]){

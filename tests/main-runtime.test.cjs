@@ -13,7 +13,7 @@ assert.ok(fixed.includes(anchor));
 const broken=fixed.replace(anchor,anchor+'if(mascotTime>0&&(mascotTime-=dt)<=0)');
 function boot({kind='normal',state='playing',brokenSource=false,practice=false,hitStop=false}={}){
  let steps=0,draws=0,queued=0,moves=0,saves=0,resolves=0,spawns=0;
- const ctx={document:{hidden:false},kind,state,reduced:false,celebration:null,shatterFX:{update:()=>hitStop},elapsed:0,adaptive:{tick(){}},
+ const ctx={document:{hidden:false},kind,state,reduced:false,toys:null,celebration:null,shatterFX:{update:()=>hitStop},elapsed:0,adaptive:{tick(){}},
  repeat:null,drag:null,run:{active:{},score:264,gravity:1000,lockDelay:500,fits:()=>true,move(){moves++;},step(){steps++;}},
  fallTime:0,lockTime:0,phase:'flash',phaseTime:0,pending:{rows:[19]},falls:[],fx:[],floaters:[],impact:null,trail:null,
  calloutTime:0,recordBest:0,initialBest:0,recordAnnounced:false,lastSave:0,last:0,lastHUD:0,desert:{level:0,relicMeter:0},

@@ -1,0 +1,34 @@
+{
+  "results": [
+    {
+      "kind": "bouncy",
+      "pieces": 2,
+      "cells": 4,
+      "ink": 0
+    },
+    {
+      "kind": "fat",
+      "pieces": 2,
+      "cells": 8,
+      "ink": 0
+    },
+    {
+      "kind": "coward",
+      "pieces": 2,
+      "cells": 4,
+      "ink": 0
+    },
+    {
+      "kind": "doodle",
+      "pieces": 2,
+      "cells": 4,
+      "ink": 1
+    }
+  ],
+  "errors": [],
+  "checks": [
+    "real touch: hold then swipe no rotation; quick CW/CCW rotate",
+    "all four: hold/retrieve/drop/pause/resume/lock",
+    "320/390/430px no horizontal overflow"
+  ]
+}
