@@ -410,14 +410,18 @@ function normalTouchMove(d,x,y){
  if(d.piece!==pieceID()||!canAct()){clearInput();return;}
  const dx=x-d.startX,dy=y-d.startY,ax=Math.abs(dx),ay=Math.abs(dy);
  if(Math.max(ax,ay)<d.swipe)return;
- // Explicit travel replaces the hold: retire its timer before one swipe action.
+ // User-approved 2026-09-29: only a quick horizontal swipe may rotate.
+ // A confirmed hold (including BLOCKED at a wall) keeps its original direction.
+ // Check elapsed time too, in case the 165ms timer is delayed by a busy frame.
+ if(ax>=ay&&(d.state!=='PENDING'||performance.now()-d.startedAt>=165))return;
+ // Vertical HOLD/drop still retires the repeat before its one swipe action.
  clearInput();
  if(action(ax>=ay?(dx>0?'rotate':'rotateCCW'):(dy<0?'hold':'drop')))draw();
 }
 function processSwipe(d,x,y,now){if(drag!==d||!playing())return;normalTouchMove(d,x,y);}
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
- const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',steps:0,side,startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
+ const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',steps:0,side,startedAt:performance.now(),startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
  d.timer=setTimeout(()=>normalTouchTick(d),165);
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
@@ -473,4 +477,3 @@ if(['sound','bgm','sfx'].some(key=>saved[key]===undefined)){
 }
 document.addEventListener('pointerdown',initAudio,{capture:true,passive:true});window.BloomAudio?.configure(saved);celebration?.preload();menu();fit();$('boot').hidden=true;if(new URLSearchParams(location.search).get('play')==='1')start();requestAnimationFrame(frame);
 })();
-

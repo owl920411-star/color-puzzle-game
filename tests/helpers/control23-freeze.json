@@ -9,7 +9,7 @@
     "name": "touch-and-buttons",
     "start": "// CONTROL 23: normal-board gestures",
     "end": "\nfor(const b of document.querySelectorAll('[data-preview]'))",
-    "sha256": "36d4677be78d0df4cc538141c057c3f824a0dcde93165473c131e813be76029c"
+    "sha256": "ce90fdcd6614a158b35b5e2a27a5f723734fa6cd36ad5c25e6aea42bbef49d79"
   },
   {
     "name": "actions",
