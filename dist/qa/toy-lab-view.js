@@ -5,6 +5,10 @@ const S=36,INK='#624e48',PAPER='#fffaf0';
 function path(ctx,points){ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);}
 function stroke(ctx,points){path(ctx,points);ctx.stroke();}
 function ellipse(ctx,x,y,rx,ry,fill){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);if(fill)ctx.fill();else ctx.stroke();}
+const patterns=[[],[],[]];
+for(let i=0;i<16;i++)patterns[0].push([i%2?28:8,7+i*1.45]);
+for(let i=0;i<42;i++){const a=i*.47,r=11-i*.20;patterns[1].push([18+Math.cos(a)*r,18+Math.sin(a)*r]);}
+for(let i=0;i<40;i++)patterns[2].push([7+i*.56,18+Math.sin(i*.95)*9]);
 class ToyPainter{
   constructor(canvas,kind,reduced=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.kind=kind;this.reduced=reduced;this.scale=1;}
   resize(dpr=1){dpr=Math.max(1,Math.min(3,dpr));this.canvas.width=360*dpr;this.canvas.height=720*dpr;this.ctx.setTransform(dpr,0,0,dpr,0,0);this.scale=(this.canvas.getBoundingClientRect?.().width||360)/360;}
@@ -24,6 +28,8 @@ class ToyPainter{
       c.beginPath();c.moveTo(10,2);c.bezierCurveTo(21,0,32,1,34,10);c.bezierCurveTo(35,18,36,30,27,33);c.bezierCurveTo(18,36,4,35,2,27);c.bezierCurveTo(0,18,0,5,10,2);c.closePath();
     }else if(type==='coward'){
       c.beginPath();c.moveTo(10,5);c.quadraticCurveTo(18,10,26,5);c.quadraticCurveTo(32,12,32,29);c.quadraticCurveTo(18,35,4,30);c.quadraticCurveTo(4,13,10,5);c.closePath();
+    }else if(type==='doodle'){
+      c.beginPath();c.moveTo(7,3);c.quadraticCurveTo(20,6,29,3);c.lineTo(33,26);c.quadraticCurveTo(25,34,5,31);c.lineTo(3,13);c.closePath();
     }else if(this.kind==='bouncy'||this.kind==='fat'){c.beginPath();c.roundRect(3,3,30,30,6);}
     else{path(c,[[4,5],[31,3],[33,31],[5,33]]);c.closePath();}
     if(!ghost)c.fill();c.stroke();
@@ -63,6 +69,12 @@ class ToyPainter{
       stroke(c,[[-11,-6],[-5,-9]]);stroke(c,[[5,-9],[11,-6]]);
       if(scared)ellipse(c,0,11,2.5,3.3,false);else if(rest){c.beginPath();c.moveTo(-3,10);c.quadraticCurveTo(0,13,3,10);c.stroke();}else stroke(c,[[-4,10],[-2,9],[0,11],[2,9],[4,10]]);
       c.fillStyle='#8bccdf';c.beginPath();c.moveTo(13,-6);c.quadraticCurveTo(8,2,13,3);c.quadraticCurveTo(17,2,13,-6);c.fill();c.stroke();
+    }else if(type==='doodle'){
+      stroke(c,[[-11,-7],[-5,-10]]);stroke(c,[[3,-5],[10,-4]]);
+      ellipse(c,-6,0,1.7,3,true);
+      if(['draw','doodleRest'].includes(phase)){stroke(c,[[4,-1],[8,1],[4,3]]);}else{ellipse(c,7,1,1.7,2.5,true);}
+      c.beginPath();c.moveTo(-6,7);c.quadraticCurveTo(1,15,10,5);c.stroke();stroke(c,[[9,4],[11,6]]);
+      c.strokeStyle='#d97193';c.lineWidth=2;stroke(c,[[-13,6],[-9,4],[-12,9],[-8,7]]);
     }
     c.restore();
   }
@@ -74,7 +86,20 @@ class ToyPainter{
     if(p.type==='coward'&&!this.reduced&&['panic','blocked'].includes(phase))c.translate(Math.sin(p.ms*.085)*.7,0);
     for(const [dx,dy] of p.cells)this.cell(vx+dx,p.y+dy,p.colour,p.type,phase,p.ms,p.dir);
     const [fx,fy]=p.original[0];this.face(vx+fx,p.y+fy,p.type,phase,p.ms,p.dir);
+    if(p.type==='doodle'&&phase!=='draw'){
+      const [dx,dy]=p.original[1]||p.original[0];this.crayon((vx+dx)*S+24,(p.y+dy)*S+26,'#d75c86',-2.15);
+    }
     c.restore();
+  }
+  crayon(px,py,colour,angle){
+    const c=this.ctx;c.save();c.translate(px,py);c.rotate(angle);c.fillStyle=colour;c.strokeStyle=INK;c.lineWidth=1;
+    path(c,[[0,0],[5,-3],[18,-3],[18,3],[5,3]]);c.closePath();c.fill();c.stroke();c.fillStyle='#fff2d7';c.fillRect(7,-2.5,7,5);stroke(c,[[9,-2],[9,2]]);c.restore();
+  }
+  inkCell(col,row,ink,progress=1,drawing=false){
+    const c=this.ctx,points=patterns[ink.pattern%3],end=Math.max(0,Math.min(1,progress))*(points.length-1),idx=Math.floor(end),t=end-idx,a=points[idx],b=points[Math.min(idx+1,points.length-1)],tip=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+    c.save();c.translate(col*S,row*S);c.fillStyle=ink.colour;c.globalAlpha=progress===1?.15:.05;c.fillRect(3,3,30,30);c.globalAlpha=1;c.strokeStyle=ink.colour;c.lineWidth=1.2;c.setLineDash(progress===1?[]:[2,3]);c.strokeRect(3.5,3.5,29,29);c.setLineDash([]);
+    c.beginPath();c.moveTo(...points[0]);for(let i=1;i<=idx;i++)c.lineTo(...points[i]);c.lineTo(...tip);c.lineCap='round';c.lineJoin='round';c.lineWidth=3.5;c.stroke();c.strokeStyle='rgba(255,250,235,.4)';c.lineWidth=.8;c.stroke();c.restore();
+    if(drawing){const dx=18-tip[0],dy=18-tip[1],angle=Math.abs(dx)+Math.abs(dy)<4?-2.2:Math.atan2(dy,dx);this.crayon(col*S+tip[0],row*S+tip[1],ink.colour,angle);}
   }
   word(e,time,p){
     let age=time-e.born;if(age<0||age>=e.ms)return;
@@ -97,10 +122,12 @@ class ToyPainter{
     if(game.controllable()&&!p.locked){const goal=game.landingY();if(goal>p.y+.3)for(const [dx,dy] of p.cells)this.cell(p.x+dx,goal+dy,p.colour,'normal','fall',0,0,true);}
     for(let y=0;y<20;y++)for(let x=0;x<10;x++){
       const tile=game.board[y][x];if(!tile)continue;
+      if(tile.kind==='ink'){this.inkCell(x,y,tile);continue;}
       this.cell(x,y,tile.colour,tile.toy||'normal','rest');
       if(tile.toy&&tile.toy!=='normal'){c.save();c.fillStyle='rgba(98,78,72,.36)';ellipse(c,x*S+29,y*S+7,1.5,1.5,true);c.restore();}
     }
     if(p.state!=='full')this.piece(p);
+    if(p.state==='draw'){const target=p.targets[p.inkIndex];this.inkCell(target.x,target.y,target,Math.min(1,p.ms/260),!this.reduced);}
     for(const e of game.effects)this.word(e,game.clock.elapsed,p);
     if(p.state==='full'){
       c.save();c.fillStyle='rgba(255,249,237,.95)';c.fillRect(20,284,320,138);c.fillStyle=INK;c.textAlign='center';c.font='700 30px Gaegu,sans-serif';c.fillText('보드가 꽉 찼어요',180,333);c.font='18px sans-serif';c.fillText('보드 비우기로 다시 시작해요',180,376);c.restore();

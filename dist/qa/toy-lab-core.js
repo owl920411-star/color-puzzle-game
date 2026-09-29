@@ -3,9 +3,10 @@
 'use strict';
 const COLS=10,ROWS=20,S=36,EPS=1e-7,STEP=5;
 const SHAPES=[[[0,0],[1,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[3,0]],[[1,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[1,1],[2,1]]];
-const PALETTES={bouncy:['#f58faf','#77c9f4','#ffd86b','#91d8b4'],fat:['#f58faf','#77c9f4','#ffd86b','#91d8b4'],coward:['#c0a5df','#9fd5ee','#eaa9bb','#f3d479']};
+const PALETTES={bouncy:['#f58faf','#77c9f4','#ffd86b','#91d8b4'],fat:['#f58faf','#77c9f4','#ffd86b','#91d8b4'],coward:['#c0a5df','#9fd5ee','#eaa9bb','#f3d479'],doodle:['#91d5bf','#a7cfea','#ecadc0','#f1d17b']};
 const WORDS={bounce:{text:'통!',colour:'#a64a6f',ms:520},roll:{text:'데굴~',colour:'#a64a6f',ms:520},land:{text:'톡!',colour:'#81634c',ms:340},expand:{text:'뿌웅!',colour:'#ae5974',ms:550},taDa:{text:'짜잔!',colour:'#986038',ms:350},noSpace:{text:'낑…',colour:'#88694b',ms:550}};
 Object.assign(WORDS,{panic:{text:'으악!',colour:'#7e579b',ms:480},escape:{text:'후다닥!',colour:'#7e579b',ms:520},blocked:{text:'벌벌…',colour:'#846c94',ms:520},relief:{text:'휴우~',colour:'#756888',ms:350}});
+Object.assign(WORDS,{draw:{text:'슥삭!',colour:'#43856c',ms:550},giggle:{text:'히히!',colour:'#508172',ms:350},noInk:{text:'힝…',colour:'#8e745b',ms:500}});
 const empty=()=>Array.from({length:ROWS},()=>Array(COLS).fill(null));
 const copy=v=>JSON.parse(JSON.stringify(v));
 function seeded(seed){return()=>{let t=seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
@@ -99,12 +100,41 @@ class ToyLab{
     }
     p.extra=extras;p.cells=copy(p.original).concat(extras);this.transition('fatpop');this.say(extras.length?'expand':'noSpace');
   }
+  inkCandidates(){
+    const p=this.p,seen=new Set(),out=[];
+    for(const [dx,dy] of p.original)for(const [ox,oy] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const x=p.x+dx+ox,y=p.y+dy+oy,key=x+','+y;
+      if(x<0||x>=COLS||y<0||y>=ROWS||this.board[y][x]||seen.has(key))continue;
+      seen.add(key);out.push({x,y});
+    }return out;
+  }
+  prepareInk(){
+    const p=this.p,choices=this.inkCandidates(),wanted=random(this.rng)<.5?1:2;
+    p.used=true;p.targets=[];p.inkIndex=0;
+    for(let i=0;i<wanted&&choices.length;i++){
+      const target=choices.splice(Math.floor(random(this.rng)*choices.length),1)[0];
+      // Cosmetic colour/pattern selection never consumes gameplay randomness.
+      p.targets.push({...target,kind:'ink',colour:['#d75c86','#3c98b7','#a86fc2'][i%3],pattern:(p.id+i)%3,owner:p.id});
+    }
+    this.transition('doodleReady');if(!p.targets.length)this.say('noInk');
+  }
+  finishStroke(){
+    const p=this.p,target=p.targets[p.inkIndex];
+    if(target&&!this.board[target.y][target.x]){
+      const{x,y,...ink}=target;this.board[y][x]=ink;p.added.push({x,y});
+      if(this.lastLock?.id===p.id)this.lastLock.added.push({x,y});
+    }
+    p.inkIndex++;
+    if(p.inkIndex>=p.targets.length){this.transition('doodleRest');this.say('giggle',true);}
+    else{this.transition('draw');this.say('draw');}
+  }
   lock(){
     const p=this.p;if(p.locked)return false;
     if(this.hit(p.x,p.y)||Math.abs(p.y-Math.round(p.y))>EPS||!this.hit(p.x,p.y+1))throw new Error('Invalid or unsupported lock');
     p.y=Math.round(p.y);p.locked=true;
     for(const [dx,dy] of p.cells)this.board[p.y+dy][p.x+dx]={kind:'block',colour:p.colour,owner:p.id,toy:p.type};
     this.locks++;this.lastLock={id:p.id,type:p.type,x:p.x,y:p.y,cells:copy(p.cells),original:copy(p.original),automaticMoves:p.automaticMoves,userMoves:p.userMoves,extra:copy(p.extra),added:[]};
+    if(p.type==='doodle'){this.prepareInk();return true;}
     this.transition('settle');if(p.type==='bouncy')this.say('land',true);if(p.type==='fat'&&p.extra.length)this.say('taDa',true);if(p.type==='coward')this.say('relief',true);return true;
   }
   update(delta){
@@ -130,7 +160,10 @@ class ToyLab{
     }else if((p.state==='escape'||p.state==='blocked')&&p.ms>=170){
       if(p.dir&&!this.hit(p.toX,p.y)){p.x=p.toX;p.automaticMoves++;}else p.dir=0;
       this.transition('after');
-    }else if(p.state==='fatSquash'&&p.ms>=100)this.fatten();
+    }else if(p.state==='doodleReady'&&p.ms>=130){this.transition(p.targets.length?'draw':'doodleRest');if(p.targets.length)this.say('draw');}
+    else if(p.state==='draw'&&p.ms>=260)this.finishStroke();
+    else if(p.state==='doodleRest'&&p.ms>=200)this.spawn();
+    else if(p.state==='fatSquash'&&p.ms>=100)this.fatten();
     else if(p.state==='fatpop'&&p.ms>=260)this.lock();
     else if(p.state==='squash'&&p.ms>=95){
       p.dir=this.chooseSide();if(p.dir){p.x+=p.dir;p.automaticMoves++;}

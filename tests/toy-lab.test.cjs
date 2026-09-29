@@ -70,3 +70,17 @@ test('coward checks the opposite side, or trembles when both sides are blocked',
 test('coward drop spam cannot skip panic; replacing the piece cancels the escape',()=>{
  const g=lab('coward');g.drop();for(let i=0;i<30;i++)assert.equal(g.drop(),false);g.update(220);g.newToy();const id=g.p.id;g.update(500);assert.equal(g.p.id,id);assert.equal(g.p.used,false);assert.equal(g.locks,0);
 });
+test('doodle fixes its original body first; ink becomes solid exactly when each stroke completes',()=>{
+ const g=lab('doodle');g.rng=()=>.9;g.drop();assert.equal(g.locks,1);assert.equal(g.p.cells.length,4);assert.equal(g.p.targets.length,2);
+ const [a,b]=g.p.targets;assert.equal(g.board[a.y][a.x],null);g.update(129);assert.equal(g.p.state,'doodleReady');g.update(1);assert.equal(g.p.state,'draw');g.update(259);assert.equal(g.board[a.y][a.x],null);g.update(1);assert.equal(g.board[a.y][a.x].kind,'ink');assert.equal(g.board[b.y][b.x],null);g.update(260);assert.equal(g.board[b.y][b.x].kind,'ink');assert.equal(g.lastLock.added.length,2);assert.equal(g.hit(a.x,a.y,[[0,0]]),true);assert.equal(g.p.cells.length,4);
+ assert.ok(g.p.targets.every(t=>g.p.original.some(([dx,dy])=>Math.abs(g.p.x+dx-t.x)+Math.abs(g.p.y+dy-t.y)===1)));assert.notDeepEqual(a,b);
+});
+test('doodle respects zero/one empty neighbour and never overwrites cells or invents success words',()=>{
+ for(const count of [0,1]){const g=lab('doodle');g.rng=()=>.9;g.p.y=18;const neighbours=[[3,18],[6,18],[4,17],[5,17],[3,19],[6,19]];for(const [x,y] of neighbours.slice(count))g.board[y][x]=tile();g.drop();assert.equal(g.p.targets.length,count);g.update(390);assert.equal(g.lastLock.added.length,count);if(!count)assert.ok(!g.effects.some(e=>e.text==='슥삭!'||e.text==='히히!'));for(const [x,y] of neighbours.slice(count))assert.equal(g.board[y][x].owner,0);}
+});
+test('one-or-two doodles follow the requested count and completed ink persists through spawn',()=>{
+ for(const rng of [0,.49,.5,.99]){const g=lab('doodle');g.rng=()=>rng;g.drop();g.update(660);assert.equal(g.lastLock.added.length,rng<.5?1:2);const added=g.lastLock.added;g.newToy();g.update(100);for(const{x,y}of added)assert.equal(g.board[y][x].kind,'ink');}
+});
+test('doodle new/reset during a stroke leaves no late ink or duplicate body locks',()=>{
+ for(const reset of [false,true]){const g=lab('doodle');g.drop();g.update(250);const targets=g.p.targets;for(let i=0;i<30;i++)assert.equal(g.drop(),false);if(reset)g.clear();else g.newToy();g.update(600);for(const{x,y}of targets)assert.notEqual(g.board[y][x]?.kind,'ink');assert.equal(g.locks,reset?0:1);}
+});
