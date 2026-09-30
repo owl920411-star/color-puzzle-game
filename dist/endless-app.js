@@ -330,7 +330,7 @@ function emitNormal(plan,result){
 }
 function update(raw){
  const dt=Math.min(100,Math.max(0,raw));if(playing()&&!document.hidden)toys?.advance(raw);
- const hitStop=!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;adaptive?.tick(raw);if(!training&&!practice())window.CrayonNativeAds?.tick(dt);
+ const hitStop=!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;adaptive?.tick(raw);
  desertTick();if(!playing())return;itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;action(r.action);if(repeat===r)r.time+=70;}}
  if(state==='playing'){
   if(toys?.busy)toys.update(dt);

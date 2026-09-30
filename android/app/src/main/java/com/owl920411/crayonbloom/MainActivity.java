@@ -20,9 +20,9 @@ import java.util.Collections;
 
 public final class MainActivity extends Activity {
     private static final String ORIGIN = "https://appassets.androidplatform.net";
-    // Official Google test IDs. This build cannot earn advertising revenue.
-    private static final String INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
-    private static final boolean TEST_ADS = true; // Set false when replacing both sample IDs for production.
+    // Publisher-provided production app/interstitial IDs.
+    private static final String INTERSTITIAL_ID = "ca-app-pub-5315201053842908/4383534846";
+    private static final boolean TEST_ADS = false; // Never bypass consent for publisher ads.
     private WebView web;
     private SharedPreferences prefs;
     private AdCadence cadence;
@@ -33,7 +33,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences("ad-cadence-v1", MODE_PRIVATE);
-        cadence = new AdCadence(prefs.getInt("games",0), prefs.getLong("activeMs",0));
+        cadence = new AdCadence(prefs.getInt("games",0));
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(255,247,232));
         root.setOnApplyWindowInsetsListener((view,insets) -> {
@@ -96,7 +96,7 @@ public final class MainActivity extends Activity {
             @Override public void onAdFailedToLoad(LoadAdError error) { loading = false; interstitial = null; }
         });
     }
-    private void persist() { prefs.edit().putInt("games",cadence.games()).putLong("activeMs",cadence.activeMs()).apply(); }
+    private void persist() { prefs.edit().putInt("games",cadence.games()).remove("activeMs").apply(); }
     private void js(String script) { if(web != null) web.evaluateJavascript(script,null); }
     private void releaseResult() { showing = false;js("window.CrayonNativeAds?.setBusy(false)");preload(); }
     private void result() {
@@ -115,7 +115,6 @@ public final class MainActivity extends Activity {
     }
     private final class AdsBridge {
         @JavascriptInterface public void beginGame(boolean eligible) { runOnUiThread(() -> { eligibleRun = eligible;terminal = false;preload(); }); }
-        @JavascriptInterface public void activeTime(int ms) { runOnUiThread(() -> { if(resumed && eligibleRun && !terminal && !showing) { cadence.tick(ms);persist(); } }); }
         @JavascriptInterface public void endGame(boolean eligible) { runOnUiThread(() -> { eligibleRun &= eligible;result(); }); }
     }
     @Override protected void onResume() { super.onResume();resumed = true;if(web != null) { web.onResume();js("window.dispatchEvent(new Event('crayon-native-resume'))"); } if(consent != null) preload(); }
