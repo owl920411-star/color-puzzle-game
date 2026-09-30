@@ -16,13 +16,13 @@ const settle=async()=>{await Promise.resolve();await Promise.resolve();};
 const interruptions={menu:a=>a.q.menu(),blur:a=>a.dispatchWindow('blur'),visibility:a=>a.dispatchDocument('visibilitychange',{hidden:true}),pagehide:a=>a.dispatchWindow('pagehide')};
 
 for(const [name,interrupt]of Object.entries(interruptions))test(`pending load ${name} cancellation never starts a late game or loses prior score/settings`,async()=>{
- const a=setup();a.q.start();a.q.action('drop');const earned=a.q.run.score;assert.ok(earned>12);
+ const a=setup();a.q.start();a.q.action('drop');const earned=a.q.run.score,key=a.q.adaptive.recordKey();assert.equal(key,'normal-adaptive-v1-calm');assert.ok(earned>12);
  a.dispatch('pointerdown');a.advance(70);const pending=a.q.requestStart();assert.equal(a.q.state,'loading');assert.equal(a.q.drag,null);assert.equal(a.timers.size,0);
- assert.equal(JSON.parse(a.store['glassfall-v1']).endlessV1.normal.best,earned);
+ assert.equal(JSON.parse(a.store['glassfall-v1']).endlessV1[key].best,earned);
  interrupt(a);assert.equal(a.q.state,'menu');assert.equal(a.cancels(),1);const preview=a.q.run;
  // Simulate an already-resolving preload that reports ready even after cancel.
  a.resolve(0,{cancelled:false,ready:true});await pending;a.advance(1500,100);assert.equal(a.q.state,'menu');assert.equal(a.q.run,preview);assert.equal(a.q.run.active,null);assert.equal(a.q.drag,null);
- const saved=JSON.parse(a.store['glassfall-v1']);assert.equal(saved.endlessV1.normal.best,earned);assert.equal(saved.endlessV1.normal.plays,7);
+ const saved=JSON.parse(a.store['glassfall-v1']);assert.equal(saved.endlessV1[key].best,earned);assert.equal(saved.endlessV1.normal.best,12);assert.equal(saved.endlessV1.normal.plays,7);
  assert.equal(saved.sound,false);assert.equal(saved.bgm,true);assert.equal(saved.sfx,false);assert.equal(saved.haptics,true);assert.equal(saved.effects,'light');assert.equal(saved.touchSensitivity10,7);assert.equal(saved.tutorialCompleted,true);assert.deepEqual(saved.unknownPreference,{keep:4});assert.equal(a.store['unrelated-key'],'keep');
 });
 

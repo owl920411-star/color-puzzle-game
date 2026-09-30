@@ -80,7 +80,8 @@ test('real bad item expiry creates effect voices',async()=>{
  const a=await game();a.q.itemScenario('seal');a.q.resume();await settle();a.step(15000);
  assert.ok(a.q.items.stats.failed>0);assert.ok(a.audio.stats().effectEvents.bad>=3,JSON.stringify(a.audio.stats()));
 });
-test('real gameover schedules its effect, and lateral movement stays silent',async()=>{
- const a=await game();a.q.action('left');a.q.action('right');assert.equal(a.audio.stats().effectsScheduled,0);
+test('successful lateral moves play their existing effect; blocked moves are silent; gameover plays',async()=>{
+ const a=await game();assert.equal(a.q.action('left'),true);assert.equal(a.q.action('right'),true);assert.equal(a.audio.stats().effectEvents.move,2);
+ while(a.q.action('left')){}const count=a.audio.stats().effectEvents.move;assert.equal(a.q.action('left'),false);assert.equal(a.audio.stats().effectEvents.move,count);
  a.q.finish();assert.ok(a.audio.stats().effectEvents.over>=4);assert.equal(a.audio.stats().scene,'over');
 });

@@ -41,7 +41,7 @@ test('audio remains lazy until enabled user interaction, and repeated config/unl
  const saved={sound:true,unrelated:'preserve'};a.api.configure(saved);assert.equal(a.counts().contexts,0);a.api.unlock();await settle();
  for(let i=0;i<1000;i++){a.api.configure(saved);a.api.unlock();}
  assert.equal(a.counts().contexts,1);assert.equal(a.counts().buffers,1);assert.equal(a.api.stats().timers,1);assert.equal(saved.unrelated,'preserve');
- assert.equal(a.api.stats().cycleBeats,128);assert.equal(a.api.effect('move'),false);
+ assert.equal(a.api.stats().cycleBeats,128);const before=a.api.stats().effectsScheduled;assert.equal(a.api.effect('move'),true);assert.equal(a.api.stats().effectsScheduled,before+1);assert.equal(a.api.effect('unknown'),false);
 });
 test('home and game have distinct scores; 30 minutes of virtual scheduling stays bounded and clears nodes',async()=>{
  const a=fixture();await start(a);a.advance(120000);const homeScheduled=a.api.stats().scheduled;

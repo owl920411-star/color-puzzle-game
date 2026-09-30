@@ -15,7 +15,7 @@
     "name": "actions",
     "start": "function action(a){",
     "end": "\nfunction initAudio(",
-    "sha256": "a42d8a74adb2179cb8ce3331ac8e214be8b8fe50b1e1b77ec28358eaba51af54"
+    "sha256": "d8833af2ea959650af804dbca37308700b316956dc59217cd80c19a96f89415c"
   },
   {
     "name": "keyboard",
