@@ -10,6 +10,8 @@ function boot(){
  const actions=['hold','rotate','drop'].map(x=>{const n=node(x);n.dataset.action=x;return n;});
  const doc={body:{dataset:{},classList:{add(){},remove(){},toggle(){}}},documentElement:{style:{setProperty(){}}},getElementById:node,querySelector:node,createElement:()=>node('new'+nodes.size),querySelectorAll:s=>s==='[data-action]'?actions:[],addEventListener(){},hidden:false};
  const env={console,document:doc,location:{search:'?qa=1'},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},navigator:{},performance:{now:()=>now},URLSearchParams,devicePixelRatio:1,requestAnimationFrame(){},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0',paddingTop:'0',paddingBottom:'0',gap:'6'}),setTimeout:(f,ms)=>{timers.set(++tid,{f,at:now+ms});return tid;},clearTimeout:id=>timers.delete(id),addEventListener(){},crypto:{getRandomValues(a){a.fill(1);}},GlassEngine:E,EndlessRules:R,BlockItems:B,AdaptiveDirector:require('../dist/adaptive-director.js'),AdaptiveBridge:require('../dist/adaptive-bridge.js')};env.window=env;
+ // Exercise the diagnostic bridge separately; production hidden defaults are covered by player-layout.test.cjs.
+ const DiagnosticBridge=env.AdaptiveBridge;env.AdaptiveBridge={create:port=>DiagnosticBridge.create({...port,playerDefaults:false})};
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/bloom-home.js'),'utf8'),env);
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/endless-app.js'),'utf8'),env,{timeout:3000});
  function menu(a,v){const b={dataset:{menu:a,v:String(v??'')},disabled:false};const e={target:{closest:s=>s==='button[data-menu]'?b:null}};for(const f of node('panel').events.click||[])f(e);}

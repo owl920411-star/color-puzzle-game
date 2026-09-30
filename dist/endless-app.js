@@ -11,6 +11,8 @@ const systemReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
 function readStore(){try{return object(JSON.parse(localStorage.getItem(KEY)||'{}'));}catch{return{};}}
 let saved=readStore(),saveOK=true,kind='normal';
+function applyBoardSide(){document.body.dataset.boardSide=saved.boardSide==='right'?'right':'left';}
+applyBoardSide();
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
 let toys=null,maxClear=0;
@@ -172,13 +174,14 @@ function finish(reason='unknown',detail=null){
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
  const toggle=(key,label,on,disabled=false)=>`<button class="paper-toggle" data-menu="${key}" aria-pressed="${on}" ${disabled?'disabled':''}><span>${label}</span><span class="toggle-state">${key==='effects'?(on?'풍부':'간결'):(disabled&&(key==='bgm'||key==='sfx')?'전체 소리 꺼짐 · 저장 '+(on?'켬':'끔'):(on?'켬':'끔'))}</span><svg viewBox="0 0 28 28" aria-hidden="true"><path class="toggle-ring" d="M14 2C29 1 30 26 14 26 0 27-2 3 14 2Z"/><path class="toggle-check" d="m7 14 5 6L22 8"/></svg></button>`;
- showPanel(`<div class="paper-options"><header><img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="54" height="54"><div class="kicker">그림책 뒤쪽</div><h2>놀이 방법 · 설정</h2></header><h3>소리</h3>${toggle('sound','전체 소리',saved.sound!==false)}${toggle('bgm','배경음',saved.bgm!==false,saved.sound===false)}${toggle('sfx','효과음',saved.sfx!==false,saved.sound===false)}${saved.sound===false?'<p role="status">전체 소리가 꺼져 있어요. 배경음·효과음 설정은 보관되며, 전체 소리를 켜면 적용돼요.</p>':''}<h3>느낌</h3>${toggle('haptics','진동',!!saved.haptics,typeof navigator.vibrate!=='function')}${toggle('effects','효과',!reduced,systemReduced)}<h3>도움</h3><button class="secondary" data-menu="tutorial">튜토리얼 다시 보기</button><details class="paper-rules"><summary>조작과 점수 알아보기</summary><p>짧게 톡! 한 칸 이동<br>꾹 누르면 휘리릭!<br>옆으로 슥! 회전 · 위로 보관 · 아래로 쏙!</p><div class="rule-box">${ruleHTML()}</div></details>${adaptive?.button()||''}<button class="text-button" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'기록은 이 기기·브라우저에 저장돼요.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p></div>`,'settings');hud();
+ showPanel(`<div class="paper-options"><header><img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="54" height="54"><div class="kicker">그림책 뒤쪽</div><h2>놀이 방법 · 설정</h2></header><h3>소리</h3>${toggle('sound','전체 소리',saved.sound!==false)}${toggle('bgm','배경음',saved.bgm!==false,saved.sound===false)}${toggle('sfx','효과음',saved.sfx!==false,saved.sound===false)}${saved.sound===false?'<p role="status">전체 소리가 꺼져 있어요. 배경음·효과음 설정은 보관되며, 전체 소리를 켜면 적용돼요.</p>':''}<h3>화면 배치</h3><div class="settings-row" role="group" aria-label="게임판 위치"><button data-menu="board-side" data-v="left" aria-pressed="${saved.boardSide!=='right'}">게임판 왼쪽<br><small>쏙! 오른쪽</small></button><button data-menu="board-side" data-v="right" aria-pressed="${saved.boardSide==='right'}">게임판 오른쪽<br><small>쏙! 왼쪽</small></button></div><h3>느낌</h3>${toggle('haptics','진동',!!saved.haptics,typeof navigator.vibrate!=='function')}${toggle('effects','효과',!reduced,systemReduced)}<h3>도움</h3><button class="secondary" data-menu="tutorial">튜토리얼 다시 보기</button><details class="paper-rules"><summary>조작과 점수 알아보기</summary><p>짧게 톡! 한 칸 이동<br>꾹 누르면 휘리릭!<br>옆으로 슥! 회전 · 위로 보관 · 아래로 쏙!</p><div class="rule-box">${ruleHTML()}</div></details>${adaptive?.button()||''}<button class="text-button" data-menu="back">${state==='paused'?'게임으로 돌아가기':'뒤로'}</button><p class="storage-note">${saveOK?'기록은 이 기기·브라우저에 저장돼요.':'저장이 제한되어 있습니다. 이번 점수는 화면에서 확인해 주세요.'}</p></div>`,'settings');hud();
 }
 panel.addEventListener('click',e=>{
  const relic=e.target.closest('[data-relic]');if(relic){if(!relic.disabled&&useRelic(relic.dataset.relic)){if(relicReturn==='dev')devPanel();else resume();}return;}
  const b=e.target.closest('button[data-menu]');if(!b||b.disabled)return;const a=b.dataset.menu;initAudio();
  if(a==='normal'){kind='normal';pref('material','glass');menu();}
  else if(a==='start'||a==='new')requestStart();else if(a==='retry')requestStart(true);else if(a==='resume')resume();else if(a==='menu')menu();else if(a==='settings')settings();
+ else if(a==='board-side'&&['left','right'].includes(b.dataset.v)){clearInput();pref('boardSide',b.dataset.v);applyBoardSide();fit();settings();}
  else if(a==='tutorial')requestStart(false,true);
  else if(a==='sound'){pref('sound',saved.sound===false);initAudio();settings();}else if(a==='bgm'||a==='sfx'){pref(a,saved[a]===false);window.BloomAudio?.configure(saved);initAudio();settings();}else if(a==='haptics'){pref('haptics',!saved.haptics);settings();}
  else if(a==='effects'&&!systemReduced){reduced=!reduced;pref('effects',reduced?'light':'rich');settings();}
@@ -475,7 +478,7 @@ tutorial=window.BloomTutorial?.create({host:$('game-area'),prepareStep:prepareTu
 if(new URLSearchParams(location.search).get('qa')==='1')window.__GLASSFALL_QA__={get tutorial(){return tutorial;},get training(){return training;},get loading(){return loading;},requestStart,get celebration(){return celebration;},get run(){return run;},get toys(){return toys;},get state(){return state;},get kind(){return kind;},get drag(){return drag;},get desert(){return desert;},get items(){return itemSystem;},get elapsed(){return elapsed;},get adaptive(){return adaptive;},action,update,start,menu,pause,resume,finish,draw,hud,devPanel,jumpTime,loadPreset,itemScenario,forceNextItem,resolveNormal,riseGround,maybeSeedNextItem,useRelic,setKind(k){kind='normal';menu();},lock(){lockNormal(!!drag);}};
 
 if(window.AdaptiveBridge&&window.AdaptiveDirector)adaptive=window.AdaptiveBridge.create({
- storage:{getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)},panel,
+ playerDefaults:true,storage:{getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)},panel,
  get:()=>({run,kind,state,desert,elapsed,seed:currentSeed,practice:practice(),overlayView,
   baseInterval:desertCfg().interval,interval:desert?.adaptiveInterval||desertCfg().interval}),
  curses:()=>findSpecials().filter(q=>DESERT_ITEMS[q.s.type].kind==='bad'&&!q.s.failed).length,

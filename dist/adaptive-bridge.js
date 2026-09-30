@@ -15,6 +15,7 @@ function create(port){
  let store=safeState(persisted),next={...store.options,guest:false},session=null,active=false,
   id='',pending=null,lastHard=false,returnView='menu',savedOK=true,profileReset=false,
   lastReport=store.history.at(-1)||null,lastCheckpoint=null,terminalDetail=null;
+ if(port.playerDefaults){store.options={...store.options,mode:'adaptive',style:'calm',guest:false};next={...store.options};save();}
  function get(){return port.get();}
  function board(){return D.metrics(get().run.board);}
  function save(){try{port.storage.setItem(KEY,JSON.stringify(store));savedOK=true;}catch{savedOK=false;}}
@@ -72,7 +73,7 @@ function create(port){
    groundAttempt:detail&&typeof detail==='object'?detail:null,
    note:'실제 종료 조건이며 근본 원인·실수·게임의 불공정성을 판정한 값이 아닙니다.'};
  }
- function button(){return get().kind==='normal'?'<button class="secondary" data-adaptive="open">개인 맞춤 난이도 · '+(active?label():'설정 / 지난 판 결과')+'　›</button>':'';}
+ function button(){if(port.playerDefaults)return '';return get().kind==='normal'?'<button class="secondary" data-adaptive="open">개인 맞춤 난이도 · '+(active?label():'설정 / 지난 판 결과')+'　›</button>':'';}
  function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
  function fmt(v,n=1){return Number.isFinite(v)?v.toFixed(n):'—';}
  function seconds(v){return Number.isFinite(v)?(v/1000).toFixed(2).replace(/\.?0+$/,'')+'초':'—';}
@@ -127,9 +128,9 @@ function create(port){
    <p class="storage-note">7분 생존이나 재미 향상을 보장하지 않습니다. 자동 모드 최고점은 고정 규칙 기록과 분리됩니다.</p>`;
   port.show(content,'adaptive');
  }
- function open(){returnView=get().overlayView||'game';port.pauseForPanel();panel();}
+ function open(){if(port.playerDefaults)return;returnView=get().overlayView||'game';port.pauseForPanel();panel();}
  function back(){port.back(returnView);}
- function handle(event){const b=event.target.closest?.('[data-adaptive]');if(!b||b.disabled)return;
+ function handle(event){if(port.playerDefaults)return;const b=event.target.closest?.('[data-adaptive]');if(!b||b.disabled)return;
   const a=b.dataset.adaptive,k=b.dataset.v;
   if(a==='open'){open();return;}
   if(a==='return'){back();return;}

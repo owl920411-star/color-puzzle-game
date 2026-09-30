@@ -1,6 +1,9 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const D=require('../dist/adaptive-director.js'),A=require('../dist/adaptive-audit.js'),{boot,B}=require('./helpers/adaptive-stable-harness.cjs');
+const D=require('../dist/adaptive-director.js'),A=require('../dist/adaptive-audit.js'),{boot:bootBase,B}=require('./helpers/adaptive-stable-harness.cjs');
+// Keep diagnostic modes testable without exposing them in the production UI.
+const DiagnosticBridge=require('../dist/adaptive-bridge.js');
+const boot=options=>bootBase({...options,Bridge:{create:port=>DiagnosticBridge.create({...port,playerDefaults:false})}});
 const metric=(height=5,holes=0)=>({height,holes,cells:20,bump:0});
 function record(d,{height=5,holes=0,added=0,lines=1,ms=2000,input=true,frame=0}={}){
  for(let t=0;t<ms;t+=100)d.tick(Math.min(100,ms-t),true);

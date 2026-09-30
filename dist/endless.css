@@ -33,3 +33,8 @@ body[data-kind="normal"] .rotate-card b{font-size:30px}
 #panel:has(.item-force-grid) .item-force-grid button,#panel:has(.item-force-grid) .settings-row button{background:#fff8f2;border:2px solid #c5b2d9;color:#594567;box-shadow:1px 2px 0 #e8d9e4}
 #panel:has(.item-force-grid) .item-force-grid button[data-menu="iteminstant"]{background:#edf8ed;border:2px dashed #9ac7ae;color:#365d45}
 #panel:has(.item-force-grid) .item-force-grid button{font-size:11px}
+
+/* Move the board and rail together without mirroring canvas coordinates. */
+body[data-board-side="right"] #game-area{grid-template-columns:var(--rail) var(--board-width)}
+body[data-board-side="right"] .board-shell{grid-column:2}
+body[data-board-side="right"] .rail{grid-column:1}
