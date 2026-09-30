@@ -22,8 +22,8 @@ function drawCell(ctx,cell,x,y,size=36,reduced=false){
   ctx.restore();return true;
 }
 class System{
-  constructor(game,{onLock=()=>game.lock(),onDone=()=>{},learned=null,onEncounter=()=>{}}={}){
-    this.game=game;this.onLock=onLock;this.onDone=onDone;this.onEncounter=onEncounter;this.guided=learned!==null;this.learned=learned||{};this.intro=null;
+  constructor(game,{onLock=()=>game.lock(),onDone=()=>{},learned=null,onEncounter=()=>{},guidanceHidden=false,onGuidanceLearned=()=>{}}={}){
+    this.game=game;this.onLock=onLock;this.onDone=onDone;this.onEncounter=onEncounter;this.guided=learned!==null;this.learned=learned||{};this.intro=null;this.guidanceHidden=guidanceHidden===true;this.onGuidanceLearned=onGuidanceLearned;
     this.clock=new K.ToyClock('cycle');this.rng=E.random(game.seed+'/toys-v1');
     this.nextKind=this.guided?Math.max(0,KINDS.findIndex(k=>!this.learned[k])):0;this.scheduled=null;this.animation=null;this.linger=null;this.accumulator=0;
     const system=this,spawn=game.spawn;
@@ -47,15 +47,18 @@ class System{
   }
   advance(ms){
     if(!Number.isFinite(ms)||ms<=0||this.game.over)return;
-    this.clock.advanceTo(this.clock.elapsed+ms);
+    this.clock.advanceTo(this.clock.elapsed+ms);this.checkGuidance();
     if(this.firstPending){this.clock.pending=null;if(this.game.pieces>=3||this.game.lines>0){this.firstPending=false;this.clock.pending={reservedAt:this.clock.elapsed,reason:'basic-success'};this.clock.next=this.clock.elapsed+60000;}}
     if(this.clock.pending&&!this.scheduled){
       const p=this.makePiece(KINDS[this.nextKind++%KINDS.length]);
       this.game.queue.unshift(p);this.scheduled=p.toy.id;
     }
   }
+  checkGuidance(){
+    if(!this.guidanceHidden&&this.guided&&this.clock.elapsed>=240000&&KINDS.every(k=>this.learned[k]===true)){this.guidanceHidden=true;this.intro=null;this.onGuidanceLearned();}
+  }
   didSpawn(piece){
-    if(this.guided&&piece?.toy&&!this.learned[piece.toy.kind]){this.learned[piece.toy.kind]=true;this.intro={kind:piece.toy.kind,id:piece.toy.id};this.onEncounter(piece.toy.kind);}
+    if(this.guided&&piece?.toy&&!this.learned[piece.toy.kind]){this.learned[piece.toy.kind]=true;this.intro={kind:piece.toy.kind,id:piece.toy.id};this.onEncounter(piece.toy.kind);this.checkGuidance();}
     if(piece?.toy?.id===this.scheduled){this.clock.take(this.scheduled);this.scheduled=null;}
   }
   shouldPanic(){return !this.busy&&this.game.active?.toy?.kind==='coward'&&this.game.dropDistance()<=1;}
@@ -118,6 +121,7 @@ class System{
     this.previewKey=key;return this.preview={cells,kind:p.toy.kind,dir:sim.linger.p.dir};
   }
   drawPrediction(ctx){
+    if(this.guidanceHidden)return;
     const preview=this.prediction();if(!preview)return;
     ctx.save();ctx.strokeStyle='#76516e';ctx.fillStyle='#76516e';ctx.lineWidth=2;ctx.font="700 20px 'Gaegu Toys', Gaegu, sans-serif";ctx.setLineDash([5,4]);
     for(const c of preview.cells){ctx.strokeRect(c.x*36+4,c.y*36+4,28,28);if(c.ink){ctx.beginPath();ctx.moveTo(c.x*36+10,c.y*36+24);ctx.lineTo(c.x*36+18,c.y*36+12);ctx.moveTo(c.x*36+17,c.y*36+24);ctx.lineTo(c.x*36+25,c.y*36+12);ctx.stroke();}else if(c.extra){ctx.fillText('+',c.x*36+12,c.y*36+24);}}

@@ -157,7 +157,7 @@ async function requestStart(retry=false,replay=false){
 function start(retry=false,asTraining=false){
  celebration?.clear(); adaptive?.end('restart');
  if(playing()||state==='paused')rememberScore();tutorial?.stop();training=asTraining;clearInput();currentSeed=retry&&currentSeed?currentSeed:seed();
- maxClear=0;run=new R.NormalGame(currentSeed);toys=!training&&window.ToyBlocks?new window.ToyBlocks.System(run,{onLock:placeNormal,onDone:completeNormal,learned:{...object(saved.toyLearned)},onEncounter:k=>{pref('toyLearned',{...object(saved.toyLearned),[k]:true});}}):null;watchAudioRun();
+ maxClear=0;run=new R.NormalGame(currentSeed);toys=!training&&window.ToyBlocks?new window.ToyBlocks.System(run,{onLock:placeNormal,onDone:completeNormal,learned:{...object(saved.toyLearned)},guidanceHidden:saved.toyGuidanceHidden===true,onGuidanceLearned:()=>pref('toyGuidanceHidden',true),onEncounter:k=>{pref('toyLearned',{...object(saved.toyLearned),[k]:true});}}):null;watchAudioRun();
  state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
  if(training){itemSystem.practice=true;itemSystem.enabled=false;desert.nextRise=Infinity;Object.defineProperty(run,'gravity',{get:()=>Infinity});Object.defineProperty(run,'lockDelay',{get:()=>Infinity});watchTutorialRun();}else adaptive?.begin();loadBest();maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();if(training)tutorial.start();
 }
@@ -210,7 +210,7 @@ function hud(){
  $('pace-label').textContent=desert.level?'BLOOM '+(desert.level===8?'MAX':'LV.'+desert.level):'LEVEL '+run.level;
  $('rotate').hidden=false;for(const b of document.querySelectorAll('[data-action]'))b.disabled=!canAct()||(b.dataset.action==='hold'&&run.holdUsed);
  $('pause').disabled=!playing();$('notice').textContent=`제거 ${run.lines}줄 · 연속 ${run.combo||0}회`;
- if(run.active?.toy&&toys?.intro?.id===run.active.toy.id)$('notice').textContent=window.ToyBlocks.LABELS[run.active.toy.kind]+' · '+({bouncy:'점선 칸으로 통! 옆으로 튀어요',fat:'＋칸까지 뿌웅! 몸이 커져요',coward:'화살표 쪽으로 한 칸 피해요',doodle:'빗금 칸에 슥삭! 낙서를 남겨요'}[run.active.toy.kind]);
+ if(!toys?.guidanceHidden&&run.active?.toy&&toys?.intro?.id===run.active.toy.id)$('notice').textContent=window.ToyBlocks.LABELS[run.active.toy.kind]+' · '+({bouncy:'점선 칸으로 통! 옆으로 튀어요',fat:'＋칸까지 뿌웅! 몸이 커져요',coward:'화살표 쪽으로 한 칸 피해요',doodle:'빗금 칸에 슥삭! 낙서를 남겨요'}[run.active.toy.kind]);
  if(desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`지반 상승 ${left}초 · 정리 ${itemSystem.purify}/2${practice()?' · 연습':''}`;}
  if(!saveOK)$('notice').textContent='기록 저장이 제한되어 있습니다.';
  for(const [id,p]of [['next',run.queue[0]],['next2',run.queue[1]],['held',run.held]]){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(p)normalPreview(g,p,c.width,c.height);}
@@ -400,7 +400,7 @@ function draw(){
  if(trail&&!reduced){ctx.save();ctx.globalAlpha=trail.life/900;ctx.fillStyle='#c2fff2';for(const cell of trail.cells)ctx.fillRect(cell.x*36+5,cell.y*36,26,(trail.distance+1)*36);ctx.restore();}
  const map=new Map(falls.map(f=>[f.cell.id,f])),hot=new Set(pending?.rows||[]);
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const cell=run.board[y][x];if(!cell||toys?.ownsAnimated(cell))continue;const f=map.get(cell.id),t=Math.min(1,phaseTime/200),yy=f&&phase==='fall'?f.from+(f.to-f.from)*(1-Math.pow(1-t,3)):y;normalCell(ctx,cell,x*36,yy*36,36,1,false,hot.has(y));}
- if(run.active&&!toys?.busy){const p=run.active,d=run.dropDistance();if(!p.toy)for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y+d)*36,36,.75,true);for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y)*36);}
+ if(run.active&&!toys?.busy){const p=run.active,d=run.dropDistance();if(!p.toy||toys?.guidanceHidden)for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y+d)*36,36,.75,true);for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y)*36);}
  if(run.active&&!toys?.busy)toys?.drawPrediction(ctx);
  toys?.draw(ctx,reduced,(canvas.getBoundingClientRect?.().width||360)/360);
  if(impact&&!reduced){const t=1-impact.life/impact.total;ctx.save();ctx.globalAlpha=(1-t)*.55;ctx.strokeStyle='#b7fff0';ctx.lineWidth=2*(1-t)+.5;ctx.beginPath();ctx.ellipse(impact.x,Math.min(714,impact.y),20+90*t,3+13*t,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
