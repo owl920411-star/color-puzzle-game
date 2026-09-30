@@ -162,6 +162,7 @@ function start(retry=false,asTraining=false){
  maxClear=0;run=new R.NormalGame(currentSeed);toys=!training&&window.ToyBlocks?new window.ToyBlocks.System(run,{onLock:placeNormal,onDone:completeNormal,learned:{...object(saved.toyLearned)},guidanceHidden:saved.toyGuidanceHidden===true,onGuidanceLearned:()=>pref('toyGuidanceHidden',true),onEncounter:k=>{pref('toyLearned',{...object(saved.toyLearned),[k]:true});}}):null;watchAudioRun();
  state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
  if(training){itemSystem.practice=true;itemSystem.enabled=false;desert.nextRise=Infinity;Object.defineProperty(run,'gravity',{get:()=>Infinity});Object.defineProperty(run,'lockDelay',{get:()=>Infinity});watchTutorialRun();}else adaptive?.begin();loadBest();maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();if(training)tutorial.start();
+ window.CrayonNativeAds?.begin(!training&&!practice());
 }
 function pause(){if(!playing())return;beforePause=state;state='paused';document.body.classList.remove('ground-warning');clearInput();rememberScore();pausePanel();hud();}
 function pausePanel(){showPanel(`<img class="paper-chick" src="assets/bloom-chick.webp?v=cb-rc2" alt="" width="72" height="72"><div class="kicker">잠깐 쉬는 시간</div><h2>잠깐 쉬어갈까요?</h2><div class="result-meta">현재 ${run.score.toLocaleString()}점 · 최고 ${recordBest.toLocaleString()}점<br>플레이 ${timeText()}${practice()?' · 연습 기록':''}</div><button class="primary" data-menu="resume">계속하기</button><button class="secondary" data-menu="settings">놀이 방법 · 설정</button><button class="secondary" data-menu="retry">같은 판 다시 시작</button><button class="text-button" data-menu="menu">처음 화면으로</button>`,'pause');}
@@ -170,6 +171,7 @@ function finish(reason='unknown',detail=null){
  if(state!=='over'){adaptive?.terminal(reason,detail);adaptive?.end('gameover');}
  if(state==='over')return;toys?.cancel();state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
  const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'연습 그림':run.score>initialBest?'새 기록!':'오늘의 그림'}</div><img class="result-friends" src="assets/${!practice()&&run.score>initialBest?'bloom-happy.webp':'bloom-home-hero.webp'}?v=cb-rc2" alt="크레용을 든 아기와 병아리" width="240" height="180"><h2>${!practice()&&run.score>initialBest?'활짝! 새 기록이에요':'한 번 더 그려볼까요?'}</h2><div class="result-score" data-best="${!practice()&&run.score>initialBest}">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-best">BEST <strong>${recordBest.toLocaleString()}</strong></div><p class="result-achievement">${run.maxCombo>1?`이번 그림의 반짝임 · ${run.maxCombo}번 연속으로 지웠어요`:maxClear>0?`이번 그림의 반짝임 · 한 번에 ${maxClear}줄을 지웠어요`:`이번 그림 · 블록 ${run.pieces}개를 놓았어요`}</p><div class="result-meta">제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거<br>플레이 ${timeText()}<br>BLOOM ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 BLOOM LV.${finite(ds.maxLevel)}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">다시 하기</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">처음 화면으로</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');tone('over');hud();
+ window.CrayonNativeAds?.end(!training&&!practice());
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
@@ -328,7 +330,7 @@ function emitNormal(plan,result){
 }
 function update(raw){
  const dt=Math.min(100,Math.max(0,raw));if(playing()&&!document.hidden)toys?.advance(raw);
- const hitStop=!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;adaptive?.tick(raw);
+ const hitStop=!reduced&&shatterFX?shatterFX.update(dt):false;if(!playing()||hitStop)return;elapsed+=dt;adaptive?.tick(raw);if(!training&&!practice())window.CrayonNativeAds?.tick(dt);
  desertTick();if(!playing())return;itemTick();if(repeat&&canAct()){repeat.time-=dt;let n=0;while(repeat&&repeat.time<=0&&n++<4){const r=repeat;action(r.action);if(repeat===r)r.time+=70;}}
  if(state==='playing'){
   if(toys?.busy)toys.update(dt);

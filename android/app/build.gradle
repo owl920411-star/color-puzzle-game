@@ -1,0 +1,42 @@
+plugins { id 'com.android.application' }
+def secrets = new Properties()
+def signingFile = rootProject.file('signing.properties')
+if (signingFile.exists()) signingFile.withInputStream { secrets.load(it) }
+android {
+    namespace 'com.owl920411.crayonbloom'
+    compileSdk 36
+    buildToolsVersion '36.0.0'
+    defaultConfig {
+        applicationId 'com.owl920411.crayonbloom'
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0-testads'
+        manifestPlaceholders = [admobAppId: 'ca-app-pub-3940256099942544~3347511713']
+    }
+    signingConfigs {
+        upload {
+            if (signingFile.exists()) {
+                storeFile file(secrets.getProperty('storeFile'))
+                storePassword secrets.getProperty('storePassword')
+                keyAlias secrets.getProperty('keyAlias')
+                keyPassword secrets.getProperty('keyPassword')
+            }
+        }
+    }
+    buildTypes { release { minifyEnabled false; if(signingFile.exists()) signingConfig signingConfigs.upload } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    sourceSets { main.assets.srcDirs = [layout.buildDirectory.dir('generated/game-assets')] }
+}
+tasks.register('syncGameAssets', Sync) {
+    from '../../dist'
+    into layout.buildDirectory.dir('generated/game-assets/game')
+    exclude 'qa/**', 'control23.html', '_headers'
+}
+tasks.named('preBuild').configure { dependsOn 'syncGameAssets' }
+dependencies {
+    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    testImplementation 'junit:junit:4.13.2'
+}
