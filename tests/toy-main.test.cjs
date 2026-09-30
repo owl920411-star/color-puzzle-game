@@ -56,18 +56,18 @@ test('fat expansion keeps the one original item badge without cloning it',()=>{
   assert.equal(g.board.flat().filter(c=>c?.special).length,1);assert.equal(g.board.flat().filter(c=>c?.toy).length,8);
 });
 test('real controller: initial toy, drop, pause, resume, score, no carried input and reset',()=>{
-  const h=boot({Toys:T,Tutorial:{create:()=>({start(){},stop(){},setPaused(){}})}}),q=h.q;q.start();assert.equal(q.run.active.toy.kind,'bouncy');
+  const h=boot({Toys:T,Tutorial:{create:()=>({start(){},stop(){},setPaused(){}})}}),q=h.q;q.start();assert.ok(!q.run.active.toy);q.run.pieces=3;q.toys.advance(1);q.run.spawn();assert.equal(q.run.active.toy.kind,'bouncy');q.run.pieces=0;
   assert.ok(q.action('drop'));assert.ok(q.toys.busy);assert.equal(q.action('hold'),false);assert.equal(q.action('left'),false);
   const time=q.toys.clock.elapsed,stage=q.toys.animation.p.state;q.pause();h.step(30000);
   assert.equal(q.toys.clock.elapsed,time);assert.equal(q.toys.animation.p.state,stage);q.resume();h.step(2000);
   assert.ok(!q.toys.busy);assert.equal(q.run.pieces,1);assert.ok(!q.run.active.toy);assert.ok(q.run.score>0);assert.equal(q.drag,null);
-  q.draw();q.hud();q.start(true);assert.equal(q.toys.clock.elapsed,0);assert.equal(q.run.active.toy.kind,'bouncy');q.start(false,true);assert.equal(q.toys,null);
+  q.draw();q.hud();q.start(true);assert.equal(q.toys.clock.elapsed,0);assert.ok(!q.run.active.toy);q.start(false,true);assert.equal(q.toys,null);
 });
 test('controller counts real active time during hit-stop and clearing; background and game-over stop it',()=>{
   const h=boot({Toys:T,FX:'real'}),q=h.q;q.start();Object.defineProperty(q.run,'gravity',{get:()=>Infinity});
-  q.update(59999);assert.equal(q.toys.clock.elapsed,59999);assert.ok(!q.run.queue[0].toy);q.update(1);assert.equal(q.run.queue[0].toy.kind,'fat');
-  h.dispatchWindow('blur');h.step(5000);assert.equal(q.toys.clock.elapsed,60000);q.resume();q.update(1000);assert.equal(q.toys.clock.elapsed,61000);
-  q.finish();h.step(5000);assert.equal(q.toys.clock.elapsed,61000);
+  q.run.pieces=3;q.toys.advance(1);q.run.spawn();q.update(59999);assert.equal(q.toys.clock.elapsed,60000);assert.ok(!q.run.queue[0].toy);q.update(1);assert.equal(q.run.queue[0].toy.kind,'fat');
+  h.dispatchWindow('blur');h.step(5000);assert.equal(q.toys.clock.elapsed,60001);q.resume();q.update(1000);assert.equal(q.toys.clock.elapsed,61001);
+  q.finish();h.step(5000);assert.equal(q.toys.clock.elapsed,61001);
 });
 test('controller finishes fat/ink before clearing rows, keeps item arming, blocks ground mutation during action',()=>{
   const h=boot({Toys:T}),q=h.q;q.start();piece(q.run,q.toys,'fat');

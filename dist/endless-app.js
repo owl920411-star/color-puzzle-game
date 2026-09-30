@@ -13,7 +13,7 @@ function readStore(){try{return object(JSON.parse(localStorage.getItem(KEY)||'{}
 let saved=readStore(),saveOK=true,kind='normal';
 let reduced=systemReduced||saved.effects==='light',run=null,state='menu',beforePause='playing',overlayView='menu',elapsed=0,last=0,fallTime=0,lockTime=0,lockResets=0;
 let phase=null,phaseTime=0,pending=null,falls=[],drag=null,repeat=null,heldKeys=new Set(),fx=[],floaters=[],impact=null,trail=null,calloutTime=0;
-let toys=null;
+let toys=null,maxClear=0;
 const celebration=window.BloomCelebration?.create({host:$('game-area'),reduced:()=>reduced});
 let startRequest=0,training=false,tutorial=null,tutorialInput={source:'other',gesture:'',inputState:''};
 const loading=window.BloomLoading?.create({show:html=>showPanel(html,'loading'),prepare:()=>celebration?.preload()??Promise.resolve(true),reduced:()=>reduced});
@@ -157,7 +157,7 @@ async function requestStart(retry=false,replay=false){
 function start(retry=false,asTraining=false){
  celebration?.clear(); adaptive?.end('restart');
  if(playing()||state==='paused')rememberScore();tutorial?.stop();training=asTraining;clearInput();currentSeed=retry&&currentSeed?currentSeed:seed();
- run=new R.NormalGame(currentSeed);toys=!training&&window.ToyBlocks?new window.ToyBlocks.System(run,{onLock:placeNormal,onDone:completeNormal}):null;watchAudioRun();
+ maxClear=0;run=new R.NormalGame(currentSeed);toys=!training&&window.ToyBlocks?new window.ToyBlocks.System(run,{onLock:placeNormal,onDone:completeNormal,learned:{...object(saved.toyLearned)},onEncounter:k=>{pref('toyLearned',{...object(saved.toyLearned),[k]:true});}}):null;watchAudioRun();
  state='playing';beforePause='playing';elapsed=fallTime=lockTime=lockResets=0;resetDesert();phase=null;pending=null;falls=[];fx=[];floaters=[];impact=trail=ghost=null;shatterFX?.clear();calloutTime=0;recordAnnounced=false;finalSaved=false;
  if(training){itemSystem.practice=true;itemSystem.enabled=false;desert.nextRise=Infinity;Object.defineProperty(run,'gravity',{get:()=>Infinity});Object.defineProperty(run,'lockDelay',{get:()=>Infinity});watchTutorialRun();}else adaptive?.begin();loadBest();maybeSeedNextItem();$('best').parentElement.classList.remove('record');last=performance.now();lastSave=last;hidePanel();$('callout').classList.remove('show');initAudio();hud();draw();if(training)tutorial.start();
 }
@@ -167,7 +167,7 @@ function resume(){if(state!=='paused')return;clearInput();state=beforePause==='c
 function finish(reason='unknown',detail=null){
  if(state!=='over'){adaptive?.terminal(reason,detail);adaptive?.end('gameover');}
  if(state==='over')return;toys?.cancel();state='over';document.body.classList.remove('ground-warning');clearInput();run.active=null;phase=null;pending=null;desertRecord(true);rememberScore(true);
- const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'연습 그림':run.score>initialBest?'새 기록!':'오늘의 그림'}</div><img class="result-friends" src="assets/${!practice()&&run.score>initialBest?'bloom-happy.webp':'bloom-home-hero.webp'}?v=cb-rc2" alt="크레용을 든 아기와 병아리" width="240" height="180"><h2>${!practice()&&run.score>initialBest?'활짝! 새 기록이에요':'한 번 더 그려볼까요?'}</h2><div class="result-score" data-best="${!practice()&&run.score>initialBest}">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-best">BEST <strong>${recordBest.toLocaleString()}</strong></div><div class="result-meta">제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거<br>플레이 ${timeText()}<br>BLOOM ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 BLOOM LV.${finite(ds.maxLevel)}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">다시 하기</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">처음 화면으로</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');tone('over');hud();
+ const ds=object(readStore()[adaptive?.desertKey()||'desertSurvival']);showPanel(`<div class="kicker">${practice()?'연습 그림':run.score>initialBest?'새 기록!':'오늘의 그림'}</div><img class="result-friends" src="assets/${!practice()&&run.score>initialBest?'bloom-happy.webp':'bloom-home-hero.webp'}?v=cb-rc2" alt="크레용을 든 아기와 병아리" width="240" height="180"><h2>${!practice()&&run.score>initialBest?'활짝! 새 기록이에요':'한 번 더 그려볼까요?'}</h2><div class="result-score" data-best="${!practice()&&run.score>initialBest}">${run.score.toLocaleString()}<small style="font-size:17px"> 점</small></div><div class="result-best">BEST <strong>${recordBest.toLocaleString()}</strong></div><p class="result-achievement">${run.maxCombo>1?`이번 그림의 반짝임 · ${run.maxCombo}번 연속으로 지웠어요`:maxClear>0?`이번 그림의 반짝임 · 한 번에 ${maxClear}줄을 지웠어요`:`이번 그림 · 블록 ${run.pieces}개를 놓았어요`}</p><div class="result-meta">제거 ${run.lines}줄 · 최대 ${run.maxCombo}연속 제거<br>플레이 ${timeText()}<br>BLOOM ${desert.level===8?'MAX':'LV.'+desert.level} · 지반 ${desert.rises}회<br>최고 생존 ${Math.floor(finite(ds.bestTime)/60)}:${String(Math.floor(finite(ds.bestTime)%60)).padStart(2,'0')} · 최고 BLOOM LV.${finite(ds.maxLevel)}</div>${adaptive?.button()||''}<button class="primary" data-menu="new">다시 하기</button><button class="secondary" data-menu="retry">같은 판 다시 도전</button><button class="text-button" data-menu="menu">처음 화면으로</button><p class="storage-note">${adaptive?.guest?'임시 플레이는 기록과 개인 프로필에 저장하지 않습니다.':practice()?'개발자 조작을 사용한 판은 최고 기록에 저장되지 않습니다.':saveOK?'최고 점수는 이 기기·브라우저에 저장됩니다.':'이 브라우저에서는 기록을 저장하지 못했습니다.'}</p>`,'over');tone('over');hud();
 }
 function settings(){
  if(playing()){beforePause=state;state='paused';clearInput();rememberScore();}
@@ -210,6 +210,7 @@ function hud(){
  $('pace-label').textContent=desert.level?'BLOOM '+(desert.level===8?'MAX':'LV.'+desert.level):'LEVEL '+run.level;
  $('rotate').hidden=false;for(const b of document.querySelectorAll('[data-action]'))b.disabled=!canAct()||(b.dataset.action==='hold'&&run.holdUsed);
  $('pause').disabled=!playing();$('notice').textContent=`제거 ${run.lines}줄 · 연속 ${run.combo||0}회`;
+ if(run.active?.toy&&toys?.intro?.id===run.active.toy.id)$('notice').textContent=window.ToyBlocks.LABELS[run.active.toy.kind]+' · '+({bouncy:'점선 칸으로 통! 옆으로 튀어요',fat:'＋칸까지 뿌웅! 몸이 커져요',coward:'화살표 쪽으로 한 칸 피해요',doodle:'빗금 칸에 슥삭! 낙서를 남겨요'}[run.active.toy.kind]);
  if(desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`지반 상승 ${left}초 · 정리 ${itemSystem.purify}/2${practice()?' · 연습':''}`;}
  if(!saveOK)$('notice').textContent='기록 저장이 제한되어 있습니다.';
  for(const [id,p]of [['next',run.queue[0]],['next2',run.queue[1]],['held',run.held]]){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(p)normalPreview(g,p,c.width,c.height);}
@@ -312,7 +313,7 @@ function emitNormal(plan,result){
  const n=plan.rows.length;
  if(!reduced&&shatterFX)shatterFX.trigger(plan.cells.filter(c=>plan.rows.includes(c.y)).map(c=>({col:c.x,row:c.y,color:COLORS[c.cell.type]?.[0]||COLORS.I[0]})),n,result.combo||0);
  if(!n){tone('clear');return;}
- celebration?.celebrate({combo:result.combo||0,lines:n});
+ maxClear=Math.max(maxClear,n);celebration?.celebrate({combo:result.combo||0,lines:n});
  const cfg=desertCfg(),extra=cfg.lv>0?Math.floor(result.gain*(cfg.mult-1)):0;if(extra>0){run.score+=extra;result.gain+=extra;}
  // This is the existing BLOOM level multiplier, not an item multiplier.
  const remaining=desert.nextRise+desert.delay-(plan.itemAt??elapsed),imminent=cfg.lv>0&&remaining>=0&&remaining<=3000;
@@ -399,7 +400,8 @@ function draw(){
  if(trail&&!reduced){ctx.save();ctx.globalAlpha=trail.life/900;ctx.fillStyle='#c2fff2';for(const cell of trail.cells)ctx.fillRect(cell.x*36+5,cell.y*36,26,(trail.distance+1)*36);ctx.restore();}
  const map=new Map(falls.map(f=>[f.cell.id,f])),hot=new Set(pending?.rows||[]);
  for(let y=0;y<20;y++)for(let x=0;x<10;x++){const cell=run.board[y][x];if(!cell||toys?.ownsAnimated(cell))continue;const f=map.get(cell.id),t=Math.min(1,phaseTime/200),yy=f&&phase==='fall'?f.from+(f.to-f.from)*(1-Math.pow(1-t,3)):y;normalCell(ctx,cell,x*36,yy*36,36,1,false,hot.has(y));}
- if(run.active&&!toys?.busy){const p=run.active,d=run.dropDistance();for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y+d)*36,36,.75,true);for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y)*36);}
+ if(run.active&&!toys?.busy){const p=run.active,d=run.dropDistance();if(!p.toy)for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y+d)*36,36,.75,true);for(const cell of p.cells)normalCell(ctx,cell,(p.x+cell.x)*36,(p.y+cell.y)*36);}
+ if(run.active&&!toys?.busy)toys?.drawPrediction(ctx);
  toys?.draw(ctx,reduced,(canvas.getBoundingClientRect?.().width||360)/360);
  if(impact&&!reduced){const t=1-impact.life/impact.total;ctx.save();ctx.globalAlpha=(1-t)*.55;ctx.strokeStyle='#b7fff0';ctx.lineWidth=2*(1-t)+.5;ctx.beginPath();ctx.ellipse(impact.x,Math.min(714,impact.y),20+90*t,3+13*t,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  for(const p of fx){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.globalAlpha=Math.min(1,p.life/350);if(p.spark&&!reduced){ctx.strokeStyle=p.color;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-p.size*2,0);ctx.lineTo(p.size*2,0);ctx.moveTo(0,-p.size*2);ctx.lineTo(0,p.size*2);ctx.stroke();}ctx.fillStyle=p.color;ctx.beginPath();ctx.moveTo(-p.size,0);ctx.lineTo(p.size*.7,-p.size*.6);ctx.lineTo(p.size*.2,p.size);ctx.closePath();ctx.fill();ctx.restore();}
