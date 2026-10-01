@@ -7,9 +7,9 @@
 .storybook-scene-piece,.storybook-result-piece{display:block;background-image:url('assets/storybook-spring-atlas.webp?v=storybook1');background-repeat:no-repeat;background-size:400% 200%;mask-repeat:no-repeat;mask-position:center;mask-size:100% 100%}
 .storybook-scene-piece{position:absolute;aspect-ratio:1;pointer-events:none}
 .scene-growth{left:36%;bottom:10%;width:28%;z-index:2}
-.scene-pink{left:15%;bottom:12%;width:26%;z-index:1;transform:rotate(-7deg)}
-.scene-yellow{right:14%;bottom:11%;width:26%;z-index:1;transform:rotate(6deg)}
-.scene-chick{right:25%;bottom:-2%;width:16%;z-index:3;transform:rotate(-7deg)}
+.scene-pink{--piece-tilt:-7deg;left:15%;bottom:12%;width:26%;z-index:1;transform:rotate(-7deg)}
+.scene-yellow{--piece-tilt:6deg;right:14%;bottom:11%;width:26%;z-index:1;transform:rotate(6deg)}
+.scene-chick{--piece-tilt:-7deg;right:25%;bottom:-2%;width:16%;z-index:3;transform:rotate(-7deg)}
 .scene-rainbow{left:35%;top:-25%;width:36%;z-index:0}
 .storybook-scene-piece[data-piece="0"],.storybook-result-piece[data-piece="0"]{background-position:0% 0%;mask-image:url("assets/storybook-mask-0.svg")}
 .storybook-scene-piece[data-piece="1"],.storybook-result-piece[data-piece="1"]{background-position:33.333% 0%;mask-image:url("assets/storybook-mask-1.svg")}
@@ -36,3 +36,12 @@
 
 /* Reclaim the unused hint spacer so the existing mascot remains prominent. */
 #panel .cb-home:has(.cb-storybook) .cb-mode-hint:empty{display:none}
+
+/* A newly drawn detail reveals once; existing art and START remain interactive. */
+.storybook-scene-piece.is-new{transform-origin:50% 90%;animation:storybook-draw-in 350ms cubic-bezier(.2,.7,.25,1) both}
+#panel .cb-storybook .storybook-completion{font-size:12px;font-weight:700;color:#8c3f60;letter-spacing:.3px}
+.storybook-completion::after{content:"";display:block;width:94px;height:3px;margin-top:2px;background:url("assets/crayon-stroke.svg") center/100% 100% no-repeat;transform-origin:left center}
+.storybook-completion.is-new::after{animation:storybook-page-finish 350ms ease-out both}
+@keyframes storybook-draw-in{from{opacity:0;transform:rotate(var(--piece-tilt,0deg)) scale(.92)}to{opacity:1;transform:rotate(var(--piece-tilt,0deg)) scale(1)}}
+@keyframes storybook-page-finish{from{opacity:.4;transform:scaleX(.25)}to{opacity:1;transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){.storybook-scene-piece.is-new,.storybook-completion.is-new::after{animation:none}}
