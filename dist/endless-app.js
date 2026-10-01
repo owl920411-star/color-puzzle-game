@@ -217,6 +217,7 @@ function hud(){
  if(!toys?.guidanceHidden&&run.active?.toy&&toys?.intro?.id===run.active.toy.id)$('notice').textContent=window.ToyBlocks.LABELS[run.active.toy.kind]+' · '+({bouncy:'점선 칸으로 통! 옆으로 튀어요',fat:'＋칸까지 뿌웅! 몸이 커져요',coward:'화살표 쪽으로 한 칸 피해요',doodle:'빗금 칸에 슥삭! 낙서를 남겨요'}[run.active.toy.kind]);
  if(desert.level>0){const left=Math.max(0,Math.ceil((desert.nextRise+desert.delay-elapsed)/1000));$('notice').textContent=`지반 상승 ${left}초 · 정리 ${itemSystem.purify}/2${practice()?' · 연습':''}`;}
  if(!saveOK)$('notice').textContent='기록 저장이 제한되어 있습니다.';
+ $('notice').classList.toggle('storybook-hud',/^(그림 목표|그림책 완성)/.test($('notice').textContent));
  for(const [id,p]of [['next',run.queue[0]],['next2',run.queue[1]],['held',run.held]]){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(p)normalPreview(g,p,c.width,c.height);}
 }
 function rebase(){if(!drag||!run.active)return;drag.originX=run.active.x;drag.anchorX=drag.lastX;drag.shift=0;drag.piece=pieceID();drag.downAnchor=drag.lastY;}

@@ -87,7 +87,7 @@ function resultCard(result,eligible=true){
   if(!ev.stage)return `<section class="storybook-result is-complete"><div><span>그림책 1</span><strong>${PAGE.title} 완성</strong><small>첫 페이지는 이미 모두 채워졌어요.</small></div></section>`;
   const idx=result.before.completed;
   if(result.changed){
-    return `<section class="storybook-result is-success"><span class="storybook-result-piece" data-piece="${idx}" role="img" aria-label="${ev.stage.reward} 완성"></span><div><span>그림 조각 완성!</span><strong>${result.pageComplete?'첫 페이지가 완성됐어요!':`${ev.stage.reward}을(를) 그렸어요`}</strong><small>${PAGE.title} ${result.after.completed}/${PAGE.total}${result.pageComplete?' · 완성':''}</small></div></section>`;
+    return `<section class="storybook-result is-success"><span class="storybook-result-piece" data-piece="${idx}" role="img" aria-label="${ev.stage.reward} 완성"></span><div><span>그림 조각 완성!</span><strong>${result.pageComplete?'첫 페이지가 완성됐어요!':`${ev.stage.reward} 그림을 완성했어요`}</strong><small>${PAGE.title} ${result.after.completed}/${PAGE.total}${result.pageComplete?' · 완성':''}</small></div></section>`;
   }
   return `<section class="storybook-result"><span class="storybook-result-piece is-locked" data-piece="${idx}" aria-hidden="true"></span><div><span>이번에는 여기까지</span><strong>${ev.stage.title}</strong><small>${formatValue(ev.stage,ev.value)} · 다음 판에 다시 이어 그려요</small></div></section>`;
 }
