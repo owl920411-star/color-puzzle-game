@@ -55,10 +55,23 @@ function pieceHTML(index,unlocked,currentPiece=false){
   const stage=PAGE.stages[index];
   return `<span class="storybook-piece${unlocked?' is-unlocked':''}${currentPiece?' is-current':''}" data-piece="${index}" role="img" aria-label="${stage.reward}${unlocked?' 완성':' 아직 비어 있음'}"></span>`;
 }
+function sceneHTML(raw){
+  const state=normalize(raw),n=state.completed;
+  const elements=[];
+  // The first four stages replace a single plant at the same ground anchor.
+  if(n>0)elements.push(scenePiece(Math.min(n,4)-1,'growth'));
+  if(n>=5)elements.push(scenePiece(4,'pink'));
+  if(n>=6)elements.push(scenePiece(5,'yellow'));
+  if(n>=7)elements.push(scenePiece(6,'chick'));
+  if(n>=8)elements.push(scenePiece(7,'rainbow'));
+  return `<div class="storybook-scene${n===8?' is-complete':''}" role="img" aria-label="${PAGE.title} · ${n===0?'아직 비어 있는 꽃밭':n<5?PAGE.stages[n-1].reward+'이 자라는 꽃밭':n===5?'하얀 꽃과 분홍 꽃':n===6?'세 송이 꽃이 핀 꽃밭':n===7?'병아리가 놀러온 꽃밭':'무지개 아래 병아리와 세 송이 꽃'}"><div class="storybook-ground" aria-hidden="true"></div>${elements.join('')}</div>`;
+}
+function scenePiece(index,place){
+  return `<span class="storybook-scene-piece scene-${place}" data-piece="${index}" aria-hidden="true"></span>`;
+}
 function homeHTML(raw=read()){
   const state=normalize(raw),stage=current(state),done=state.completed>=PAGE.total;
-  const pieces=PAGE.stages.map((_,i)=>pieceHTML(i,i<state.completed,!done&&i===state.completed)).join('');
-  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div><div class="storybook-pieces" aria-hidden="false">${pieces}</div><p>${done?'첫 페이지 완성! 자유롭게 한 판 더 그려봐요.':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
+  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state)}<p>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
 }
 function hud(run,raw=read()){
   const state=normalize(raw),stage=current(state);
@@ -87,7 +100,7 @@ function resultCard(result,eligible=true){
   if(!ev.stage)return `<section class="storybook-result is-complete"><div><span>그림책 1</span><strong>${PAGE.title} 완성</strong><small>첫 페이지는 이미 모두 채워졌어요.</small></div></section>`;
   const idx=result.before.completed;
   if(result.changed){
-    return `<section class="storybook-result is-success"><span class="storybook-result-piece" data-piece="${idx}" role="img" aria-label="${ev.stage.reward} 완성"></span><div><span>그림 조각 완성!</span><strong>${result.pageComplete?'첫 페이지가 완성됐어요!':`${ev.stage.reward} 그림을 완성했어요`}</strong><small>${PAGE.title} ${result.after.completed}/${PAGE.total}${result.pageComplete?' · 완성':''}</small></div></section>`;
+    return `<section class="storybook-result is-success"><span class="storybook-result-piece" data-piece="${idx}" role="img" aria-label="${ev.stage.reward} 완성"></span><div><span>${result.pageComplete?'첫 페이지 완성!':'그림이 자라고 있어요'}</span><strong>${['씨앗을 심었어요!','새싹이 자랐어요!','꽃봉오리가 생겼어요!','첫 꽃이 피었어요!','분홍 꽃이 피었어요!','꽃밭이 더 풍성해졌어요!','병아리가 놀러왔어요!','무지개가 나타났어요!'][idx]}</strong><small>${PAGE.title} ${result.after.completed}/${PAGE.total}${result.pageComplete?' · 완성':''}</small></div></section>`;
   }
   return `<section class="storybook-result"><span class="storybook-result-piece is-locked" data-piece="${idx}" aria-hidden="true"></span><div><span>이번에는 여기까지</span><strong>${ev.stage.title}</strong><small>${formatValue(ev.stage,ev.value)} · 다음 판에 다시 이어 그려요</small></div></section>`;
 }
@@ -98,5 +111,5 @@ function finish(run,{eligible=true}={}){
   if(result.changed)write(result.after);
   return{...result,html:resultCard(result,true)};
 }
-return{PAGE,normalize,current,valueFor,evaluate,advance,read,write,formatValue,pieceHTML,homeHTML,hud,goalHTML,announce,resultCard,finish};
+return{PAGE,normalize,current,valueFor,evaluate,advance,read,write,formatValue,pieceHTML,sceneHTML,homeHTML,hud,goalHTML,announce,resultCard,finish};
 });

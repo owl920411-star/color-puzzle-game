@@ -29,5 +29,22 @@ test('home, hud and result copy expose progress without requiring control change
   assert.match(S.homeHTML({completed:3}),/3\/8/);
   assert.match(S.hud({lines:2},{completed:1}),/2\/4줄/);
   const result=S.advance({completed:7},{score:4000});
-  assert.match(S.resultCard(result,true),/첫 페이지가 완성됐어요/);
+  assert.match(S.resultCard(result,true),/첫 페이지 완성!/);
+});
+
+
+test('home paints one growing plant; later flowers and visitors share one scene',()=>{
+ const expected=[[],[0],[1],[2],[3],[3,4],[3,4,5],[3,4,5,6],[3,4,5,6,7]];
+ for(let n=0;n<=8;n++){
+  const html=S.homeHTML({completed:n});
+  assert.match(html,new RegExp(n+'/8'));
+  assert.match(html,/class="storybook-scene/);
+  assert.doesNotMatch(html,/storybook-pieces|is-locked|is-current|is-unlocked/);
+  assert.deepEqual([...html.matchAll(/data-piece="(\d+)"/g)].map(m=>Number(m[1])),expected[n]);
+  if(n>0)assert.match(html,/class="storybook-scene-piece scene-growth"/);
+ }
+});
+
+test('existing objective metrics and thresholds stay frozen',()=>{
+ assert.deepEqual(S.PAGE.stages.map(s=>[s.metric,s.target]),[['pieces',12],['lines',4],['score',1500],['lines',6],['maxCombo',2],['pieces',24],['lines',8],['score',4000]]);
 });
