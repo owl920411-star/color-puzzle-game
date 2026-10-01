@@ -60,13 +60,14 @@ let lastHomeCompleted=null;
 function sceneHTML(raw,{reveal=false}={}){
   const state=normalize(raw),n=state.completed;
   const elements=[];
+  const outlines=[[3,'growth',4],[4,'pink',5],[5,'yellow',6],[6,'chick',7]].filter(([, ,stage])=>n<stage).map(([i,place])=>`<span class="storybook-outline scene-${place}" style="background-image:url(assets/storybook-outline-${i}.svg)" aria-hidden="true"></span>`).join('');
   // The first four stages replace a single plant at the same ground anchor.
   if(n>0)elements.push(scenePiece(Math.min(n,4)-1,'growth',reveal&&n<=4));
   if(n>=5)elements.push(scenePiece(4,'pink',reveal&&n===5));
   if(n>=6)elements.push(scenePiece(5,'yellow',reveal&&n===6));
   if(n>=7)elements.push(scenePiece(6,'chick',reveal&&n===7));
   if(n>=8)elements.push(scenePiece(7,'rainbow',reveal&&n===8));
-  return `<div class="storybook-scene${n===8?' is-complete':''}" role="img" aria-label="${PAGE.title} · ${n===0?'아직 비어 있는 꽃밭':n<5?PAGE.stages[n-1].reward+'이 자라는 꽃밭':n===5?'하얀 꽃과 분홍 꽃':n===6?'세 송이 꽃이 핀 꽃밭':n===7?'병아리가 놀러온 꽃밭':'무지개 아래 병아리와 세 송이 꽃'}"><div class="storybook-ground" aria-hidden="true"></div>${elements.join('')}</div>`;
+  return `<div class="storybook-scene${n===8?' is-complete':''}" role="img" aria-label="${PAGE.title} · ${n===0?'꽃 세 송이와 병아리 밑그림이 있는 꽃밭':n<5?PAGE.stages[n-1].reward+'이 자라는 꽃밭':n===5?'하얀 꽃과 분홍 꽃':n===6?'세 송이 꽃이 핀 꽃밭':n===7?'병아리가 놀러온 꽃밭':'무지개 아래 병아리와 세 송이 꽃'}"><div class="storybook-ground" aria-hidden="true"></div>${outlines}${elements.join('')}</div>`;
 }
 function scenePiece(index,place,reveal=false){
   return `<span class="storybook-scene-piece scene-${place}${reveal?' is-new':''}" data-piece="${index}" aria-hidden="true"></span>`;
@@ -75,8 +76,35 @@ function homeHTML(raw=read()){
   const state=normalize(raw),stage=current(state),done=state.completed>=PAGE.total;
   const reveal=lastHomeCompleted!==null&&state.completed>lastHomeCompleted;
   lastHomeCompleted=state.completed;
-  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-binding" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
+  return `<section class="cb-storybook" role="button" tabindex="0" aria-haspopup="dialog" aria-label="그림책 진행 상황"><div class="storybook-binding" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="storybook-head"><div><span>그림책 1 · 보기</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
 }
+// Preview-only pages never participate in game progression or storage.
+const PREVIEWS=[
+ {title:'장난감 자동차 놀이',art:'storybook-cars.webp'},
+ {title:'아기 목욕 시간',art:'storybook-bath.webp'},
+ {title:'블록과 곰 인형',art:'storybook-toys.webp'},
+ {title:'아기방 모빌',art:'storybook-mobile.webp'}
+];
+function openBook(){
+ if(!root.document)return;
+ const previous=root.document.querySelector('.storybook-reader');if(previous)return;
+ const trigger=root.document.querySelector('.cb-storybook');
+ const dialog=root.document.createElement('dialog');dialog.className='storybook-reader';dialog.setAttribute('aria-label','내 그림책');
+ const state=read(),stage=current(state);let page=0;
+ function render(){
+  const preview=PREVIEWS[page-1];
+  dialog.innerHTML=`<div class="reader-top"><strong>내 그림책 · ${page+1}/5</strong><button type="button" data-book-close aria-label="그림책 닫기">닫기</button></div><h2>${preview?preview.title:PAGE.title}</h2><div class="reader-art">${preview?`<img src="assets/${preview.art}" alt="${preview.title} 완성 그림 미리보기">`:sceneHTML(state)}</div><p class="reader-status">${preview?'다음 그림책 · 미리보기':`현재 진행 · ${state.completed}/8${state.completed===8?' · 첫 페이지 완성!':''}`}</p><p class="reader-goal">${preview?'이 그림은 아직 플레이 진행에 포함되지 않아요.':stage?`이번 판 목표 · ${stage.goal}<br>다음 변화 · ${stage.reward}`:'꽃밭 한 장을 모두 완성했어요!'}</p><nav aria-label="그림책 페이지"><button type="button" data-book-prev ${page===0?'disabled':''}>이전 그림</button><button type="button" data-book-next ${page===4?'disabled':''}>다음 그림</button></nav>`;
+ }
+ dialog.addEventListener('click',e=>{if(e.target.closest('[data-book-close]'))dialog.close();else if(e.target.closest('[data-book-prev]')&&page>0){page--;render();dialog.querySelector('[data-book-prev]').focus();}else if(e.target.closest('[data-book-next]')&&page<4){page++;render();dialog.querySelector('[data-book-next]').focus();}});
+ dialog.addEventListener('close',()=>{dialog.remove();if(trigger?.isConnected)trigger.focus();});
+ render();root.document.body.appendChild(dialog);dialog.showModal();
+}
+if(root.document){
+ root.document.addEventListener('keydown',e=>{const reader=root.document.querySelector('.storybook-reader[open]');if(reader&&e.key==='Escape'){e.preventDefault();e.stopPropagation();reader.close();}},true);
+ root.document.addEventListener('click',e=>{if(e.target.closest?.('.cb-storybook'))openBook();});
+ root.document.addEventListener('keydown',e=>{if(e.target.closest?.('.cb-storybook')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openBook();}});
+}
+
 function hud(run,raw=read()){
   const state=normalize(raw),stage=current(state);
   if(!stage)return'그림책 완성 · 자유롭게 놀아요';
