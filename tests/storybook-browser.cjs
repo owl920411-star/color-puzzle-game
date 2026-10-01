@@ -1,7 +1,7 @@
 'use strict';
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 (async()=>{
- const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/qa/storybook-reveal');fs.mkdirSync(out,{recursive:true});
+ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/qa/storybook-sketchbook');fs.mkdirSync(out,{recursive:true});
  const server=http.createServer((req,res)=>{try{const f=path.join(root,'dist',req.url.split('?')[0]==='/'?'index.html':req.url.split('?')[0]);res.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.webp')?'image/webp':f.endsWith('.svg')?'image/svg+xml':f.endsWith('.woff')?'font/woff':'text/html');res.end(fs.readFileSync(f));}catch{res.statusCode=404;res.end();}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.STORYBOOK_CHROMIUM||undefined,args:['--no-sandbox','--disable-gpu']});
@@ -14,7 +14,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:
   await page.evaluate(n=>{CrayonStorybook.write({completed:n});__GLASSFALL_QA__.menu();},n);
   for(const [width,height] of [[320,568],[360,640],[390,844],[430,932]]){
    await page.setViewportSize({width,height});await page.waitForTimeout(420);
-   const start=await page.locator('.cb-start').boundingBox();assert.ok(start.y>=0&&start.y+start.height<=height,`${width} stage ${n} start`);
+   const start=await page.locator('.cb-start').boundingBox();const book=await page.locator('.cb-storybook').boundingBox();assert.ok(book.y>start.y+start.height,'sketchbook follows START');assert.equal(await page.locator('.storybook-binding i').count(),7);assert.ok(start.y>=0&&start.y+start.height<=height,`${width} stage ${n} start`);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.match(await page.locator('.cb-storybook').innerText(),new RegExp(n+'/8'));
    for(const selector of ['.cb-logo','.cb-hero','.storybook-scene']){const r=await page.locator(selector).boundingBox();assert.ok(r.width>0&&r.height>0&&r.y+r.height<=height);}
    assert.deepEqual(await page.locator('.storybook-scene-piece').evaluateAll(es=>es.map(e=>Number(e.dataset.piece))),expected[n]);
