@@ -75,7 +75,7 @@ function homeHTML(raw=read()){
   const state=normalize(raw),stage=current(state),done=state.completed>=PAGE.total;
   const reveal=lastHomeCompleted!==null&&state.completed>lastHomeCompleted;
   lastHomeCompleted=state.completed;
-  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
+  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-binding" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
 }
 function hud(run,raw=read()){
   const state=normalize(raw),stage=current(state);
