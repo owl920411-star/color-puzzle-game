@@ -41,10 +41,27 @@ test('home paints one growing plant; later flowers and visitors share one scene'
   assert.match(html,/class="storybook-scene/);
   assert.doesNotMatch(html,/storybook-pieces|is-locked|is-current|is-unlocked/);
   assert.deepEqual([...html.matchAll(/data-piece="(\d+)"/g)].map(m=>Number(m[1])),expected[n]);
-  if(n>0)assert.match(html,/class="storybook-scene-piece scene-growth"/);
+  if(n>0)assert.match(html,/class="storybook-scene-piece scene-growth(?: is-new)?"/);
  }
 });
 
 test('existing objective metrics and thresholds stay frozen',()=>{
  assert.deepEqual(S.PAGE.stages.map(s=>[s.metric,s.target]),[['pieces',12],['lines',4],['score',1500],['lines',6],['maxCombo',2],['pieces',24],['lines',8],['score',4000]]);
+});
+
+
+test('only the newest scene detail reveals once; reload and storage remain unchanged',()=>{
+ const vm=require('node:vm'),fs=require('node:fs');let writes=0;
+ function fresh(){const env={localStorage:{getItem:()=>JSON.stringify({storybookV1:{completed:5}}),setItem:()=>writes++}};vm.runInNewContext(fs.readFileSync(require.resolve('../dist/storybook.js'),'utf8'),env);return env.CrayonStorybook;}
+ const view=fresh();assert.doesNotMatch(view.homeHTML(),/is-new/);
+ view.homeHTML({completed:0});
+ for(let n=1;n<=8;n++){
+  const html=view.homeHTML({completed:n});
+  assert.equal([...html.matchAll(/class="storybook-scene-piece[^"\n]*is-new"/g)].length,1);
+  assert.match(html,new RegExp('is-new" data-piece="'+(n-1)+'"'));
+  assert.doesNotMatch(view.homeHTML({completed:n}),/is-new/);
+ }
+ assert.match(view.homeHTML({completed:8}),/storybook-completion/);
+ assert.doesNotMatch(fresh().homeHTML(),/is-new/);
+ assert.equal(writes,0);
 });

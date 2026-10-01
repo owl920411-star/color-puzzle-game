@@ -55,23 +55,27 @@ function pieceHTML(index,unlocked,currentPiece=false){
   const stage=PAGE.stages[index];
   return `<span class="storybook-piece${unlocked?' is-unlocked':''}${currentPiece?' is-current':''}" data-piece="${index}" role="img" aria-label="${stage.reward}${unlocked?' 완성':' 아직 비어 있음'}"></span>`;
 }
-function sceneHTML(raw){
+// Presentation-only memory: existing progress does not replay its reveal on reload.
+let lastHomeCompleted=null;
+function sceneHTML(raw,{reveal=false}={}){
   const state=normalize(raw),n=state.completed;
   const elements=[];
   // The first four stages replace a single plant at the same ground anchor.
-  if(n>0)elements.push(scenePiece(Math.min(n,4)-1,'growth'));
-  if(n>=5)elements.push(scenePiece(4,'pink'));
-  if(n>=6)elements.push(scenePiece(5,'yellow'));
-  if(n>=7)elements.push(scenePiece(6,'chick'));
-  if(n>=8)elements.push(scenePiece(7,'rainbow'));
+  if(n>0)elements.push(scenePiece(Math.min(n,4)-1,'growth',reveal&&n<=4));
+  if(n>=5)elements.push(scenePiece(4,'pink',reveal&&n===5));
+  if(n>=6)elements.push(scenePiece(5,'yellow',reveal&&n===6));
+  if(n>=7)elements.push(scenePiece(6,'chick',reveal&&n===7));
+  if(n>=8)elements.push(scenePiece(7,'rainbow',reveal&&n===8));
   return `<div class="storybook-scene${n===8?' is-complete':''}" role="img" aria-label="${PAGE.title} · ${n===0?'아직 비어 있는 꽃밭':n<5?PAGE.stages[n-1].reward+'이 자라는 꽃밭':n===5?'하얀 꽃과 분홍 꽃':n===6?'세 송이 꽃이 핀 꽃밭':n===7?'병아리가 놀러온 꽃밭':'무지개 아래 병아리와 세 송이 꽃'}"><div class="storybook-ground" aria-hidden="true"></div>${elements.join('')}</div>`;
 }
-function scenePiece(index,place){
-  return `<span class="storybook-scene-piece scene-${place}" data-piece="${index}" aria-hidden="true"></span>`;
+function scenePiece(index,place,reveal=false){
+  return `<span class="storybook-scene-piece scene-${place}${reveal?' is-new':''}" data-piece="${index}" aria-hidden="true"></span>`;
 }
 function homeHTML(raw=read()){
   const state=normalize(raw),stage=current(state),done=state.completed>=PAGE.total;
-  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state)}<p>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
+  const reveal=lastHomeCompleted!==null&&state.completed>lastHomeCompleted;
+  lastHomeCompleted=state.completed;
+  return `<section class="cb-storybook" aria-label="그림책 진행 상황"><div class="storybook-head"><div><span>그림책 1</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
 }
 function hud(run,raw=read()){
   const state=normalize(raw),stage=current(state);
