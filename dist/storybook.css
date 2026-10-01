@@ -50,3 +50,22 @@
 @keyframes storybook-draw-in{from{opacity:0;transform:rotate(var(--piece-tilt,0deg)) scale(.92)}to{opacity:1;transform:rotate(var(--piece-tilt,0deg)) scale(1)}}
 @keyframes storybook-page-finish{from{opacity:.4;transform:scaleX(.25)}to{opacity:1;transform:scaleX(1)}}
 @media(prefers-reduced-motion:reduce){.storybook-scene-piece.is-new,.storybook-completion.is-new::after{animation:none}}
+
+/* Coloring-book marks reveal the future scene without inventory slots. */
+.storybook-outline{position:absolute;aspect-ratio:1;background-repeat:no-repeat;background-position:center;background-size:100% 100%;opacity:.42;pointer-events:none}
+.cb-storybook{cursor:pointer;touch-action:manipulation}
+.cb-storybook:focus-visible{outline:3px solid #8c3f60;outline-offset:4px}
+.storybook-reader{box-sizing:border-box;width:min(90vw,460px);max-height:90svh;overflow:auto;padding:17px;background:#fffdf5;color:#665048;border:1px solid #bda78b;border-radius:3px;box-shadow:4px 5px 0 #e8dbc3;font-family:GaeguStorybook,Gaegu,'Malgun Gothic',sans-serif}
+.storybook-reader::backdrop{background:#493c385c}
+.reader-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.reader-top strong{font-size:16px}
+.storybook-reader h2{margin:12px 0 5px;text-align:center;font-size:24px;color:#8c3f60}
+.reader-art{background:#fffaf0;border:1px solid #d7c7a7;padding:8px}.reader-art img{display:block;width:100%;aspect-ratio:3/2;object-fit:contain}.reader-art .storybook-scene{height:180px}
+.storybook-reader p{font-size:15px;line-height:1.4;margin:10px 0}.reader-status{font-weight:700;color:#8c3f60}
+.storybook-reader nav{display:flex;justify-content:space-between;gap:10px;margin-top:15px}
+.storybook-reader button{font:700 16px GaeguStorybook,Gaegu,sans-serif;color:#665048;background:#faecda;border:1px solid #bda78b;padding:7px 12px;border-radius:3px;cursor:pointer;touch-action:manipulation;min-height:40px}
+.storybook-reader button:disabled{opacity:.4;cursor:default}.storybook-reader button:focus-visible{outline:2px solid #8c3f60;outline-offset:2px}
+@media(max-width:360px){.reader-art .storybook-scene{height:145px}.storybook-reader{padding:12px}.storybook-reader h2{font-size:21px}}
+
+#panel .cb-home figcaption{font-family:GaeguStorybook,Gaegu,sans-serif}
+
+.storybook-outline.scene-chick{opacity:.65}

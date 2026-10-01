@@ -65,3 +65,12 @@ test('only the newest scene detail reveals once; reload and storage remain uncha
  assert.doesNotMatch(fresh().homeHTML(),/is-new/);
  assert.equal(writes,0);
 });
+
+
+test('coloring-book outlines disappear as their existing stage receives color',()=>{
+ for(let n=0;n<=8;n++){
+  const html=S.homeHTML({completed:n});
+  assert.equal([...html.matchAll(/class="storybook-outline /g)].length,n<4?4:Math.max(0,7-n));
+  assert.match(html,/role="button" tabindex="0" aria-haspopup="dialog"/);
+ }
+});
