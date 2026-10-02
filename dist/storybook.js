@@ -83,12 +83,12 @@ function sceneHTML(raw,{reveal=false}={}){
   const elements=[];
   const outlines=[[3,'growth',4],[4,'pink',5],[5,'yellow',6],[6,'chick',7]].filter(([, ,stage])=>n<stage).map(([i,place])=>`<span class="storybook-outline scene-${place}" style="background-image:url(assets/storybook-outline-${i}.svg)" aria-hidden="true"></span>`).join('');
   // The first four stages replace a single plant at the same ground anchor.
-  if(n>0)elements.push(scenePiece(Math.min(n,4)-1,'growth',reveal&&n<=4));
+  if(n>1)elements.push(scenePiece(Math.min(n,4)-1,'growth',reveal&&n<=4));
   if(n>=5)elements.push(scenePiece(4,'pink',reveal&&n===5));
   if(n>=6)elements.push(scenePiece(5,'yellow',reveal&&n===6));
   if(n>=7)elements.push(scenePiece(6,'chick',reveal&&n===7));
   if(n>=8)elements.push(scenePiece(7,'rainbow',reveal&&n===8));
-  return `<div class="storybook-scene${n===8?' is-complete':''}" role="img" aria-label="${PAGE.title} · ${n===0?'꽃 세 송이와 병아리 밑그림이 있는 꽃밭':n<5?PAGE.stages[n-1].reward+'이 자라는 꽃밭':n===5?'하얀 꽃과 분홍 꽃':n===6?'세 송이 꽃이 핀 꽃밭':n===7?'병아리가 놀러온 꽃밭':'무지개 아래 병아리와 세 송이 꽃'}"><div class="storybook-ground" aria-hidden="true"></div>${outlines}${elements.join('')}</div>`;
+  return `<div class="storybook-scene${n===8?' is-complete':''}" role="img" aria-label="${PAGE.title} · ${n<=1?'꽃 세 송이와 병아리 밑그림이 있는 꽃밭':n<5?PAGE.stages[n-1].reward+'이 자라는 꽃밭':n===5?'하얀 꽃과 분홍 꽃':n===6?'세 송이 꽃이 핀 꽃밭':n===7?'병아리가 놀러온 꽃밭':'무지개 아래 병아리와 세 송이 꽃'}"><div class="storybook-ground" aria-hidden="true"></div>${outlines}${elements.join('')}</div>`;
 }
 function scenePiece(index,place,reveal=false){
   return `<span class="storybook-scene-piece scene-${place}${reveal?' is-new':''}" data-piece="${index}" aria-hidden="true"></span>`;
@@ -201,9 +201,9 @@ function resultCard(result,eligible=true){
  if(!eligible)return'';
  const ev=result.evaluation,book=pageFor(result.before),page=pageIndex(result.before),idx=result.before.completed;
  if(!ev.stage)return `<section class="storybook-result is-complete"><div><span>다섯 장 완성!</span><strong>내 그림책 완성</strong><small>모든 그림을 색칠했어요.</small></div></section>`;
- const art=page===0?`<span class="storybook-result-piece${result.changed?'':' is-locked'}" data-piece="${idx}" role="img" aria-label="${ev.stage.reward}"></span>`:`<div class="storybook-result-detail">${coloringScene({page:book.id,completed:result.changed?idx+1:idx},false,idx)}</div>`;
+ const art=page===0&&idx===0?'':page===0?`<span class="storybook-result-piece${result.changed?'':' is-locked'}" data-piece="${idx}" role="img" aria-label="${ev.stage.reward}"></span>`:`<div class="storybook-result-detail">${coloringScene({page:book.id,completed:result.changed?idx+1:idx},false,idx)}</div>`;
  if(result.changed){
-  const message=page===0?['씨앗을 심었어요!','새싹이 자랐어요!','꽃봉오리가 생겼어요!','첫 꽃이 피었어요!','분홍 꽃이 피었어요!','꽃밭이 더 풍성해졌어요!','병아리가 놀러왔어요!','무지개가 나타났어요!'][idx]:ev.stage.reward+' 색칠했어요!';
+  const message=page===0?['그림을 시작했어요!','새싹이 자랐어요!','꽃봉오리가 생겼어요!','첫 꽃이 피었어요!','분홍 꽃이 피었어요!','꽃밭이 더 풍성해졌어요!','병아리가 놀러왔어요!','무지개가 나타났어요!'][idx]:ev.stage.reward+' 색칠했어요!';
   return `<section class="storybook-result is-success">${art}<div><span>${result.pageComplete?(page===0?'첫 페이지 완성!':page===4?'다섯 장 완성!':'페이지 완성!'):'그림이 자라고 있어요'}</span><strong>${message}</strong><small>${book.title} ${idx+1}/8${result.pageComplete?(page<4?' · 다음 그림이 열렸어요!':' · 모두 완성'):''}</small></div></section>`;
  }
  return `<section class="storybook-result">${art}<div><span>이번에는 여기까지</span><strong>${ev.stage.title}</strong><small>${formatValue(ev.stage,ev.value)} · 다음 판에 다시 이어 그려요</small></div></section>`;

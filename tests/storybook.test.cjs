@@ -34,14 +34,14 @@ test('home, hud and result copy expose progress without requiring control change
 
 
 test('home paints one growing plant; later flowers and visitors share one scene',()=>{
- const expected=[[],[0],[1],[2],[3],[3,4],[3,4,5],[3,4,5,6],[3,4,5,6,7]];
+ const expected=[[],[],[1],[2],[3],[3,4],[3,4,5],[3,4,5,6],[3,4,5,6,7]];
  for(let n=0;n<=8;n++){
   const html=S.homeHTML({completed:n});
   assert.match(html,new RegExp(n+'/8'));
   assert.match(html,/class="storybook-scene/);
   assert.doesNotMatch(html,/storybook-pieces|is-locked|is-current|is-unlocked/);
   assert.deepEqual([...html.matchAll(/data-piece="(\d+)"/g)].map(m=>Number(m[1])),expected[n]);
-  if(n>0)assert.match(html,/class="storybook-scene-piece scene-growth(?: is-new)?"/);
+  if(n>1)assert.match(html,/class="storybook-scene-piece scene-growth(?: is-new)?"/);
  }
 });
 
@@ -57,8 +57,8 @@ test('only the newest scene detail reveals once; reload and storage remain uncha
  view.homeHTML({completed:0});
  for(let n=1;n<=8;n++){
   const html=view.homeHTML({completed:n});
-  assert.equal([...html.matchAll(/class="storybook-scene-piece[^"\n]*is-new"/g)].length,1);
-  assert.match(html,new RegExp('is-new" data-piece="'+(n-1)+'"'));
+  assert.equal([...html.matchAll(/class="storybook-scene-piece[^"\n]*is-new"/g)].length,n===1?0:1);
+  if(n>1)assert.match(html,new RegExp('is-new" data-piece="'+(n-1)+'"'));
   assert.doesNotMatch(view.homeHTML({completed:n}),/is-new/);
  }
  assert.match(view.homeHTML({completed:8}),/storybook-completion/);
