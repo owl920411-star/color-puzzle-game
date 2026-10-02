@@ -74,3 +74,47 @@ test('coloring-book outlines disappear as their existing stage receives color',(
   assert.match(html,/role="button" tabindex="0" aria-haspopup="dialog"/);
  }
 });
+
+
+test('five pages reuse the frozen goals and each run colors at most one detail',()=>{
+ assert.equal(S.PAGES.length,5);
+ for(const page of S.PAGES){
+  assert.deepEqual(page.stages.map(g=>[g.metric,g.target]),S.PAGE.stages.map(g=>[g.metric,g.target]));
+  for(let n=0;n<8;n++){
+   const raw={page:page.id,completed:n},goal=page.stages[n];
+   assert.equal(S.advance(raw,{[goal.metric]:goal.target-1}).changed,false);
+   const r=S.advance(raw,{pieces:999,lines:999,score:999999,maxCombo:99});
+   assert.equal(r.after.page,page.id);assert.equal(r.after.completed,n+1);
+  }
+ }
+});
+
+test('legacy saves migrate lazily and forty successes advance pages in order',()=>{
+ const vm=require('node:vm'),fs=require('node:fs');let text=JSON.stringify({best:12345,storybookV1:{page:'spring-garden',completed:5}}),writes=0;
+ const env={localStorage:{getItem:()=>text,setItem:(k,v)=>{text=v;writes++;}}};vm.runInNewContext(fs.readFileSync(require.resolve('../dist/storybook.js'),'utf8'),env);const A=env.CrayonStorybook;
+ assert.equal(A.read().completed,5);assert.equal(writes,0);
+ for(let total=5;total<40;total++){
+  const before=A.read();assert.equal(before.page,A.PAGES[Math.floor(total/8)].id);assert.equal(before.completed,total%8);
+  const r=A.finish({pieces:999,lines:999,score:999999,maxCombo:99});assert.equal(r.changed,true);
+  const save=JSON.parse(text);assert.equal(save.best,12345);assert.equal(save.storybookV1.completed,Math.min(8,total+1));assert.equal(save.storybookV2.pages.reduce((a,b)=>a+b),total+1);
+  const reload={localStorage:env.localStorage};vm.runInNewContext(fs.readFileSync(require.resolve('../dist/storybook.js'),'utf8'),reload);assert.equal(JSON.stringify(reload.CrayonStorybook.read()),JSON.stringify(A.read()));
+ }
+ assert.equal(A.read().page,A.PAGES[4].id);assert.equal(A.read().completed,8);assert.equal(A.finish({score:999999}).changed,false);
+});
+
+test('future pages only reveal outlines; result cards identify the newly colored element',()=>{
+ for(const page of S.PAGES.slice(1))for(let n=0;n<=8;n++){
+  const html=S.sceneHTML({page:page.id,completed:n});assert.equal([...html.matchAll(/data-color-piece=/g)].length,n);assert.doesNotMatch(html,/완성 그림 미리보기/);
+  if(n<8)assert.match(S.resultCard(S.advance({page:page.id,completed:n},{pieces:999,lines:999,score:999999,maxCombo:99})),/색칠했어요!/);
+ }
+});
+
+
+test('every legacy progress value survives and corrupt future progress cannot bypass page order',()=>{
+ const vm=require('node:vm'),fs=require('node:fs'),code=fs.readFileSync(require.resolve('../dist/storybook.js'),'utf8');
+ for(let n=0;n<=8;n++){
+  let writes=0;const env={localStorage:{getItem:()=>JSON.stringify({storybookV1:{page:'spring-garden',completed:n}}),setItem:()=>writes++}};vm.runInNewContext(code,env);
+  const state=env.CrayonStorybook.read();assert.equal(state.page,n<8?'spring-garden':'toy-cars');assert.equal(state.completed,n<8?n:0);assert.equal(writes,0);
+ }
+ const env={localStorage:{getItem:()=>JSON.stringify({storybookV1:{completed:3},storybookV2:{pages:[3,8,8,8,8]}})}};vm.runInNewContext(code,env);assert.equal(env.CrayonStorybook.read().completed,3);assert.equal(env.CrayonStorybook.read().page,'spring-garden');
+});

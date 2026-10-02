@@ -23,10 +23,30 @@ const PAGE={
   ]
 };
 
+
+const THEMES=[
+ ['toy-cars','장난감 자동차 놀이','cars',['뒷바퀴','앞바퀴','자동차','차고','장난감 블록','표지판','작은 풀','놀이 길']],
+ ['baby-bath','아기 목욕 시간','bath',['목욕 오리','비눗방울','샴푸','수건','목욕 스펀지','목욕물','아기 욕조','욕조 다리']],
+ ['bear-toys','블록과 곰 인형','toys',['곰 얼굴','곰 몸통','곰 발','분홍 블록','파란 블록','쌓기 놀이','초록 블록','장난감 집']],
+ ['baby-mobile','아기방 모빌','mobile',['달','구름','별','모빌 고리','아기 이불','침대 왼쪽','침대 오른쪽','아기 침대']]
+];
+const PAGES=[PAGE,...THEMES.map(([id,title,art,rewards])=>({id,title,art,total:8,stages:PAGE.stages.map((goal,i)=>({...goal,key:id+'-'+i,title:rewards[i]+' 색칠하기',reward:rewards[i]}))}))];
+const SEQUENCE_KEY='storybookV2';
+function pageFor(raw){return PAGES.find(p=>p.id===raw?.page)||PAGE;}
+function pageIndex(raw){return PAGES.indexOf(pageFor(raw));}
+function progressFor(all){
+ const legacy=clampInt(object(all[STORE_KEY]).completed,0,8),saved=object(all[SEQUENCE_KEY]);
+ const pages=Array.from({length:5},(_,i)=>clampInt(Array.isArray(saved.pages)?saved.pages[i]:0,0,8));
+ pages[0]=Math.max(pages[0],legacy);
+ // Later pages cannot be colored before all earlier pages are complete.
+ let blocked=false;return pages.map(n=>{if(blocked)return 0;if(n<8)blocked=true;return n;});
+}
+function activeState(pages){let i=pages.findIndex(n=>n<8);if(i<0)i=4;return{page:PAGES[i].id,completed:pages[i]};}
+
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
 function clampInt(v,min,max){return Math.max(min,Math.min(max,Math.floor(Number(v)||0)));}
-function normalize(raw){const r=object(raw);return{page:PAGE.id,completed:clampInt(r.completed,0,PAGE.total)};}
-function current(raw){const state=normalize(raw);return state.completed>=PAGE.total?null:PAGE.stages[state.completed];}
+function normalize(raw){const r=object(raw);return{page:pageFor(r).id,completed:clampInt(r.completed,0,8)};}
+function current(raw){const state=normalize(raw);return state.completed>=8?null:pageFor(state).stages[state.completed];}
 function valueFor(run,stage){if(!stage||!run)return 0;return Math.max(0,Math.floor(Number(run[stage.metric])||0));}
 function evaluate(raw,run){
   const state=normalize(raw),stage=current(state);
@@ -36,15 +56,15 @@ function evaluate(raw,run){
 }
 function advance(raw,run){
   const before=normalize(raw),evaluation=evaluate(before,run);
-  const after=evaluation.success?{page:PAGE.id,completed:Math.min(PAGE.total,before.completed+1)}:before;
+  const after=evaluation.success?{page:before.page,completed:Math.min(8,before.completed+1)}:before;
   return{before,after,evaluation,changed:after.completed!==before.completed,pageComplete:after.completed>=PAGE.total};
 }
 function readRoot(){
   try{return object(JSON.parse(root.localStorage?.getItem(STORAGE_KEY)||'{}'));}catch{return{};}
 }
-function read(){return normalize(readRoot()[STORE_KEY]);}
+function read(){return activeState(progressFor(readRoot()));}
 function write(state){
-  try{const all=readRoot();all[STORE_KEY]=normalize(state);root.localStorage?.setItem(STORAGE_KEY,JSON.stringify(all));return true;}catch{return false;}
+  try{const all=readRoot(),next=normalize(state),i=pageIndex(next),pages=progressFor(all);for(let j=0;j<i;j++)pages[j]=8;pages[i]=next.completed;for(let j=i+1;j<5;j++)pages[j]=0;all[STORE_KEY]={page:PAGE.id,completed:pages[0]};all[SEQUENCE_KEY]={version:2,pages};root.localStorage?.setItem(STORAGE_KEY,JSON.stringify(all));return true;}catch{return false;}
 }
 function formatValue(stage,value){
   const n=Math.min(Math.max(0,Math.floor(Number(value)||0)),stage.target);
@@ -59,6 +79,7 @@ function pieceHTML(index,unlocked,currentPiece=false){
 let lastHomeCompleted=null;
 function sceneHTML(raw,{reveal=false}={}){
   const state=normalize(raw),n=state.completed;
+  if(pageIndex(state)>0)return coloringScene(state,reveal);
   const elements=[];
   const outlines=[[3,'growth',4],[4,'pink',5],[5,'yellow',6],[6,'chick',7]].filter(([, ,stage])=>n<stage).map(([i,place])=>`<span class="storybook-outline scene-${place}" style="background-image:url(assets/storybook-outline-${i}.svg)" aria-hidden="true"></span>`).join('');
   // The first four stages replace a single plant at the same ground anchor.
@@ -72,28 +93,78 @@ function sceneHTML(raw,{reveal=false}={}){
 function scenePiece(index,place,reveal=false){
   return `<span class="storybook-scene-piece scene-${place}${reveal?' is-new':''}" data-piece="${index}" aria-hidden="true"></span>`;
 }
-function homeHTML(raw=read()){
-  const state=normalize(raw),stage=current(state),done=state.completed>=PAGE.total;
-  const reveal=lastHomeCompleted!==null&&state.completed>lastHomeCompleted;
-  lastHomeCompleted=state.completed;
-  return `<section class="cb-storybook" role="button" tabindex="0" aria-haspopup="dialog" aria-label="그림책 진행 상황"><div class="storybook-binding" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="storybook-head"><div><span>그림책 1 · 보기</span><strong>${PAGE.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?'첫 페이지 완성!':`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
+// Native SVG regions keep each colored part aligned with its uncolored drawing.
+const REGIONS={
+ cars:[
+  'M183 337 A41 41 0 1 0 265 337 A41 41 0 1 0 183 337Z',
+  'M307 360 A43 43 0 1 0 393 360 A43 43 0 1 0 307 360Z',
+  'M177 327 Q180 290 218 263 Q235 200 296 188 Q354 178 389 207 L421 259 Q465 257 490 285 L508 343 L494 373 L425 381 L392 379 L305 355 L268 351 L180 344Z M183 337 A41 41 0 1 0 265 337 A41 41 0 1 0 183 337Z M307 360 A43 43 0 1 0 393 360 A43 43 0 1 0 307 360Z',
+  'M375 40H634V280H555L539 260H421L390 207L375 175Z',
+  'M634 155H760V318H595V240H634Z',
+  'M88 153 A57 57 0 1 0 202 153 A57 57 0 1 0 88 153Z M135 204H155V278H135Z M104 277H206V316H104Z',
+  'M20 231H104V316H20Z M155 231H209V277H155Z M625 296H755V375H625Z'
+ ],
+ bath:[
+  'M233 205 Q228 184 245 190 L267 199 Q254 170 270 143 L294 122L308 111L328 107L341 112 Q376 123 384 154 Q397 180 381 194 Q403 218 379 242 Q344 257 288 248 Q252 245 233 205Z',
+  'M165 99 A27 27 0 1 0 219 99 A27 27 0 1 0 165 99Z M216 133 A20 20 0 1 0 256 133 A20 20 0 1 0 216 133Z M370 80 A48 48 0 1 0 466 80 A48 48 0 1 0 370 80Z M452 128 A27 27 0 1 0 506 128 A27 27 0 1 0 452 128Z M400 157 A11 11 0 1 0 422 157 A11 11 0 1 0 400 157Z',
+  'M565 129L571 111L615 111L616 99L684 100L719 110L723 135L688 143L688 169 Q724 186 729 238 L733 352L702 363L595 335L566 315L574 219L582 176L625 157L624 139Z',
+  'M400 398 Q399 361 438 337 Q478 312 540 319 L706 347 Q751 360 748 393 Q768 420 745 445 L696 468 Q653 476 602 463 L433 438 Q393 425 400 398Z',
+  'M14 327 Q13 309 44 301 L80 299 Q110 282 150 291 Q170 290 184 307 Q223 297 232 327 Q239 341 228 351 Q263 357 270 395 Q264 424 240 434 Q241 451 215 462 L162 471L109 461L68 437L42 410L48 386L32 370L27 356Z',
+  'M105 183 Q175 149 265 181 L389 174 Q492 150 556 196 Q517 250 387 260 Q213 256 105 210Z',
+  'M60 140H602V410H270V290H60Z'
+ ],
+ toys:[
+  'M175 145 Q174 90 218 83 Q244 78 279 105 Q341 55 391 65 Q388 23 437 29 Q504 26 497 88 Q492 110 464 135 Q500 188 476 227 Q463 253 424 267 Q342 289 293 267 Q258 252 240 214 Q183 211 175 145Z',
+  'M297 262 Q350 278 423 252 L483 229 Q520 192 551 195 Q570 212 544 236 L475 301 L472 354 Q430 335 408 371 L384 407L363 429L284 368 Q232 367 235 324 Q247 284 297 262Z',
+  'M256 415 A65 65 0 1 0 386 415 A65 65 0 1 0 256 415Z M405 376 Q423 345 450 350 Q481 355 499 392 L490 393L434 401L435 459 Q409 450 405 426Z',
+  'M434 401L490 393L555 410L553 470L499 488L435 468Z',
+  'M585 408L646 390L690 405L689 469L646 487L585 468Z',
+  'M0 180H290V512H0Z',
+  'M486 329L587 317L656 338L655 392L583 411L579 447L552 436L557 410L496 393L486 394Z'
+ ],
+ mobile:[
+  'M321 155 Q276 156 257 185 Q236 224 265 248 Q292 266 321 250 Q342 242 343 219 Q315 232 306 219 Q297 190 321 155Z',
+  'M326 200H453V291H326Z',
+  'M445 182H550V278H445Z',
+  'M230 0H560V145H230Z M375 145H405V200H375Z M472 145H504V182H472Z',
+  'M402 354 Q418 325 470 323 L542 328L573 379L614 450 Q614 463 586 470 L506 494 Q491 495 482 470 L446 378 Q426 356 402 354Z',
+  'M151 311 Q160 253 198 243 Q246 228 269 291 L268 340L242 340L239 306 Q221 277 204 298 L204 478L219 492L219 505L174 501 Q149 495 151 471Z',
+  'M548 291 Q553 251 589 247 Q629 249 638 293 L642 489L623 504L596 504L596 471L613 454L601 389L572 332L548 325Z'
+ ]
+};
+const DETAIL_BOXES={
+ cars:[[165,278,120,120],[290,300,120,120],[160,175,365,240],[355,25,300,280],[575,130,190,210],[75,90,145,245],[610,285,155,110],[25,270,655,225]],
+ bath:[[260,70,200,195],[125,0,415,110],[535,45,230,310],[390,270,375,240],[5,265,245,240],[120,155,410,130],[135,220,405,250],[180,395,345,115]],
+ toys:[[155,0,355,290],[280,180,275,190],[260,300,255,210],[485,330,130,180],[585,355,180,155],[0,120,305,390],[510,225,250,160],[510,130,240,180]],
+ mobile:[[245,115,125,185],[335,145,130,155],[430,115,145,185],[225,0,350,155],[425,275,230,235],[130,230,150,280],[595,230,130,280],[230,260,430,250]]
+};
+let sceneSerial=0;
+function coloringScene(raw,reveal=false,detail=null){
+ const state=normalize(raw),book=pageFor(state),n=state.completed,id='sb'+(++sceneSerial),paths=REGIONS[book.art];
+ const box=detail===null?'0 0 768 512':DETAIL_BOXES[book.art][detail].join(' ');
+ const whole='M0 0H768V512H0Z',regions=[...paths,whole+' '+paths.join(' ')];
+ const image=`<image href="assets/storybook-${book.art}.webp" width="768" height="512"/>`;
+ const defs=regions.map((d,i)=>`<clipPath id="${id}p${i}"><path d="${d}" clip-rule="evenodd"/></clipPath>`).join('');
+ const color=Array.from({length:n},(_,i)=>detail!==null&&i!==detail?'':`<g clip-path="url(#${id}p${i})" class="storybook-color-part${reveal&&i===n-1?' is-new':''}" data-color-piece="${i}">${image}</g>`).join('');
+ return `<div class="storybook-scene storybook-coloring${n===8?' is-complete':''}" role="img" aria-label="${book.title} · ${n}/8 색칠"><svg viewBox="${box}" aria-hidden="true"><defs>${defs}<filter id="${id}line" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="smooth"/><feColorMatrix in="smooth" type="saturate" values="0"/><feConvolveMatrix order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" divisor="1" bias="0" preserveAlpha="true"/><feColorMatrix values="0 0 0 0 .6 0 0 0 0 .5 0 0 0 0 .4 1.6 0 0 0 0" result="inner"/><feComposite in="inner" in2="SourceAlpha" operator="in" result="inside"/><feMorphology in="SourceAlpha" operator="erode" radius="1.2" result="eroded"/><feComposite in="SourceAlpha" in2="eroded" operator="out" result="edge"/><feFlood flood-color="#99836e" flood-opacity=".55"/><feComposite in2="edge" operator="in"/><feMerge><feMergeNode/><feMergeNode in="inside"/></feMerge></filter></defs><g filter="url(#${id}line)" opacity=".65">${image}</g>${color}</svg></div>`;
 }
-// Preview-only pages never participate in game progression or storage.
-const PREVIEWS=[
- {title:'장난감 자동차 놀이',art:'storybook-cars.webp'},
- {title:'아기 목욕 시간',art:'storybook-bath.webp'},
- {title:'블록과 곰 인형',art:'storybook-toys.webp'},
- {title:'아기방 모빌',art:'storybook-mobile.webp'}
-];
+
+function homeHTML(raw=read()){
+  const state=normalize(raw),stage=current(state),book=pageFor(state),index=pageIndex(state),done=state.completed>=8;
+  const count=index*8+state.completed;const reveal=lastHomeCompleted!==null&&count>lastHomeCompleted;
+  lastHomeCompleted=count;
+  return `<section class="cb-storybook" role="button" tabindex="0" aria-haspopup="dialog" aria-label="그림책 진행 상황"><div class="storybook-binding" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="storybook-head"><div><span>그림책 ${index+1}/5 · 보기</span><strong>${book.title}</strong></div><b>${state.completed}/${PAGE.total}</b></div>${sceneHTML(state,{reveal})}<p${done?` class="storybook-completion${reveal?' is-new':''}"`: ''}>${done?(index===4?'다섯 장 완성!':'페이지 완성!'):`다음 그림 · ${stage.title} · ${stage.goal}`}</p></section>`;
+}
 function openBook(){
  if(!root.document)return;
  const previous=root.document.querySelector('.storybook-reader');if(previous)return;
  const trigger=root.document.querySelector('.cb-storybook');
  const dialog=root.document.createElement('dialog');dialog.className='storybook-reader';dialog.setAttribute('aria-label','내 그림책');
- const state=read(),stage=current(state);let page=0;
+ const all=readRoot(),pages=progressFor(all),state=activeState(pages),active=pageIndex(state);let page=active;
  function render(){
-  const preview=PREVIEWS[page-1];
-  dialog.innerHTML=`<div class="reader-top"><strong>내 그림책 · ${page+1}/5</strong><button type="button" data-book-close aria-label="그림책 닫기">닫기</button></div><h2>${preview?preview.title:PAGE.title}</h2><div class="reader-art">${preview?`<img src="assets/${preview.art}" alt="${preview.title} 완성 그림 미리보기">`:sceneHTML(state)}</div><p class="reader-status">${preview?'다음 그림책 · 미리보기':`현재 진행 · ${state.completed}/8${state.completed===8?' · 첫 페이지 완성!':''}`}</p><p class="reader-goal">${preview?'이 그림은 아직 플레이 진행에 포함되지 않아요.':stage?`이번 판 목표 · ${stage.goal}<br>다음 변화 · ${stage.reward}`:'꽃밭 한 장을 모두 완성했어요!'}</p><nav aria-label="그림책 페이지"><button type="button" data-book-prev ${page===0?'disabled':''}>이전 그림</button><button type="button" data-book-next ${page===4?'disabled':''}>다음 그림</button></nav>`;
+  const book=PAGES[page],completed=pages[page],locked=page>active,shown={page:book.id,completed},stage=current(shown);
+  dialog.innerHTML=`<div class="reader-top"><strong>내 그림책 · ${page+1}/5</strong><button type="button" data-book-close aria-label="그림책 닫기">닫기</button></div><h2>${book.title}</h2><div class="reader-art">${sceneHTML(shown)}</div><p class="reader-status">${locked?'아직 기다리는 그림':`현재 진행 · ${completed}/8${completed===8?' · 페이지 완성!':''}`}</p><p class="reader-goal">${locked?'앞의 그림을 완성하면 이어서 색칠해요.':completed===8?(page===4?'다섯 장을 모두 색칠했어요!':'이 페이지를 모두 색칠했어요!'):stage?`이번 판 목표 · ${stage.goal}<br>다음 변화 · ${stage.reward}`:''}</p><nav aria-label="그림책 페이지"><button type="button" data-book-prev ${page===0?'disabled':''}>이전 그림</button><button type="button" data-book-next ${page===4?'disabled':''}>다음 그림</button></nav>`;
+
  }
  dialog.addEventListener('click',e=>{if(e.target.closest('[data-book-close]'))dialog.close();else if(e.target.closest('[data-book-prev]')&&page>0){page--;render();dialog.querySelector('[data-book-prev]').focus();}else if(e.target.closest('[data-book-next]')&&page<4){page++;render();dialog.querySelector('[data-book-next]').focus();}});
  dialog.addEventListener('close',()=>{dialog.remove();if(trigger?.isConnected)trigger.focus();});
@@ -112,8 +183,8 @@ function hud(run,raw=read()){
 }
 function goalHTML(raw=read()){
   const state=normalize(raw),stage=current(state);
-  if(!stage)return `<span>봄날의 꽃밭</span><strong>첫 페이지 완성!</strong><small>이제 자유롭게 놀아도 좋아요</small>`;
-  return `<span>이번 그림</span><strong>${stage.title}</strong><small>${stage.goal}</small>`;
+  if(!stage)return `<span>내 그림책</span><strong>다섯 장 완성!</strong><small>이제 자유롭게 놀아도 좋아요</small>`;
+  return `<span>${pageFor(state).title}</span><strong>${stage.title}</strong><small>${stage.goal}</small>`;
 }
 function announce(raw=read()){
   if(typeof document==='undefined')return false;
@@ -127,15 +198,17 @@ function announce(raw=read()){
   return true;
 }
 function resultCard(result,eligible=true){
-  if(!eligible)return'';
-  const ev=result.evaluation;
-  if(!ev.stage)return `<section class="storybook-result is-complete"><div><span>그림책 1</span><strong>${PAGE.title} 완성</strong><small>첫 페이지는 이미 모두 채워졌어요.</small></div></section>`;
-  const idx=result.before.completed;
-  if(result.changed){
-    return `<section class="storybook-result is-success"><span class="storybook-result-piece" data-piece="${idx}" role="img" aria-label="${ev.stage.reward} 완성"></span><div><span>${result.pageComplete?'첫 페이지 완성!':'그림이 자라고 있어요'}</span><strong>${['씨앗을 심었어요!','새싹이 자랐어요!','꽃봉오리가 생겼어요!','첫 꽃이 피었어요!','분홍 꽃이 피었어요!','꽃밭이 더 풍성해졌어요!','병아리가 놀러왔어요!','무지개가 나타났어요!'][idx]}</strong><small>${PAGE.title} ${result.after.completed}/${PAGE.total}${result.pageComplete?' · 완성':''}</small></div></section>`;
-  }
-  return `<section class="storybook-result"><span class="storybook-result-piece is-locked" data-piece="${idx}" aria-hidden="true"></span><div><span>이번에는 여기까지</span><strong>${ev.stage.title}</strong><small>${formatValue(ev.stage,ev.value)} · 다음 판에 다시 이어 그려요</small></div></section>`;
+ if(!eligible)return'';
+ const ev=result.evaluation,book=pageFor(result.before),page=pageIndex(result.before),idx=result.before.completed;
+ if(!ev.stage)return `<section class="storybook-result is-complete"><div><span>다섯 장 완성!</span><strong>내 그림책 완성</strong><small>모든 그림을 색칠했어요.</small></div></section>`;
+ const art=page===0?`<span class="storybook-result-piece${result.changed?'':' is-locked'}" data-piece="${idx}" role="img" aria-label="${ev.stage.reward}"></span>`:`<div class="storybook-result-detail">${coloringScene({page:book.id,completed:result.changed?idx+1:idx},false,idx)}</div>`;
+ if(result.changed){
+  const message=page===0?['씨앗을 심었어요!','새싹이 자랐어요!','꽃봉오리가 생겼어요!','첫 꽃이 피었어요!','분홍 꽃이 피었어요!','꽃밭이 더 풍성해졌어요!','병아리가 놀러왔어요!','무지개가 나타났어요!'][idx]:ev.stage.reward+' 색칠했어요!';
+  return `<section class="storybook-result is-success">${art}<div><span>${result.pageComplete?(page===0?'첫 페이지 완성!':page===4?'다섯 장 완성!':'페이지 완성!'):'그림이 자라고 있어요'}</span><strong>${message}</strong><small>${book.title} ${idx+1}/8${result.pageComplete?(page<4?' · 다음 그림이 열렸어요!':' · 모두 완성'):''}</small></div></section>`;
+ }
+ return `<section class="storybook-result">${art}<div><span>이번에는 여기까지</span><strong>${ev.stage.title}</strong><small>${formatValue(ev.stage,ev.value)} · 다음 판에 다시 이어 그려요</small></div></section>`;
 }
+
 function finish(run,{eligible=true}={}){
   const before=read();
   if(!eligible){const result=advance(before,null);return{...result,html:''};}
@@ -143,5 +216,5 @@ function finish(run,{eligible=true}={}){
   if(result.changed)write(result.after);
   return{...result,html:resultCard(result,true)};
 }
-return{PAGE,normalize,current,valueFor,evaluate,advance,read,write,formatValue,pieceHTML,sceneHTML,homeHTML,hud,goalHTML,announce,resultCard,finish};
+return{PAGE,PAGES,normalize,current,valueFor,evaluate,advance,read,write,formatValue,pieceHTML,sceneHTML,homeHTML,hud,goalHTML,announce,resultCard,finish};
 });
