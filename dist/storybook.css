@@ -12,6 +12,8 @@
 .storybook-scene-piece,.storybook-result-piece{display:block;background-image:url('assets/storybook-spring-atlas.webp?v=storybook1');background-repeat:no-repeat;background-size:400% 200%;mask-repeat:no-repeat;mask-position:center;mask-size:100% 100%}
 .storybook-scene-piece{position:absolute;aspect-ratio:1;pointer-events:none}
 .scene-growth{left:36%;bottom:10%;width:28%;z-index:2}
+/* A planted seed is smaller than the growing flower and sits in the soil. */
+.storybook-scene-piece.scene-growth[data-piece="0"]{left:45.3%;bottom:9%;width:9.4%;clip-path:inset(0 0 12% 0)}
 .scene-pink{--piece-tilt:-7deg;left:15%;bottom:12%;width:26%;z-index:1;transform:rotate(-7deg)}
 .scene-yellow{--piece-tilt:6deg;right:14%;bottom:11%;width:26%;z-index:1;transform:rotate(6deg)}
 .scene-chick{--piece-tilt:-7deg;right:25%;bottom:-2%;width:16%;z-index:3;transform:rotate(-7deg)}
