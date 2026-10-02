@@ -1,14 +1,14 @@
 'use strict';
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 (async()=>{
- const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/qa/storybook-sequence');fs.mkdirSync(out,{recursive:true});
+ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/qa/storybook-noseed');fs.mkdirSync(out,{recursive:true});
  const server=http.createServer((req,res)=>{try{const f=path.join(root,'dist',req.url.split('?')[0]==='/'?'index.html':req.url.split('?')[0]);res.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.webp')?'image/webp':f.endsWith('.svg')?'image/svg+xml':f.endsWith('.woff')?'font/woff':'text/html');res.end(fs.readFileSync(f));}catch{res.statusCode=404;res.end();}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.STORYBOOK_CHROMIUM||undefined,args:['--no-sandbox','--disable-gpu']});
  try{
  const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),errors=[],results={layouts:[],goals:[]};page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.address().port}/?qa=1`);await page.evaluate(()=>localStorage.setItem('glassfall-v1',JSON.stringify({tutorialCompleted:true,sound:false,qaSentinel:'keep'})));await page.reload();await page.waitForTimeout(1100);
- const expected=[[],[0],[1],[2],[3],[3,4],[3,4,5],[3,4,5,6],[3,4,5,6,7]];
+ const expected=[[],[],[1],[2],[3],[3,4],[3,4,5],[3,4,5,6],[3,4,5,6,7]];
  await page.evaluate(async()=>{for(let i=0;i<8;i++){const img=new Image();img.src='assets/storybook-mask-'+i+'.svg';await img.decode();}const ground=new Image();ground.src='assets/storybook-ground.svg';await ground.decode();});
  for(let n=0;n<=8;n++){
   await page.evaluate(n=>{CrayonStorybook.write({completed:n});__GLASSFALL_QA__.menu();},n);
@@ -22,6 +22,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:
    await page.screenshot({path:path.join(out,`stage-${n}-${width}.png`)});if(width===390)await page.locator('.cb-storybook').screenshot({path:path.join(out,`scene-${n}.png`)});results.layouts.push({width,height,completed:n,start});
   }
  }
+ await page.evaluate(()=>{CrayonStorybook.write({completed:1});__GLASSFALL_QA__.menu();});await page.locator('.cb-storybook').tap();assert.equal(await page.locator('.storybook-reader [data-piece="0"]').count(),0);assert.match(await page.locator('.reader-status').innerText(),/1\/8/);await page.locator('.storybook-reader').screenshot({path:path.join(out,'reader-first-page-1.png')});await page.locator('[data-book-close]').click();
  // Future pages show only outlines, and browsing must preserve the complete save.
  await page.evaluate(()=>{CrayonStorybook.write({completed:3});__GLASSFALL_QA__.menu();});
  assert.equal(await page.locator('.cb-scene figcaption').innerText(),'오늘도 같이 색칠하자 !');
@@ -54,18 +55,18 @@ const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:
  }
  assert.ok(await page.evaluate(()=>__GLASSFALL_QA__.run.pieces>=12));assert.equal(await page.locator('#storybook-goal-toast').evaluate(e=>e.classList.contains('show')),false);assert.equal(await page.evaluate(()=>CrayonStorybook.read().completed),0);await page.screenshot({path:path.join(out,'play.png')});
  for(let i=0;i<70&&await page.evaluate(()=>__GLASSFALL_QA__.state==='playing');i++){await page.locator('#board').focus();await page.keyboard.press('Space');await page.waitForTimeout(140);}
- assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.state),'over');assert.equal(await page.evaluate(()=>CrayonStorybook.read().completed),1);assert.match(await page.locator('.storybook-result').innerText(),/씨앗을 심었어요!/);await page.waitForTimeout(400);await page.screenshot({path:path.join(out,'success.png')});results.actualPlay=await page.evaluate(()=>({pieces:__GLASSFALL_QA__.run.pieces,lines:__GLASSFALL_QA__.run.lines,completed:CrayonStorybook.read().completed}));
- await page.evaluate(()=>__GLASSFALL_QA__.finish('duplicate'));assert.equal(await page.evaluate(()=>CrayonStorybook.read().completed),1);await page.locator('[data-menu=menu]').tap();assert.equal(await page.locator('.storybook-scene-piece.is-new').count(),1);assert.equal(await page.locator('.storybook-scene-piece.is-new').getAttribute('data-piece'),'0');assert.match(await page.locator('.cb-storybook').innerText(),/1\/8/);assert.deepEqual(await page.locator('.storybook-scene-piece').evaluateAll(es=>es.map(e=>Number(e.dataset.piece))),[0]);await page.waitForTimeout(500);await page.screenshot({path:path.join(out,'actual-play-home-1.png')});await page.reload();assert.match(await page.locator('.cb-storybook').innerText(),/1\/8/);await page.evaluate(()=>__GLASSFALL_QA__.start(false,false));await page.locator('#drop').tap();await page.waitForTimeout(150);await page.locator('#pause').tap();await page.locator('[data-menu=resume]').tap();assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.state),'playing');
+ assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.state),'over');assert.equal(await page.evaluate(()=>CrayonStorybook.read().completed),1);assert.match(await page.locator('.storybook-result').innerText(),/그림을 시작했어요!/);await page.waitForTimeout(400);await page.screenshot({path:path.join(out,'success.png')});results.actualPlay=await page.evaluate(()=>({pieces:__GLASSFALL_QA__.run.pieces,lines:__GLASSFALL_QA__.run.lines,completed:CrayonStorybook.read().completed}));
+ await page.evaluate(()=>__GLASSFALL_QA__.finish('duplicate'));assert.equal(await page.evaluate(()=>CrayonStorybook.read().completed),1);await page.locator('[data-menu=menu]').tap();assert.equal(await page.locator('.storybook-scene-piece.is-new').count(),0);assert.equal(await page.locator('.storybook-result-piece[data-piece="0"]').count(),0);assert.match(await page.locator('.cb-storybook').innerText(),/1\/8/);assert.deepEqual(await page.locator('.storybook-scene-piece').evaluateAll(es=>es.map(e=>Number(e.dataset.piece))),[]);await page.waitForTimeout(500);await page.screenshot({path:path.join(out,'actual-play-home-1.png')});await page.reload();assert.match(await page.locator('.cb-storybook').innerText(),/1\/8/);await page.evaluate(()=>__GLASSFALL_QA__.start(false,false));await page.locator('#drop').tap();await page.waitForTimeout(150);await page.locator('#pause').tap();await page.locator('[data-menu=resume]').tap();assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.state),'playing');
  // Deterministic browser fixtures check every threshold, separately from actual play above.
  for(let stage=0;stage<8;stage++){
   for(const success of [false,true]){
-   const result=await page.evaluate(({stage,success})=>{const s=CrayonStorybook; s.write({completed:stage});const q=__GLASSFALL_QA__;q.start(false,false);const goal=s.PAGE.stages[stage];q.run[goal.metric]=goal.target-(success?0:1);q.hud();const hud=document.getElementById('notice').textContent;q.finish('qa-fixture');q.finish('duplicate');return{completed:JSON.parse(localStorage.getItem('glassfall-v1')).storybookV1.completed,hud,html:document.querySelector('.storybook-result').innerText};},{stage,success});assert.equal(result.completed,stage+(success?1:0));assert.match(result.html,success?/(심었어요|자랐어요|생겼어요|피었어요|풍성해졌어요|놀러왔어요|나타났어요)/:/이번에는 여기까지/);results.goals.push({stage,success,...result});
+   const result=await page.evaluate(({stage,success})=>{const s=CrayonStorybook; s.write({completed:stage});const q=__GLASSFALL_QA__;q.start(false,false);const goal=s.PAGE.stages[stage];q.run[goal.metric]=goal.target-(success?0:1);q.hud();const hud=document.getElementById('notice').textContent;q.finish('qa-fixture');q.finish('duplicate');return{completed:JSON.parse(localStorage.getItem('glassfall-v1')).storybookV1.completed,hud,html:document.querySelector('.storybook-result').innerText};},{stage,success});assert.equal(result.completed,stage+(success?1:0));assert.match(result.html,success?/(시작했어요|자랐어요|생겼어요|피었어요|풍성해졌어요|놀러왔어요|나타났어요)/:/이번에는 여기까지/);results.goals.push({stage,success,...result});
   }
  }
  await page.evaluate(()=>__GLASSFALL_QA__.menu());await page.waitForTimeout(500);await page.screenshot({path:path.join(out,'complete.png')});await page.reload();assert.match(await page.locator('.cb-storybook').innerText(),/장난감 자동차 놀이/);assert.match(await page.locator('.cb-storybook').innerText(),/0\/8/);
  for(const excluded of ['practice','guest','tutorial']){assert.equal(await page.evaluate(excluded=>{CrayonStorybook.write({completed:0});const q=__GLASSFALL_QA__;q.start(false,excluded==='tutorial');q.run.pieces=999;if(excluded==='guest')q.adaptive.session.config.guest=true;if(excluded==='practice')q.items.practice=true;q.finish('excluded');return CrayonStorybook.read().completed;},excluded),0);}
  // Presentation fixtures: inspect one-shot reveal and motion-reduction behavior.
- for(const completed of [1,5,6,7]){
+ for(const completed of [2,5,6,7]){
   await page.evaluate(n=>{CrayonStorybook.write({completed:n-1});__GLASSFALL_QA__.menu();CrayonStorybook.write({completed:n});__GLASSFALL_QA__.menu();},completed);
   assert.equal(await page.locator('.storybook-scene-piece.is-new').count(),1);
   assert.equal(await page.locator('.storybook-scene-piece.is-new').getAttribute('data-piece'),String(completed-1));
@@ -83,7 +84,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:
  await page.screenshot({path:path.join(out,'reduced-motion.png')});
  await page.emulateMedia({reducedMotion:'no-preference'});
  // Tap START during the reveal rather than waiting for the animation to end.
- await page.evaluate(()=>{CrayonStorybook.write({completed:0});__GLASSFALL_QA__.menu();CrayonStorybook.write({completed:1});__GLASSFALL_QA__.menu();});
+ await page.evaluate(()=>{CrayonStorybook.write({completed:1});__GLASSFALL_QA__.menu();CrayonStorybook.write({completed:2});__GLASSFALL_QA__.menu();});
  await page.locator('[data-menu=start]').tap();await page.waitForFunction(()=>__GLASSFALL_QA__.state==='playing');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('glassfall-v1')).qaSentinel),'keep');assert.deepEqual(errors,[]);results.errors=errors;results.checks=['toast does not intercept input and hides after 1.8s','natural gameplay to gameover unlocks exactly one','all eight threshold success/failure fixtures','duplicate finish guard','reload persistence and next-page transition','practice/guest/tutorial exclusion','pause/resume','existing save fields preserved','only newest detail reveals once at 350ms','reload does not replay reveal','reduced motion disables detail and completion animation','START during reveal works'];fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify(results,null,2)+'\n');console.log('Storybook browser QA PASS');
  }finally{await browser.close();server.close();}
