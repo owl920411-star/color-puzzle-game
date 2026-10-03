@@ -423,7 +423,9 @@ function normalTouchTick(d){
  if(!action(d.side<0?'left':'right')){d.state='BLOCKED';return;}
  // Timer belongs to this pointer and this piece, not animation/gameplay dt.
  // No accumulated catch-up work after a main-thread stall.
- if(drag===d){const delay=d.steps===0?38:d.steps===1?33:29;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
+ // User-reported 2026-10-03: a 205–250ms single touch repeated too soon.
+ // Give the first step a 100ms release window; keep the sustained 33→29ms ramp.
+ if(drag===d){const delay=d.steps===0?100:d.steps===1?33:29;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
 }
 function normalTouchMove(d,x,y){
  if(drag!==d)return;

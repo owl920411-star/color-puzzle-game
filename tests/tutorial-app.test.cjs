@@ -33,7 +33,7 @@ test('practice actions, pause, menu and restart leave existing records/settings/
 test('real CONTROL23 tap, stationary repeat and rotation results are observed without owning input',()=>{
  const a=setup();a.q.start(false,true);const startX=a.q.run.active.x;
  tap(a);assert.equal(a.q.run.active.x,startX-1);assert.deepEqual(a.observed.map(e=>[e.action,e.success,e.source,e.gesture,e.inputState,e.dx]),[['move',true,'board','tap','PENDING',-1]]);
- a.prepare(2);a.observed.length=0;a.dispatch('pointerdown',{x:220});a.advance(240);a.dispatch('pointerup',{x:220});
+ a.prepare(2);a.observed.length=0;a.dispatch('pointerdown',{x:220});a.advance(310);a.dispatch('pointerup',{x:220});
  assert.equal(a.observed.length,3);assert.ok(a.observed.every(e=>e.action==='move'&&e.success&&e.inputState==='REPEATING'&&e.source==='board'));
  a.prepare(3);a.observed.length=0;const cells=JSON.stringify(a.q.run.active.cells.map(c=>[c.x,c.y]));swipe(a,60);
  assert.notEqual(JSON.stringify(a.q.run.active.cells.map(c=>[c.x,c.y])),cells);assert.deepEqual(a.observed.map(e=>[e.action,e.success,e.source,e.gesture]),[['rotate',true,'board','rotate']]);

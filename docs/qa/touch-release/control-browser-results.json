@@ -1,0 +1,490 @@
+[
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 40,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 546.7000000001863
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 40,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 762.2000000001863
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 40,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 962.7999999998137
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 120,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 1278.8999999999069
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 120,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 1562.2000000001863
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 120,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 1845.8999999999069
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 205,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 2195.2999999998137
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 205,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 2561.7999999998137
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 205,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 2929.7000000001863
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 220,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 3295
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 220,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 3695.7000000001863
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 220,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 4078.600000000093
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 240,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 4462
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 240,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 4862.399999999907
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.25,
+    "age": 240,
+    "calls": [
+      {
+        "dx": -1,
+        "result": true,
+        "at": 5262.100000000093
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 40,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 5561.899999999907
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 40,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 5762.299999999814
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 40,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 5962.5
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 120,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 6245.100000000093
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 120,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 6529.5
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 120,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 6812.100000000093
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 205,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 7112.399999999907
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 205,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 7478.299999999814
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 205,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 7845.299999999814
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 220,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 8211.799999999814
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 220,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 8595.100000000093
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 220,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 8978.700000000186
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 240,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 9361.899999999907
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 240,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 9761.5
+      }
+    ]
+  },
+  {
+    "singleTap": true,
+    "side": 0.75,
+    "age": 240,
+    "calls": [
+      {
+        "dx": 1,
+        "result": true,
+        "at": 10161.5
+      }
+    ]
+  },
+  {
+    "twoDeliberateTaps": true,
+    "side": 0.25
+  },
+  {
+    "twoDeliberateTaps": true,
+    "side": 0.75
+  },
+  {
+    "age": 280,
+    "dx": 65,
+    "dy": 0,
+    "expected": "no-rotation",
+    "calls": [
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": false
+      }
+    ]
+  },
+  {
+    "age": 40,
+    "dx": 65,
+    "dy": 0,
+    "expected": "CW",
+    "calls": [
+      {
+        "name": "rotateDir",
+        "args": [
+          1
+        ],
+        "result": true
+      }
+    ]
+  },
+  {
+    "age": 40,
+    "dx": -65,
+    "dy": 0,
+    "expected": "CCW",
+    "calls": [
+      {
+        "name": "rotateDir",
+        "args": [
+          -1
+        ],
+        "result": true
+      }
+    ]
+  },
+  {
+    "age": 220,
+    "dx": 0,
+    "dy": -65,
+    "expected": "HOLD",
+    "calls": [
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "hold",
+        "args": [],
+        "result": true
+      }
+    ]
+  },
+  {
+    "age": 220,
+    "dx": 0,
+    "dy": 65,
+    "expected": "drop",
+    "calls": [
+      {
+        "name": "move",
+        "args": [
+          -1
+        ],
+        "result": true
+      },
+      {
+        "name": "move",
+        "args": [
+          0,
+          18
+        ],
+        "result": true
+      },
+      {
+        "name": "lock",
+        "args": []
+      }
+    ]
+  }
+]
