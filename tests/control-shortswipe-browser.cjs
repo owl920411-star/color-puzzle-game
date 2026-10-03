@@ -9,6 +9,19 @@ const root=path.resolve(__dirname,'..');
   const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://127.0.0.1:${server.address().port}/index.html?qa=1&play=1`);await page.waitForFunction(()=>window.__GLASSFALL_QA__?.run?.active);
   const cdp=await page.context().newCDPSession(page),results=[];
+  // Real Chromium touch events: a slightly lingering single tap stays one step.
+  for(const side of [.25,.75])for(const age of [40,120,205,220,240])for(let i=0;i<3;i++){
+   await page.evaluate(()=>{const q=__GLASSFALL_QA__;q.start(false,false);window.controlCalls=[];const f=q.run.move.bind(q.run);q.run.move=(dx,dy)=>{const r=f(dx,dy);if(dx)controlCalls.push({dx,result:r,at:performance.now()});return r;};});
+   const r=await page.locator('#board').boundingBox(),point={x:r.x+r.width*side,y:r.y+r.height*.4,id:1};
+   const before=await page.evaluate(()=>__GLASSFALL_QA__.run.active.x);
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});await page.waitForTimeout(age);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+   await page.waitForTimeout(100);const calls=await page.evaluate(()=>controlCalls);assert.equal(calls.length,1,`single tap ${age}ms side ${side}`);assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.run.active.x),before+(side<.5?-1:1));results.push({singleTap:true,side,age,calls});
+  }
+  for(const side of [.25,.75]){
+   await page.evaluate(()=>__GLASSFALL_QA__.start(false,false));const r=await page.locator('#board').boundingBox(),point={x:r.x+r.width*side,y:r.y+r.height*.4,id:1};const before=await page.evaluate(()=>__GLASSFALL_QA__.run.active.x);
+   for(let i=0;i<2;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});await page.waitForTimeout(50);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(20);}
+   assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.run.active.x),before+(side<.5?-2:2));results.push({twoDeliberateTaps:true,side});
+  }
   for(const [age,dx,dy,expected] of [[280,65,0,'no-rotation'],[40,65,0,'CW'],[40,-65,0,'CCW'],[220,0,-65,'HOLD'],[220,0,65,'drop']]){
    await page.evaluate(()=>{const q=__GLASSFALL_QA__;q.start(false,false);window.controlCalls=[];for(const k of ['move','rotateDir','hold','lock']){const f=q.run[k].bind(q.run);q.run[k]=(...args)=>{const r=f(...args);controlCalls.push({name:k,args,result:r});return r;};}});
    const r=await page.locator('#board').boundingBox(),point={x:r.x+r.width*.4,y:r.y+r.height*.4,id:1};
@@ -20,6 +33,6 @@ const root=path.resolve(__dirname,'..');
    const x=await page.evaluate(()=>__GLASSFALL_QA__.run.active?.x);await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>__GLASSFALL_QA__.run.active?.x),x);
    results.push({age,dx,dy,expected,calls});
   }
-  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(root,'docs/qa/toy-v2/control-browser-results.json'),JSON.stringify(results,null,2)+'\n');console.log('Production browser: long hold no rotation, short CW/CCW, long-hold up HOLD/down drop and release stops PASS');
+  assert.deepEqual(errors,[]);fs.mkdirSync(path.join(root,'docs/qa/touch-release'),{recursive:true});await page.screenshot({path:path.join(root,'docs/qa/touch-release/play.png')});fs.writeFileSync(path.join(root,'docs/qa/touch-release/control-browser-results.json'),JSON.stringify(results,null,2)+'\n');console.log('Browser: 30 lingering single taps, two deliberate taps, long hold no rotation, short CW/CCW, long-hold up HOLD/down drop and release stops PASS');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
