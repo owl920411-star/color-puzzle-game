@@ -60,7 +60,12 @@ function create(port){
  function system(kind,before){if(!session||!active)return;const g=get();session.system(kind,before||board(),board(),g.elapsed);}
  function exclude(){if(session){session.exclude('개발자 조작');pending=null;}}
  function interval(base){if(!session||!active)return base;const g=get();return session.takeInterval(base,{now:g.elapsed,forceFixed:g.practice});}
- function recordKey(){return session?.config.mode==='adaptive'?'normal-adaptive-v1-'+session.config.style:'normal';}
+ function recordKey(){
+  // Before the first game, home must read the same record as the selected rules.
+  // Keep finished sessions authoritative until their final score has been saved.
+  const config=session?.config||next;
+  return config.mode==='adaptive'?'normal-adaptive-v1-'+config.style:'normal';
+ }
  function desertKey(){return recordKey()==='normal'?'desertSurvival':'desertSurvival-'+recordKey();}
  function label(){return session?MODES[session.config.mode]+(session.config.guest?' · 임시':''):MODES[next.mode];}
  function info(){return session?(active?session.report('checkpoint'):lastReport):null;}
