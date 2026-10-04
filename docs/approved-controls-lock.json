@@ -1,0 +1,40 @@
+{
+  "approvedCommit": "00edfd6bf96522d7db58cd7bd25293b57c1dded4",
+  "approvedAt": "2026-10-04",
+  "holdStartMs": 232,
+  "firstRepeatMs": 33,
+  "repeatMs": 29,
+  "swipeWindowMs": 165,
+  "files": [
+    {
+      "path": "dist/endless-app.js",
+      "sha256": "15043635e337f1aca7ffbad19b9c868dc5a231154dc7d3e83c528553d684f8c7"
+    },
+    {
+      "path": "dist/engine.js",
+      "sha256": "ad0ddd8572a7ab4b56323b13842ec210a351f0a2132f25ff59d7a3ee811df3fe"
+    },
+    {
+      "path": "dist/endless-rules.js",
+      "sha256": "61a2946e1b8fdae1431d4e89151305200750d87c53644067d30d3b5a86b67984"
+    },
+    {
+      "path": "dist/pointer-button-guard.js",
+      "sha256": "7e2d1e5d269440aa380f9589046112775350bf9b634beb15cf5850043e794ef2"
+    }
+  ],
+  "guardFiles": [
+    "AGENTS.md",
+    "docs/approved-controls-lock.json",
+    "docs/APPROVED-CONTROLS-LOCK.md",
+    "scripts/check-control-lock.cjs",
+    ".github/workflows/approved-controls.yml",
+    "scripts/test-rc.cjs",
+    "tests/approved-control-lock.test.cjs",
+    "tests/control19-hold.test.cjs",
+    "tests/control20-stability.test.cjs",
+    "tests/pointer-button-guard.test.cjs",
+    "tests/control23-freeze.test.cjs",
+    "tests/helpers/control23-freeze.json"
+  ]
+}

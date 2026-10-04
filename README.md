@@ -11,7 +11,7 @@
 
 ## 현재 조작
 
-CONTROL 23 최종 후보를 기준으로 입력 영역을 동결합니다. 회귀 검사와 동결 범위는 `docs/RC1-CONTROL-FREEZE.md`에 기록합니다.
+2026-10-04 사용자가 승인한 현재 조작을 잠급니다. 사용자 명시적 잠금 해제 없이 조작 코드·기준·검사를 바꾸지 않습니다. 저장소 지침은 `AGENTS.md`, 현재 잠금 범위와 GitHub 병합 차단은 `docs/APPROVED-CONTROLS-LOCK.md`, 기존 회귀 검사는 `docs/RC1-CONTROL-FREEZE.md`에 기록합니다.
 
 - 게임판 왼쪽·오른쪽을 짧게 터치: 해당 방향 한 칸 이동.
 - 같은 영역을 길게 누르기: 빠른 연속 이동. 손을 떼면 정지.
@@ -59,6 +59,7 @@ CONTROL 23 최종 후보를 기준으로 입력 영역을 동결합니다. 회�
 
 ```sh
 node --check dist/endless-app.js
+node scripts/check-control-lock.cjs
 node scripts/build-home.cjs
 node scripts/test-rc.cjs
 ```
