@@ -51,7 +51,7 @@ test('real upward HOLD, downward DROP and actual drop button have distinct obser
 });
 
 test('tutorial preparation and finish invalidate the old piece gesture and restore normal gravity',()=>{
- const a=setup(storeFixture);a.q.start(false,true);a.dispatch('pointerdown');a.advance(180);assert.equal(a.q.drag.state,'REPEATING');
+ const a=setup(storeFixture);a.q.start(false,true);a.dispatch('pointerdown');a.advance(250);assert.equal(a.q.drag.state,'REPEATING');
  a.prepare(3);const prepared=a.q.run.active,preparedX=prepared.x;assert.equal(a.q.drag,null);assert.equal(a.timers.size,0);
  a.advance(400);a.dispatch('pointerup');assert.equal(a.q.run.active,prepared);assert.equal(prepared.x,preparedX);
  a.dispatch('pointerdown');a.advance(70);a.complete();const normal=a.q.run,normalX=normal.active.x,normalY=normal.active.y;
