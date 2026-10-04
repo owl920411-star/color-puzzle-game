@@ -1,0 +1,56 @@
+name: Approved controls lock
+
+on:
+  push:
+    branches: [main]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: approved-controls-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify approved controls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read trusted base guard
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: trusted
+          persist-credentials: false
+      - name: Read proposed source without executing it
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: candidate
+          persist-credentials: false
+      - name: Use Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check against the approved base
+        id: lock
+        run: node trusted/scripts/check-control-lock.cjs --root candidate --guard-root trusted
+      - name: Publish required status on the proposed commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          LOCK_OUTCOME: ${{ steps.lock.outcome }}
+        run: |
+          node --input-type=module <<'JS'
+          const response=await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/statuses/${process.env.TARGET_SHA}`,{
+            method:'POST',
+            headers:{Authorization:`Bearer ${process.env.GH_TOKEN}`,Accept:'application/vnd.github+json','Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},
+            body:JSON.stringify({state:process.env.LOCK_OUTCOME==='success'?'success':'failure',context:'Approved controls',description:process.env.LOCK_OUTCOME==='success'?'User-approved controls unchanged':'Approved controls changed or guard could not run',target_url:`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`})
+          });
+          if(!response.ok)throw Error(`Could not publish control lock status: HTTP ${response.status}`);
+          JS

@@ -84,3 +84,13 @@ HOLD/drop, pointer replacement and keyboard behavior remain guarded. The
 all other frozen span hashes remain unchanged. Both sides are swept through
 150–264ms releases to guard the previously reported single-touch double move.
 Real Android subjective feel must be confirmed by the user after deployment.
+
+## User acceptance and permanent working freeze · 2026-10-04
+
+After deployment the user said the controls now feel right and explicitly asked
+that they be locked. `00edfd6bf96522d7db58cd7bd25293b57c1dded4` is the accepted
+runtime. Follow `AGENTS.md` and `APPROVED-CONTROLS-LOCK.md`: documenting a reason
+and renewing a hash is no longer sufficient permission. A new explicit user
+unlock is required before any control change. No input implementation changed
+when this lock was installed. User acceptance is not a claim of testing every
+Android device.
