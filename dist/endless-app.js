@@ -415,6 +415,7 @@ function draw(){
 }
 // CONTROL 23: normal-board gestures own one state and one timer.
 // Keyboard repeat remains in update().
+const TOUCH_SWIPE_WINDOW_MS=165,TOUCH_HOLD_START_MS=232;
 function normalTouchTick(d){
  d.timer=null;
  if(drag!==d||d.piece!==pieceID()||!canAct()){if(drag===d)clearInput();return;}
@@ -423,9 +424,10 @@ function normalTouchTick(d){
  if(!action(d.side<0?'left':'right')){d.state='BLOCKED';return;}
  // Timer belongs to this pointer and this piece, not animation/gameplay dt.
  // No accumulated catch-up work after a main-thread stall.
- // User-reported 2026-10-03: a 205–250ms single touch repeated too soon.
- // Give the first step a 100ms release window; keep the sustained 33→29ms ramp.
- if(drag===d){const delay=d.steps===0?100:d.steps===1?33:29;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
+ // User-reported 2026-10-04: moving once, then waiting100ms felt like a hitch.
+ // Put the wait before movement:232ms first step,265ms second, then29ms.
+ // A205–250ms single touch still moves once; release never adds a repeat.
+ if(drag===d){const delay=d.steps===0?33:29;d.steps++;d.timer=setTimeout(()=>normalTouchTick(d),delay);}
 }
 function normalTouchMove(d,x,y){
  if(drag!==d)return;
@@ -434,8 +436,8 @@ function normalTouchMove(d,x,y){
  if(Math.max(ax,ay)<d.swipe)return;
  // User-approved 2026-09-29: only a quick horizontal swipe may rotate.
  // A confirmed hold (including BLOCKED at a wall) keeps its original direction.
- // Check elapsed time too, in case the 165ms timer is delayed by a busy frame.
- if(ax>=ay&&(d.state!=='PENDING'||performance.now()-d.startedAt>=165))return;
+ // Preserve the165ms quick-swipe window independently of the later first step.
+ if(ax>=ay&&(d.state!=='PENDING'||performance.now()-d.startedAt>=TOUCH_SWIPE_WINDOW_MS))return;
  // Vertical HOLD/drop still retires the repeat before its one swipe action.
  clearInput();
  if(action(ax>=ay?(dx>0?'rotate':'rotateCCW'):(dy<0?'hold':'drop')))draw();
@@ -444,7 +446,7 @@ function processSwipe(d,x,y,now){if(drag!==d||!playing())return;normalTouchMove(
 canvas.addEventListener('pointerdown',e=>{
  if(!canAct()||drag||e.button!==0)return;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);repeat=null;initAudio();const r=canvas.getBoundingClientRect(),side=e.clientX<r.left+r.width/2?-1:1;
  const d=drag={id:e.pointerId,piece:pieceID(),state:'PENDING',steps:0,side,startedAt:performance.now(),startX:e.clientX,startY:e.clientY,swipe:Math.max(26,Math.max(23,Math.min(36,r.width/10))*.78),timer:null};
- d.timer=setTimeout(()=>normalTouchTick(d),165);
+ d.timer=setTimeout(()=>normalTouchTick(d),TOUCH_HOLD_START_MS);
 });
 canvas.addEventListener('pointermove',e=>{const d=drag;if(!d||d.id!==e.pointerId)return;e.preventDefault();processSwipe(d,e.clientX,e.clientY,performance.now());});
 canvas.addEventListener('pointerup',e=>{
