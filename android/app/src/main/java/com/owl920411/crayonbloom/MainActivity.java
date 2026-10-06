@@ -1,6 +1,5 @@
 package com.owl920411.crayonbloom;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Build;
@@ -13,13 +12,15 @@ import android.net.Uri;
 import android.widget.FrameLayout;
 import android.content.SharedPreferences;
 import androidx.webkit.WebViewAssetLoader;
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedCallback;
 import com.google.android.gms.ads.*;
 import com.google.android.gms.ads.interstitial.*;
 import com.google.android.ump.*;
 import java.io.ByteArrayInputStream;
 import java.util.Collections;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "https://appassets.androidplatform.net";
     // Publisher-provided production app/interstitial IDs.
     private static final String INTERSTITIAL_ID = "ca-app-pub-5315201053842908/4383534846";
@@ -49,6 +50,9 @@ public final class MainActivity extends Activity {
         web = new WebView(this);
         root.addView(web,new FrameLayout.LayoutParams(-1,-1));
         setContentView(root);
+        getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() { confirmExit(); }
+        });
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true);
         s.setAllowFileAccess(false); s.setAllowContentAccess(false);
@@ -141,7 +145,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onResume() { super.onResume();resumed = true;if(web != null) { web.onResume();js("window.dispatchEvent(new Event('crayon-native-resume'))"); } if(consent != null) preload(); }
     @Override protected void onPause() { resumed = false;if(web != null) { js("window.dispatchEvent(new Event('blur'));window.BloomAudio?.scene('paused')");web.onPause(); }persist();super.onPause(); }
-    @Override public void onBackPressed() {
+    private void confirmExit() {
         if(showing) return;
         js("window.dispatchEvent(new Event('blur'))");
         new AlertDialog.Builder(this).setMessage("놀이를 마칠까요?")

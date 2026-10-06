@@ -20,6 +20,6 @@ The existing conservative advertising treatment is retained: nonpersonalized req
 
 ## App behavior and verification limits
 
-Current game files and art are bundled locally via HTTPS WebViewAssetLoader, including the latest storybook and audio. QA pages are excluded. Record formats, audio options, tutorial and gameplay remain unchanged. Android backgrounding pauses through the approved controller's existing blur handler. The old upload key is reused so the signature remains compatible with earlier delivered builds.
+Current game files and art are bundled locally via HTTPS WebViewAssetLoader, including the latest storybook and audio. QA pages are excluded. Record formats, audio options, tutorial and gameplay remain unchanged. Android backgrounding pauses through the approved controller's existing blur handler. AndroidX Activity 1.11.0 handles system back buttons/gestures through OnBackPressedDispatcher, preserving the exit confirmation on Android 16. The old upload key is reused so the signature remains compatible with earlier delivered builds.
 
 Automated tests/build/signature checks do not establish actual Android touch/audio/advertising behavior. Verify installation, ordinary game completion 1→no ad, completion 2→at most one available ad, closing the ad→saved result and retry, unavailable/offline ad→immediate result, tutorial exclusion, background/resume and saved records. Actual AdMob delivery, account approval and Play Console acceptance/publication are not performed by a local build.
