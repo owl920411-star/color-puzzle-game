@@ -23,6 +23,8 @@ function create(port){
   const g=get();if(g.kind!=='normal'){session=null;active=false;return;}
   session=new A.AuditDirector(next,next.guest?null:store.profile);active=true;pending=null;lastHard=false;
   terminalDetail=null;lastCheckpoint=null;id=g.seed+'-'+Date.now().toString(36)+'-'+(++create.counter);profileReset=false;
+  // Observe the session lifecycle only; the approved controller stays unchanged.
+  globalThis.CrayonNativeAds?.begin(!g.practice&&!session.config.guest);
  }
  function end(outcome='gameover',checkpoint=false){
   if(!active||!session)return;const g=get();session.now=g.elapsed;
@@ -39,6 +41,11 @@ function create(port){
    if(!checkpoint&&!profileReset)store.profile=D.learn(store.profile,report);save();
   }
   if(!checkpoint)active=false;
+  if(outcome==='gameover'&&!checkpoint&&globalThis.CrayonNativeAds){
+   const eligible=!g.practice&&!session.config.guest;
+   // The controller saves the score and renders the result before this runs.
+   queueMicrotask(()=>globalThis.CrayonNativeAds?.end(eligible));
+  }
  }
  function tick(raw){const g=get();if(!active||!session)return;session.now=g.elapsed;
   if(g.practice&&!session.practice)session.exclude('개발자 조작');
